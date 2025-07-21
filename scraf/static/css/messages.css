@@ -1,0 +1,19 @@
+.message-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.message-error {
+    background-color: #dc3545;
+    color: white;
+}
+
+.message-warning {
+    background-color: #ffc107;
+    color: black;
+}
+
+.message-info {
+    background-color: #17a2b8;
+    color: white;
+}

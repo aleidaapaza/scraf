@@ -1,0 +1,39 @@
+# Archivos de compilación
+__pycache__/
+*.py[cod]
+
+# Entornos virtuales
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Archivos de configuración de IDE
+.idea/
+*.sublime-project
+*.sublime-workspace
+.vscode/
+
+# Archivos de bases de datos
+db.sqlite3
+
+# Archivos de migraciones
+*/migrations/*.py
+*/migrations/*.pyc
+!*/migrations/__init__.py
+
+# Archivos de log
+*.log
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Archivos de seguridad
+*.env
+*.env.local
+
+# Otros archivos ignorados
+.DS_Store
+Thumbs.db

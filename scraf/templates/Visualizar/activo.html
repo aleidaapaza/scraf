@@ -1,0 +1,84 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block librerias %}
+    {% include "include/timeline.html" %}
+{% endblock %}
+{% block contenido %}
+    {% if user.is_authenticated %}
+        <div class="row bg-info rounded-4 py-2">
+            <h4>CODIGO IDENTIFICADOR: {{activo.slug}} </h4>
+        </div>
+        <div class="row rounded-4 py-2">
+            <div class="col-sm-12 col-md-6 rounded-4">
+                <h4>DATOS DEL ACTIVO </h4>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="table-info">
+                        <th scope="col">CODIGO DEL ACTIVO</th>
+                        <th scope="col">DESCRIPCION DEL ACTIVO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td> {{activo.activo.codigo}} </td>
+                            <td> {{activo.activo.descActivo}} </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="table-info">
+                        <th scope="col">DESCRIPCION</th>
+                        <th scope="col">ESTADO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td> {{activo.activo.descripcion}} </td>
+                            <td> {{activo.estado}} </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h4>DATOS DEL RESPONSABLE Y UBICACION</h4>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr class="table-info">
+                        <th scope="col">NOMBRE DEL RESPONSABLE ACTUAL</th>
+                        <th scope="col">PISO</th>
+                        <th scope="col">OFICINA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td> {{activo.responsable.persona.nombre}} {{activo.responsable.persona.apellido}}</td>
+                            <td> {{activo.piso_ubicacion}} </td>
+                            <td> {{activo.oficina_ubicacion}} </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-sm-12 col-md-6 rounded-4 py-2">
+                <h4>Cambios</h4>
+                <div class="timeline">
+                {% for evento in line %}
+                    <div class="event {% cycle 'left' 'right' %}">
+                        <div class="event-content">
+                            <p><b>Registrado por:</b>{{ evento.creador }}</p>
+                            <hr>
+                            <p><b>Responsable:</b> {{ evento.responsable.persona.nombre }} {{ evento.responsable.persona.apellido }}</p>
+                            <p><b>Ubicacion:</b> {{ evento.piso_ubicacion }} - {{ evento.oficina_ubicacion }}</p>
+                            <p><b>Estado:</b> {{ evento.estado }}</p>
+                            <hr>
+                            <p>{{ evento.observacion }}</p>
+                            <time>{{ evento.fecha_registro}}</time>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No hay observaciones disponibles para este proyecto.</p>
+                {% endfor %}
+            </div>
+            </div>
+        </div>
+    {% else %}
+    {% endif %}
+{% endblock  %}

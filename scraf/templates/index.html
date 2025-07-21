@@ -1,0 +1,22 @@
+{% extends 'base/base.html' %}
+{% block librerias %}
+   <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />  
+{% endblock %}
+{% load static %}
+{% block contenido %}
+    {% if user.is_authenticated %}        
+        {% include "index/user.html" %}
+    {% else %}
+        {% include "homepage/login.html" %}
+    {% endif %}
+{% endblock %}
+{% block script %}
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+    <script type="application/javascript">
+        $(function () {
+            $(document).ready( function () {
+                $('#myTable').DataTable();
+            } );
+            });
+    </script>
+{% endblock %}

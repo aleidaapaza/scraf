@@ -1,0 +1,28 @@
+{% extends 'base/baseListasDatos.html' %}
+{% load static %}
+{% block thead %}
+    <tr>
+        <th scope="col">NOMBRE</th>
+        <th scope="col">APELLIDO</th>
+        <th scope="col">CARGO</th>
+        <th scope="col">ULTIMA HORA DE CONEXION</th>
+        <th scope="col">VER/EDITAR</th>
+    </tr>
+
+{% endblock %}
+{% block tbody %}
+    {% for personal in object_list %}
+        <tr>
+            <td> {{ personal.persona.nombre }}</td>
+            <td> {{ personal.persona.apellido }} </td>
+            <td> {{ personal.persona.cargo }}</td>
+            <td> {{ personal.user.last_login }}</td>
+            <td>
+                <a href=" {% url 'users:actualizacion_personal' personal.slug %} " type="button"
+                   class="btn btn-primary btn-xs">
+                   <i class="fas fa-edit"></i> 
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}

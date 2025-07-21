@@ -1,0 +1,52 @@
+{% load static %}
+<div style="background-color: #4da358">
+    <ul class="nav nav-tabs d-flex justify-content-between w-100">
+        <li class="nav-item d-flex align-items-center">
+            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions">
+                <i class="fa fa-align-justify" aria-hidden="true"></i>
+            </button>
+        </li>
+        <li class="nav-item ms-auto d-flex align-items-center justify-content-center p-3">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a href="" class="nav-link font-weight-bold"><i class="fas fa-user-alt"></i> Bienvenido {{ request.user.username }}</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'inicio:Logout' %}" class="nav-link font-weight-bold"><i class="fas fa-sign-in-alt"></i> Cerrar sesión</a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">MENU</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'inicio:Index' %}"><i class="fas fa-home"></i> INICIO</a>
+                    <hr>
+                </li>
+                {% if user.g_personal %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'users:lista_personal' %}"><i class="fas fa-list-alt"></i> LISTA DE PERSONAL</a>
+                    <hr>
+                </li>
+                {% endif %}
+                {% if user.g_Activos or user.v_Activos %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'activos:lista_activos' %}"><i class="fas fa-list-alt"></i> LISTA DE ACTIVOS DE LA INSTITUCION</a>
+                    <hr>
+                </li>
+                {% endif %}                
+                {% if user.is_encargado %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'revision:lista_revisiones' %}"><i class="fas fa-list-alt"></i> LISTA DE REVISIONES DE ACTIVO</a>
+                    <hr>
+                </li>
+                {% endif %}
+            </ul>
+        </div>        
+    </div>
+</div>

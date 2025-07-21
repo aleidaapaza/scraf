@@ -1,0 +1,26 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block contenido %}
+{% if user.is_authenticated %}
+    <div class="row">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row py-2">
+                {% block formulario %}                    
+                {% endblock formulario %}
+            </div>
+            <div class="row text-center py-2">
+                <div class="col">
+                    <button class="btn btn-success" type="submit">
+                    <i class="fas fa-save"></i> {{accion}}</button>
+                </div>
+                <div class="col">
+                    <a href="{{ accion2_url }}" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> {{ accion2 }}</a>
+                </div>
+            </div>
+        </form>
+    </div>    
+{% else %}
+{% endif %}
+{% endblock contenido %}

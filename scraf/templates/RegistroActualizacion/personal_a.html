@@ -1,0 +1,83 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block contenido %}
+    <div class="row">
+            <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+                <div class="row mt-2">
+                    <h3 class="text-center text-bg-primary">{{ entity }}</h3>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-12 col-md-6 card card-body fw-bold">
+                            <h4 class="text-center">DATOS PERSONALES</h4>
+                            <hr>
+                            {% for field in form3 %}
+                                <div class="mb-3 row">
+                                    <label class="col-sm-4 col-form-label text-end">
+                                        {{ field.label_tag }}
+                                    </label>
+                                    <div class="col-sm-8">
+                                        {{ field }}
+
+                                        {% if field.help_text %}
+                                            <div class="form-text text-warning text-muted small">
+                                                {{ field.help_text }}
+                                            </div>
+                                        {% endif %}
+
+                                        {% if field.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {% for error in field.errors %}
+                                                    <span>({{ error }})</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-sm-12 col-md-6 card card-body fw-bold bg-secondary text-white">
+                            <h4 class="text-center">USUARIO Y PERMISOS</h4>
+                            <hr>
+                            {% for field in form2 %}
+                                <div class="mb-3 row">
+                                    <label class="col-sm-6 col-form-label text-end lh-1">
+                                        {{ field.label_tag }}
+                                    </label>
+                                    <div class="col-sm-6">
+                                        {{ field }}
+
+                                        {% if field.help_text %}
+                                            <div class="form-text text-warning small text-muted">
+                                                {{ field.help_text }}
+                                            </div>
+                                        {% endif %}
+
+                                        {% if field.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {% for error in field.errors %}
+                                                    <span>({{ error }})</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                     
+                    <hr>
+                <div class="row text-center row mt-2">
+                    <div class="col">
+                        <button class="btn btn-success" type="submit">
+                        <i class="fas fa-save"></i>GUARDAR</button>
+                    </div>
+                    <div class="col">
+                        <a href="{% url 'users:lista_personal' %}" class="btn btn-danger">
+                        <i class="fas fa-trash-alt"></i>CANCELAR</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+{% endblock %}

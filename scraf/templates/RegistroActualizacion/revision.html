@@ -1,0 +1,29 @@
+{% extends 'base/form1col.html' %}
+{% load static %}
+{% block formulario %}
+    <div class="row content-header text-center bg bg-primary">
+        <h4 class="text-uppercase font-weight-bold">{{ titulo }}</h4>
+    </div>    <hr>
+    {% for field in form %}
+        <div class="mb-3 row">
+            <label class="col-sm-4 col-form-label text-end">
+                {{ field.label_tag }}
+            </label>
+            <div class="col-sm-8">
+                {{ field }}
+                {% if field.help_text %}                                            
+                    <div class="form-text text-warning text-muted small">
+                    {{ field.help_text }}
+                    </div>
+                {% endif %}
+                {% if field.errors %}
+                    <div class="text-danger small mt-1">
+                        {% for error in field.errors %}
+                            <span>({{ error }})</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% endblock formulario %}

@@ -1,0 +1,92 @@
+<style>
+        
+        .timeline {
+            position: relative;
+            margin: 0 auto;
+            padding: 20px 0;
+            width: 110%;
+            max-width: 800px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #ccc;
+            transform: translateX(-50%);
+        }
+
+        .event {
+            position: relative;
+            width: 50%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .event.left {
+            left: 0;
+            text-align: right;
+        }
+
+        .event.right {
+            left: 50%;
+        }
+
+        .event-content {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .event::after {
+            content: '';
+            position: absolute;
+            top: 30px;
+            width: 10px;
+            height: 10px;
+            background: #3498db;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .event.left::after {
+            right: -5px;
+        }
+
+        .event.right::after {
+            left: -5px;
+        }
+
+        .event h4 {
+            margin: 0 0 5px;
+            color: #333;
+        }
+
+        .event p {
+            margin: 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .event time {
+            font-size: 12px;
+            color: #888;
+            display: block;
+            margin-top: 3px;
+        }
+
+        .event-content p {
+            display: none;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .event-content:hover p {
+            display: block;
+        }
+    </style>

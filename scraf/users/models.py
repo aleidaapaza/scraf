@@ -22,6 +22,9 @@ class Persona(models.Model):
     def __str__(self):
         return f'{self.nombre} {self.apellido}'
     
+    def nombrecompleto(self):
+        return f'{self.nombre} {self.apellido}'
+
     def save(self, *args, **kwargs):
         self.nombre = (self.nombre).upper()
         self.apellido = (self.apellido).upper()

@@ -177,11 +177,13 @@ class ActualizarActivoResponsable(LoginRequiredMixin, UpdateView):
             # Comparar cambios
             cambios = []
             if old_responsable != nuevo_responsable:
-                cambios.append("responsable")
-            if old_piso != nuevo_piso or old_oficina != nuevo_oficina:
-                cambios.append("ubicación")
+                cambios.append(f"Responsable cambiado: antes era '{old_responsable or ''}', ahora es '{nuevo_responsable or ''}'")
+            if old_piso != nuevo_piso:
+                cambios.append(f"Ubicacion cambiada: antes era '{old_piso or ''}', ahora es '{nuevo_piso or ''}'")
+            if old_oficina != nuevo_oficina:
+                cambios.append(f"Ubicacion cambiad: antes era '{old_oficina or ''}', ahora es '{nuevo_oficina or ''}'")
             if old_estado != nuevo_estado:
-                cambios.append("estado")
+                cambios.append(f"Estado cambiado: antes era '{old_estado or ''}', ahora es '{nuevo_estado or ''}'")
 
             if cambios:
                 observacion = "Se actualizó la información del " + ", ".join(cambios)

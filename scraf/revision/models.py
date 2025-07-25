@@ -22,8 +22,7 @@ class Revision(models.Model):
     nombre = models.CharField(max_length=255, null=False, blank=False)
     descripcion = models.TextField(blank=False, null=False)
     encargado = models.ForeignKey(Personal, null=False, blank=False, on_delete=models.CASCADE)
-    doc_Respaldo1 = models.FileField(upload_to=doc_respaldo, null=False, blank=False)
-    revisores = models.ManyToManyField(Personal, related_name='revisiones_apoyadas', blank=True)
+    revisores = models.ManyToManyField(Personal, related_name='revisiones_apoyadas', blank=True, null=True)
     fechaHora_inicio = models.DateTimeField(blank=True, null=True)
     fechaHora_finalizacion = models.DateTimeField(blank=True, null=True)
     def __str__(self):
@@ -33,7 +32,7 @@ class Revision(models.Model):
         verbose_name_plural = ('Revision')
         db_table = 'Revisiones'
 
-pre_save.connect(set_slug, sender=Personal)
+pre_save.connect(set_slug, sender=Revision)
 
 class Revision_line(models.Model):
     slug = models.SlugField(null=False, blank=False, unique=False)

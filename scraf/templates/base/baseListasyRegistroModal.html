@@ -1,0 +1,145 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block librerias %}
+   <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />  
+{% endblock %}
+{% block contenido %}    
+    <div class="row content-header text-center bg bg-primary">
+        <h4 class="text-uppercase font-weight-bold">{{ titulo }}</h4>
+    </div>
+    {% if not user.is_superuser %}
+    <div class="row">
+        <div class="col-md-3 mt-2">
+            <button id="id_btn1" class="btn btn-success btn-block">
+                {{ entity_registro_nom }}
+            </button>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div id="modal1" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content p-3" id="modalContent1">
+
+            </div>
+        </div>
+    </div>
+    <div id="modal2" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content p-3" id="modalContent2">
+
+            </div>
+        </div>
+    </div>
+    <div class="card card-default mt-3 mb-3">
+        <!-- /.card-header style="height: 400px; -->
+        <div class="card-body table-responsive-md p-0 mt-3">
+            <table class="table table-striped table-bordered table-hover text-center text-wrap" id="myTable">
+                <thead class="bg-info">
+                {% block thead %}
+                {% endblock %}
+                </thead>
+                <tbody class="font-weight-bold">
+                {% block tbody %}
+                {% endblock %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+    <hr>
+{% endblock %}
+
+{% block script %}
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+{% endblock %}
+{% block funcScript %}
+    <script type="application/javascript">
+        $(function () {
+            $(document).ready( function () {
+                $('#myTable').DataTable();
+            } );
+            });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            $('#myTable').DataTable();
+
+            document.getElementById('id_btn1').addEventListener('click', function () {
+                cargarFormularioModal("{{entity_registro}}");
+            });
+        });
+
+        function cargarFormularioModal(url) {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('modalContent1').innerHTML = data.html_form;
+                    const modal = new bootstrap.Modal(document.getElementById('modal1'));
+                    modal.show();
+
+                    const form = document.querySelector('#modal1 form');
+                    form.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        const formData = new FormData(form);
+                        fetch(url, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.form_is_valid) {
+                                modal.hide();
+                                location.reload();
+                            } else {
+                                document.getElementById('modalContent1').innerHTML = data.html_form;
+                            }
+                        });
+                    });
+                });
+        }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            $('#myTable').DataTable();
+
+            // Asigna evento a todos los botones con clase btn-editar
+            document.querySelectorAll('.btn-editar').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const url = this.getAttribute('data-url');
+                    actualizarFormularioModal(url);
+                });
+            });
+        });
+
+        function actualizarFormularioModal(url) {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('modalContent2').innerHTML = data.html_form;
+                    const modal = new bootstrap.Modal(document.getElementById('modal2'));
+                    modal.show();
+
+                    const form = document.querySelector('#modal2 form');
+                    form.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        const formData = new FormData(form);
+                        fetch(url, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.form_is_valid) {
+                                modal.hide();
+                                location.reload();
+                            } else {
+                                document.getElementById('modalContent2').innerHTML = data.html_form;
+                            }
+                        });
+                    });
+                });
+        }
+    </script>
+
+{% endblock %}

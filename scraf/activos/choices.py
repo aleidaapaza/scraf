@@ -4,6 +4,7 @@ estados= [
     ("Malo", "Malo"),
 ]
 pisos_ubicacion = [
+    ("ALMACENES", "ALMACENES"),
     ("PISO 5", "PISO 5"),
     ("PISO 4", "PISO 4"),
     ("PISO 3", "PISO 3"),

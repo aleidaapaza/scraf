@@ -1,7 +1,7 @@
 from django.forms import *
 from django import forms
 
-from revision.models import Revision
+from revision.models import Revision, Revision_Activo
 
 class R_Revision(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -54,4 +54,17 @@ class A_Revision_S(forms.ModelForm):
             'nombre' : 'TITULO DE LA REVISION',
             'descripcion' : 'DESCRIPCION DE LA REVISION',
             'revisores' : 'COMISION DE APOYO',
+        }
+
+class R_Revision_ACtivo(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.visible_fields():
+            form.field.widget.attrs['class'] = 'form-control form-control-sm font-weight-bold border border-info'
+            form.field.widget.attrs['autocomplete'] = 'off'
+    class Meta:
+        model = Revision_Activo
+        fields = ['observacion']
+        labels ={
+            'observacion' : 'OBSERVACION DE LA REVISION'
         }

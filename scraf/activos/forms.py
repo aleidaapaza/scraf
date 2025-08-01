@@ -57,3 +57,23 @@ class A_Activo(forms.ModelForm):
             'descActivo' : 'DESCRIPCION DEL ACTIVO',
             'descripcion' : 'DESCRIPCION',
         }
+
+class A_Activo_responsable(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.visible_fields():
+            form.field.widget.attrs['class'] = 'form-select font-weight-bold border border-info'
+            form.field.widget.attrs['autocomplete'] = 'off'
+        self.fields['estado'].widget.attrs['disabled'] = True
+        self.fields['responsable'].widget.attrs['disabled'] = True
+    
+    class Meta:
+        model = Activo_responsable
+        fields = '__all__'
+        exclude = ['slug', 'activo']
+        labels = {
+            'responsable' : 'RESPONSABLE ACTUAL DEL ACTIVO',
+            'piso_ubicacion' : 'PISO DONDE SE ENCUENTRA UBICADO EL ACTIVO',
+            'oficina_ubicacion' : 'OFICINA DONDE SE ENCUENTRA UBICADO EL ACTIVO',
+            'estado' : 'ESTADO ACTUAL DEL ACTIVO',
+        }

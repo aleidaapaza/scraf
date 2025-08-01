@@ -1,0 +1,38 @@
+
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">Detalle de Revisión</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+</div>
+
+<div class="modal-body">
+    <div class="mb-3">
+        <label class="form-label fw-bold">Nombre:</label>
+        <div class="form-control-plaintext border rounded p-2 bg-light">{{ revision.nombre }}</div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label fw-bold">Motivo:</label>
+        <div class="form-control-plaintext border rounded p-2 bg-light">{{ revision.motivo }}</div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label fw-bold">Descripción:</label>
+        <div class="form-control-plaintext border rounded p-2 bg-light">{{ revision.descripcion|linebreaksbr }}</div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label fw-bold">Estado:</label>
+        <div class="form-control-plaintext border rounded p-2 bg-light">{{ revision.estado }}</div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label fw-bold">Revisores:</label>
+        <div class="form-control-plaintext border rounded p-2 bg-light">
+            {% for r in revision.revisores.all %}
+                <span class="badge bg-info text-dark me-1">{{ r.persona.nombrecompleto }}</span>
+            {% empty %}
+                <span class="text-muted">Sin revisores asignados</span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+</div>

@@ -1,31 +1,91 @@
 {% extends 'base/baseListasyRegistroModal.html' %}
 {% load static %}
+{% block modalExtra %}
+<!-- Modal -->
+<div class="modal fade" id="modalAdvertenciaRevision" tabindex="-1" aria-labelledby="modalAdvertenciaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title text-dark" id="modalAdvertenciaLabel">Advertencia</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body text-dark">
+        Ya hay una revisión activa en proceso. No puedes iniciar otra hasta que finalice la actual.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Entendido</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock  %}
 {% block thead %}
     <tr>
+        {% if user.is_encargado or user.is_superuser %}
+        <th scope="col">LINE</th>
+        {% endif %}
         <th scope="col">CODIGO</th>
-        <th scope="col">NOMBRE</th>
+        <th scope="col">DESCRIPCION DE LA REVISION</th>
         <th scope="col">ENCARGADO</th>
+        <th scope="col">VER/EDITAR</th>
         <th scope="col">FECHA DE INICIO</th>
         <th scope="col">FECHA DE FINALIZACION</th>
-        <th scope="col">VER/EDITAR</th>
-        <th scope="col">REVISIONES</th>
+        {% if user.is_encargado %}
+        <th scope="col">ESTADO</th>
+        <th scope="col">INICIO/FIN</th>
+        {% endif %}
+        <th scope="col">LISTA COMPLETA</th>
+        {% if revisionr %}
+        <th scope="col">FORMULARIO DE REVISION</th>    
+        {% endif %}        
     </tr>
 
 {% endblock %}
 {% block tbody %}
     {% for revision in object_list %}
         <tr>
+            {% if user.is_encargado or user.is_superuser %}
+            <td><a href="{% url 'revision:lista_revisiones_line' revision.slug %}"><i class="fas fa-eye"></i></a></td>
+            {% endif %}
             <td> {{ revision.slug }}</td>
             <td> {{ revision.nombre }} </td>
             <td> {{ revision.encargado.persona.nombrecompleto }}</td>
-            <td> {{ revision.fechaHora_inicio }}</td>
-            <td> {{ revision.fechaHora_finalizacion }}</td>
             <td>
+                {% if revision.estado == None %}
                 <button 
                     class="btn btn-primary btn-editar" 
                     data-url="{% url 'revision:ajax_a_Revision' revision.slug %}">
-                    Editar
+                    <i class="fas fa-edit"></i>
                 </button>
+                {% else %}
+                <button
+                    class="btn btn-primary btn-ver" 
+                    data-url="{% url 'revision:ajax_ver_Revision' revision.slug %}">
+                    <i class="fas fa-eye"></i>
+                </button>
+                {% endif %}
+            </td>
+            <td id="fecha-inicio-{{ revision.slug }}"> {{ revision.fechaHora_inicio }}</td>
+            <td id="fecha-fin-{{ revision.slug }}"> {{ revision.fechaHora_finalizacion }}</td>            
+            <td id="estado-{{ revision.slug }}"> {% if revision.estado == None %} Sin Accion
+            {% elif revision.estado %} En Curso {% else %} Finalizado
+            {% endif %}</td>
+            <td>
+                {% if revisionr and revision_datos.slug != revision.slug %}
+                <a href="#" 
+                class="btn btn-primary-subtle btn-xs iniciar-finalizar-true"
+                data-revisionr="true">
+                {% else %}
+                <a href="{% url 'revision:inicio_fin_revision' revision.slug %}" 
+                class="btn btn-primary-subtle btn-xs iniciar-finalizar-revision" 
+                data-url="{% url 'revision:inicio_fin_revision' revision.slug %}"
+                data-slug="{{ revision.slug }}">
+                {% endif %}                
+                {% if revision.estado == None %}<i class="fas fa-circle text-danger" title="No iniciada"></i> 
+                {% elif revision.estado %}<i class="fas fa-play-circle text-primary" title="En proceso"></i> 
+                {% elif not revision.estado %}<i class="fas fa-check-circle text-success" title="Finalizada"></i> 
+                {% endif %}
+                </a>
             </td>
             <td>
                 <a href="" type="button"
@@ -33,6 +93,77 @@
                    <i class="fas fa-edit"></i> 
                 </a>
             </td>
+            {% if revision_datos %}
+                <td>
+                {% if revision.slug == revision_datos.slug %}                
+                    <a href="{% url 'revision:revision_activo' revision.slug %}" type="button"
+                    class="btn btn-primary btn-xs">
+                    <i class="fas fa-edit"></i> 
+                    </a>
+                {% else %}
+                <p>-</p>
+                {% endif %}
+                </td>
+            {% endif %}            
         </tr>
     {% endfor %}
+{% endblock %}
+
+{% block scripfun %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const botones = document.querySelectorAll(".iniciar-finalizar-revision");
+    botones.forEach(boton => {
+        boton.addEventListener("click", function (e) {
+            e.preventDefault();
+            const url = this.getAttribute("data-url");
+            const slug = this.getAttribute("data-slug");
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Error HTTP ${response.status}: ${text}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data3 => {
+                    alert(`Revisión ${data3.status}`);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error("Error en la solicitud:", error.message || error);
+                    alert("Ocurrió un error al iniciar/finalizar la revisión.");
+                });
+        });
+    });
+});
+</script>
+<script>
+document.querySelectorAll('.btn-ver').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        const url = this.getAttribute('data-url');
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('modalContent2').innerHTML = data.html_form;
+                const modal = new bootstrap.Modal(document.getElementById('modal2'));
+                modal.show();
+            });
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const modalAdvertencia = new bootstrap.Modal(document.getElementById('modalAdvertenciaRevision'));
+
+  // Botones bloqueados por revisión activa
+  document.querySelectorAll('.iniciar-finalizar-true').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      modalAdvertencia.show(); // Mostrar modal
+    });
+  });
+});
+</script>
 {% endblock %}

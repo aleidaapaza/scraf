@@ -48,7 +48,9 @@ class RegistroActivo(LoginRequiredMixin, CreateView):
             form.save()
             activos = Activo.objects.get(codigo = codigo)
             Activo_responsable.objects.create(
-                activo = activos,                
+                activo = activos,
+                piso_ubicacion = "ALMACENES",
+                oficina_ubicacion = "ALMACEN",
             )
             activos_responsable = Activo_responsable.objects.get(activo = activos)
             Activos_line.objects.create(
@@ -154,8 +156,6 @@ class ActualizarActivoResponsable(LoginRequiredMixin, UpdateView):
         usuario = self.request.user
         activo_responsable = self.object
         activo = activo_responsable.activo
-
-        # Guardar valores originales
         old_responsable = activo_responsable.responsable
         old_piso = activo_responsable.piso_ubicacion
         old_oficina = activo_responsable.oficina_ubicacion
@@ -167,14 +167,10 @@ class ActualizarActivoResponsable(LoginRequiredMixin, UpdateView):
         if form.is_valid() and form2.is_valid():
             form2.save()
             form.save()
-
-            # Nuevos valores (ya están guardados en DB, así que podemos recargar si quieres seguridad extra)
             nuevo_responsable = activo_responsable.responsable
             nuevo_piso = activo_responsable.piso_ubicacion
             nuevo_oficina = activo_responsable.oficina_ubicacion
             nuevo_estado = activo_responsable.estado
-
-            # Comparar cambios
             cambios = []
             if old_responsable != nuevo_responsable:
                 cambios.append(f"Responsable cambiado: antes era '{old_responsable or ''}', ahora es '{nuevo_responsable or ''}'")
@@ -190,7 +186,6 @@ class ActualizarActivoResponsable(LoginRequiredMixin, UpdateView):
             else:
                 observacion = "No se realizaron cambios relevantes"
 
-            # Crear línea de historial
             Activos_line.objects.create(
                 slug=activo_responsable.slug,
                 responsable=nuevo_responsable,

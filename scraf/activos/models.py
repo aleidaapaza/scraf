@@ -28,14 +28,16 @@ class Activo(models.Model):
         
 class Activo_responsable(models.Model):
     slug = models.SlugField(null=False, blank=False, unique=True)
-    activo = models.ForeignKey(Activo, to_field='codigo', on_delete=models.CASCADE)
-    responsable = models.ForeignKey(Personal, to_field='slug', on_delete=models.CASCADE, null=True, blank=True)
+    activo = models.ForeignKey(Activo, to_field='codigo', on_delete=models.CASCADE, related_name = 'activoresponsablet')
+    responsable = models.ForeignKey(Personal, to_field='slug', on_delete=models.CASCADE, null=True, blank=True, related_name = 'personaResponsable')
     piso_ubicacion = models.CharField(choices=pisos_ubicacion, null=True, blank=True)
     oficina_ubicacion = models.CharField(choices=oficinas_ubicacion, null=True, blank=True)
     estado = models.CharField(choices=estados, null=True, blank=True, default='Bueno')
     
     def __str__(self):
-        return f'{self.slug}-{self.activo}-{self.responsable}'    
+        return f'{self.slug}-{self.activo}-{self.responsable}'
+    def lugar(self):
+        return f'{self.piso_ubicacion} {self.oficina_ubicacion}'
     class Meta:
         verbose_name = ('Activo_responsable')
         verbose_name_plural = ('Activos_responsables')

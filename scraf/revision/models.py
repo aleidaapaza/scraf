@@ -3,7 +3,8 @@ import uuid
 from django.utils.text import slugify
 from django.db.models.signals import pre_save
 
-from users.models import Personal
+from users.models import Personal, User
+from activos.models import Activo_responsable
 from revision.upload import doc_respaldo
 from revision.choices import motivos
 # Create your models here.
@@ -18,13 +19,14 @@ class Revision(models.Model):
     slug = models.SlugField(null=False, blank=False, unique=True)
     motivo = models.CharField(choices=motivos, null=False, blank=False)
     fecha_registro = models.DateTimeField(auto_now_add=True)
-    estado = models.BooleanField(default=False)
+    estado = models.BooleanField(null=True)
     nombre = models.CharField(max_length=255, null=False, blank=False)
     descripcion = models.TextField(blank=False, null=False)
     encargado = models.ForeignKey(Personal, null=False, blank=False, on_delete=models.CASCADE)
-    revisores = models.ManyToManyField(Personal, related_name='revisiones_apoyadas', blank=True, null=True)
+    revisores = models.ManyToManyField(Personal, related_name='revisiones_apoyadas', blank=True)
     fechaHora_inicio = models.DateTimeField(blank=True, null=True)
     fechaHora_finalizacion = models.DateTimeField(blank=True, null=True)
+    
     def __str__(self):
         return f'{self.slug}-{self.nombre}'    
     class Meta:
@@ -35,7 +37,6 @@ class Revision(models.Model):
 pre_save.connect(set_slug, sender=Revision)
 
 class Revision_line(models.Model):
-    slug = models.SlugField(null=False, blank=False, unique=False)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     revision = models.ForeignKey(Revision, related_name='revision_datos', on_delete=models.CASCADE)
     estado = models.CharField(max_length=255, blank=False, null=False)
@@ -48,3 +49,18 @@ class Revision_line(models.Model):
         verbose_name = ('Revision_line')
         verbose_name_plural = ('Revision_line')
         db_table = 'Revision_line'
+
+class Revision_Activo(models.Model):
+    revision = models.ForeignKey(Revision, on_delete=models.CASCADE, related_name='revision_activos')
+    activo_res = models.ForeignKey(Activo_responsable, on_delete=models.CASCADE, related_name='activo_responsable')
+    estado = models.BooleanField(default=False)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+    encargado = models.ForeignKey(User, on_delete=models.CASCADE, related_name='encargadoRevision', blank=True)
+    observacion = models.TextField()
+
+    def __str__(self):
+        return f'{self.slug}-{self.revision.nombre}-{self.activo_res.activo.codigo}'    
+    class Meta:
+        verbose_name = ('Revision_Activo')
+        verbose_name_plural = ('Revision_Activo')
+        db_table = 'Revision_Activo'

@@ -37,3 +37,4 @@ db.sqlite3
 # Otros archivos ignorados
 .DS_Store
 Thumbs.db
+scraf/activos/migrations/0010_alter_activo_responsable_piso_ubicacion_and_more.py

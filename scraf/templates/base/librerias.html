@@ -20,11 +20,11 @@
     {% endblock %}
 </head>
 <body>    
-    <div class="">
+    <div >
         {% block navbar %}
-            {% if user.is_authenticated %}
-                {% include "include/navbar/users.html" %}
-            {% else %}
+                {% if user.is_authenticated %}
+                    {% include "include/navbar/users.html" %}
+                {% else %}
             {% endif %}
         {% endblock  %}
     </div>    

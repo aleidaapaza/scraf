@@ -1,52 +1,81 @@
 {% load static %}
-<div style="background-color: #4da358">
-    <ul class="nav nav-tabs d-flex justify-content-between w-100">
-        <li class="nav-item d-flex align-items-center">
-            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions">
-                <i class="fa fa-align-justify" aria-hidden="true"></i>
-            </button>
-        </li>
-        <li class="nav-item ms-auto d-flex align-items-center justify-content-center p-3">
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <a href="" class="nav-link font-weight-bold"><i class="fas fa-user-alt"></i> Bienvenido {{ request.user.username }}</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{% url 'inicio:Logout' %}" class="nav-link font-weight-bold"><i class="fas fa-sign-in-alt"></i> Cerrar sesión</a>
-                </li>
-            </ul>
-        </li>
-    </ul>
-    <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">MENU</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link active" href="{% url 'inicio:Index' %}"><i class="fas fa-home"></i> INICIO</a>
-                    <hr>
-                </li>
-                {% if user.g_personal %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'users:lista_personal' %}"><i class="fas fa-list-alt"></i> LISTA DE PERSONAL</a>
-                    <hr>
-                </li>
-                {% endif %}
-                {% if user.g_Activos or user.v_Activos %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'activos:lista_activos' %}"><i class="fas fa-list-alt"></i> LISTA DE ACTIVOS DE LA INSTITUCION</a>
-                    <hr>
-                </li>
-                {% endif %}                
-                {% if user.is_encargado %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'revision:lista_revisiones' %}"><i class="fas fa-list-alt"></i> LISTA DE REVISIONES DE ACTIVO</a>
-                    <hr>
-                </li>
-                {% endif %}
-            </ul>
-        </div>        
+<!-- Header principal -->
+<header class="text-white w-100" style="background-color:#006532; overflow-x:hidden;">
+  <div class="container-fluid d-flex align-items-center justify-content-between py-3 px-3">
+    <!-- IZQUIERDA: botón hamburguesa + “Bienvenido” -->
+    <div class="d-flex align-items-center">
+      <button
+        class="btn btn-link text-white p-0 me-2"
+        type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasMenu"
+        aria-controls="offcanvasMenu"
+      >
+        <i class="fas fa-bars fa-lg"></i>
+      </button>
+      <span>Bienvenido {{ request.user.username }}</span>
     </div>
+
+    <!-- CENTRO: logo -->
+    <a href="{% url 'inicio:Index' %}" class="d-flex align-items-center justify-content-center" style="flex:1;">
+      <img
+        src="{% static 'img/fonabosqueLogoNegativo.webp' %}"
+        alt="Logo Fonabosque"
+        height="40"
+        style="display:block; margin-left:auto; margin-right:auto;"
+      >
+    </a>
+
+    <!-- DERECHA: cerrar sesión con separador -->
+    <a
+      href="{% url 'inicio:Logout' %}"
+      class="text-white border-start border-white ps-3 ms-3"
+    >
+      Cerrar sesión
+    </a>
+  </div>
+</header>
+
+<!-- Offcanvas / menú lateral -->
+<div
+  class="offcanvas offcanvas-start"
+  tabindex="-1"
+  id="offcanvasMenu"
+  aria-labelledby="offcanvasMenuLabel"
+>
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasMenuLabel">MENÚ</h5>
+    <button
+      type="button"
+      class="btn-close text-reset"
+      data-bs-dismiss="offcanvas"
+      aria-label="Cerrar"
+    ></button>
+  </div>
+  <div class="offcanvas-body p-0">
+    <nav class="nav flex-column">
+      <a class="nav-link px-3" href="{% url 'inicio:Index' %}">
+        <i class="fas fa-home me-2"></i>Inicio
+      </a>
+      <hr class="my-1">
+      {% if user.g_personal %}
+        <a class="nav-link px-3" href="{% url 'users:lista_personal' %}">
+          <i class="fas fa-list-alt me-2"></i>Lista de Personal
+        </a>
+        <hr class="my-1">
+      {% endif %}
+      {% if user.g_Activos or user.v_Activos %}
+        <a class="nav-link px-3" href="{% url 'activos:lista_activos' %}">
+          <i class="fas fa-list-alt me-2"></i>Activos Institución
+        </a>
+        <hr class="my-1">
+      {% endif %}
+      {% if user.is_encargado %}
+        <a class="nav-link px-3" href="{% url 'revision:lista_revisiones' %}">
+          <i class="fas fa-list-alt me-2"></i>Revisiones de Activo
+        </a>
+        <hr class="my-1">
+      {% endif %}
+    </nav>
+  </div>
 </div>

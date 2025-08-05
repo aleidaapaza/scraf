@@ -50,22 +50,3 @@
     </div>
   </div>
 {% endblock %}
-
-{% block extra_js %}
-<script>
-$(function(){
-  $('#myTable').DataTable({
-    language:{
-      lengthMenu: "Mostrar _MENU_ registros",
-      search: "Buscar:",
-      paginate:{
-        previous: "«",
-        next: "»"
-      },
-      info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-      zeroRecords: "No se encontraron registros"
-    },
-  });
-});
-</script>
-{% endblock %}

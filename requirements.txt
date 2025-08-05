@@ -4,3 +4,5 @@ psycopg==3.2.9
 sqlparse==0.5.3
 typing_extensions==4.14.1
 tzdata==2025.2
+django-widget-tweaks==1.4.12
+django-crispy-forms==1.14.0

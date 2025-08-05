@@ -1,42 +1,45 @@
 {% extends 'base/base.html' %}
 {% load static %}
+{% load widget_tweaks %}
 {% block contenido %}
-    <div class="wrapper mt-3">
-        <div class="row ">
-            <div class="col-md-2 "></div>
-            <div class="col-md-4 bg-light">
-                <div class="card card-body">
-                    <img src="{% static 'img/LogoInst.png' %}" style="object-fit: cover">                
-                </div>
+  <div class="container-fluid">
+    <div class="row vh-100">
+      <!-- Left Image -->
+      <div class="col-md-7 p-0">
+        <img src="{% static 'img/bosque.webp' %}" class="img-fluid w-100 h-100 object-fit-cover">
+      </div>
+        <!-- Right Form -->
+      <div class="col-md-5 d-flex align-items-center justify-content-center">
+        <div class="card shadow-sm p-4" style="border-radius:.75rem; max-width:400px; width:100%;">
+          <div class="text-center mb-4">
+            <img src="{% static 'img/fonabosqueLogoTrasnparente.webp' %}" alt="Logo" style="max-height:80px;">
+          </div>    
+          <h4 class="text-center mb-4">Inicio de Sesión</h4>
+          {% if message %}
+            <div class="alert alert-danger">{{ message }}</div>
+          {% endif %}
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              {{ form.username.label_tag }}
+              {{ form.username|add_class:"form-control" }}
+              {% for error in form.username.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
             </div>
-            <div class="col-md-4">
-                <div class="card mt-5">
-                    <div class="card-body login-card-body">
-                        <h4 class="login-box-msg text-center bg-success rounded-3" style="color: white"><b>Inicio de Sesion</h4>
-                        {% if message %}
-                            <div class="alert alert-danger">
-                                {{ message }}
-                            </div>
-                        {% endif %}
-                        <form method="post">
-                            {% csrf_token %}
-                            {% for field in form %}
-                                <p>
-                                    {{ field.label_tag }}<br>
-                                <div class="input-group-append">
-                                    {{ field }}
-                                </div>
-                                {% for error in field.errors %}
-                                    <p style="color: red">{{ error }}</p>
-                                {% endfor %}
-                                </p>
-                            {% endfor %}
-                            <button class="btn btn-block btn-success font-weight-bold text-uppercase" type="submit">Iniciar Sesion</button>
-                        </form>
-                    </div>
-                </div>
+            <div class="mb-4">
+              {{ form.password.label_tag }}
+              {{ form.password|add_class:"form-control" }}
+              {% for error in form.password.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
             </div>
+            <button type="submit" class="btn btn-success w-100 text-uppercase font-weight-bold">
+              Iniciar Sesión
+            </button>
+          </form>
         </div>
+      </div>
     </div>
-
+  </div>
 {% endblock contenido %}

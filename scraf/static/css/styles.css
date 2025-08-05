@@ -110,3 +110,20 @@ a {
     border: 2px solid #ccc;
     display: inline-block;
 }
+
+/* filas alternas color verde suave */
+#myTable tbody tr:nth-of-type(odd) {
+  background-color: #a3d9a5;
+}
+
+/* cabecera fija blanca con texto en negrita */
+#myTable thead th {
+  background-color: #ffffff;
+  font-weight: bold;
+  border-bottom: 2px solid #ccc;
+}
+
+/* borde redondeado a la card */
+.card {
+  border-radius: 0.75rem;
+}

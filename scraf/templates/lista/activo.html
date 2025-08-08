@@ -25,14 +25,14 @@
             <td>
                 <a href=" {% url 'activos:ver_activos_responsable' activo.slug %} " type="button"
                    class="btn btn-primary btn-xs">
-                   <i class="fas fa-edit"></i> 
+                   <i class="bi bi-eye"></i>
                 </a>
             </td>
             {% if user.g_Activos %}
             <td>
                 <a href=" {% url 'activos:actualizar_activos_responsable' activo.slug %} " type="button"
                    class="btn btn-primary btn-xs">
-                   <i class="fas fa-edit"></i> 
+                   <i class="bi bi-brush-fill"></i>
                 </a>
             </td>
         {% endif %}  

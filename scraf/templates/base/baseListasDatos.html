@@ -7,21 +7,34 @@
     {% block modal_f %}
     
     {% endblock modal_f %}
-    <div class="row content-header text-center bg bg-primary">
-        <h4 class="text-uppercase font-weight-bold">{{ titulo }}</h4>
+  <div class="container-fluid mt-4">
+    <!-- 1. Título y línea -->
+    <div class="row mb-2">
+      <div class="col">
+        <h2 class="text-success fw-bold">Lista de Activos Fijos Designados</h2>
+        <hr>
+      </div>
     </div>
+
+    <!-- 2. Botones de creacion de activos -->
     <div class="row">
-        {% if entity_registro %}
-            <div class="col-md-3 mt-2">
-                <a href="{{ entity_registro }}" class="btn btn-success btn-block">{{ entity_registro_nom }}</a>
-            </div>
-        {% endif %}
-        {% if entity_registro2 %}
-            <div class="col-md-3 mt-2">
-                <a href="{{ entity_registro2 }}" class="btn btn-success btn-block">{{ entity_registro_nom2 }}</a>
-            </div>
-        {% endif %}
-    </div>    
+        <div class="col-md-6 d-flex justify-content-center">
+            {% if entity_registro %}
+                <div class="col-md-6 mt-2">
+                    <a href="{{ entity_registro }}" class="btn btn-success btn-block">{{ entity_registro_nom }}</a>
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6 d-flex justify-content-center">
+            {% if entity_registro2 %}
+                <div class="col-md-6 mt-2">
+                    <a href="{{ entity_registro2 }}" class="btn btn-success btn-block">{{ entity_registro_nom2 }}</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 3. Tabla -->
     <div class="card card-default mt-3 mb-3">
         <div class="card-body p-0 mt-3">
             <div class="table-responsive">
@@ -38,7 +51,9 @@
             </div>            
         </div>
     </div>
+    
     <hr>
+</div>
 {% endblock %}
 
 {% block script %}

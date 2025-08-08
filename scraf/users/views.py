@@ -60,6 +60,7 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
             )
             return HttpResponseRedirect(reverse('users:lista_personal', args=[]))
         else:
+            self.object = None
             return self.render_to_response(self.get_context_data(form=form, form2=form2,))
 
 

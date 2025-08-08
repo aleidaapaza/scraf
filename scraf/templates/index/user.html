@@ -14,7 +14,7 @@
         <div class="table-responsive">
           <table
             id="myTable"
-            class="table table-bordered text-center align-middle mb-0"
+            class="table table-bordered text-center align-middle mb-0 table-striped-custom"
           >
             <thead class="bg-white">
               <tr>
@@ -46,7 +46,18 @@
             </tbody>
           </table>
         </div>
+        
       </div>
     </div>
   </div>
+
+  <style>
+    .table-striped-custom tbody tr:nth-of-type(odd) {
+        background-color: rgba(19, 158, 89, 0.671);
+    }
+    .table-striped-custom tbody tr:nth-of-type(even) {
+        background-color: #fff;
+    }
+  </style>
+
 {% endblock %}

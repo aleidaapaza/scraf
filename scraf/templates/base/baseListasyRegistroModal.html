@@ -71,46 +71,6 @@
     }
     const csrftoken = getCookie('csrftoken');
 
-    document.addEventListener('DOMContentLoaded', function () {
-        // Solo una inicialización de DataTables
-        if ($.fn.DataTable.isDataTable('#myTable')) {
-            $('#myTable').DataTable().destroy();
-        }
-        $('#myTable').DataTable({
-            language: {
-                lengthMenu: "Mostrar _MENU_ registros por página",
-                zeroRecords: "No se encontraron resultados",
-                info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-                infoEmpty: "Mostrando 0 a 0 de 0 registros",
-                infoFiltered: "(filtrado de _MAX_ registros totales)",
-                search: "Buscar:",
-                emptyTable: "No hay datos disponibles en la tabla",
-                paginate: {
-                    first: "Primero",
-                    last: "Último",
-                    next: "Siguiente",
-                    previous: "Anterior"
-                }
-            }
-        });
-
-        const btn1 = document.getElementById('id_btn1');
-        if (btn1) {
-            btn1.addEventListener('click', function () {
-                cargarFormularioModal("{{entity_registro}}");
-            });
-        } else {
-            console.warn('Botón #id_btn1 no encontrado en el DOM');
-        }
-
-        document.querySelectorAll('.btn-editar').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                const url = this.getAttribute('data-url');
-                actualizarFormularioModal(url);
-            });
-        });
-    });
-
     function cargarFormularioModal(url) {
         fetch(url)
             .then(response => response.json())

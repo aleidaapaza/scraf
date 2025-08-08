@@ -23,8 +23,7 @@
                 <th>ENCARGADO</th>
                 <th>FECHA REGISTRO</th>
                 <th>ESTADO</th>
-                <th>VER</th>
-                <th>EDITAR</th>
+                <th>VER</th>  
                 </tr>
             </thead>
             <tbody>
@@ -36,7 +35,6 @@
                   <td>{{ rev.ultima_fecha_registro }}</td>
                   <td>{{ rev.estado }}</td>
                   <td><a href="{% url 'activos:ver_activo' rev.slug %}" class="btn btn-info">Ver</a></td>
-                  <td></td>
                 </tr>
               {% endfor %}
             </tbody>

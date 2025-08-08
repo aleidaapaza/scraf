@@ -8,5 +8,5 @@ urlpatterns = [
     path('registroActivoResponsable/', RegistroActivoResponsable.as_view(), name='registro_activos_responsable'),
     path('VerActivoResponsable/<slug:slug>', VerActivo.as_view(), name='ver_activos_responsable'),
     path('ActualizacionActivoResponsable/<slug:slug>', ActualizarActivoResponsable.as_view(), name='actualizar_activos_responsable'),
-    
+    path('verActivo/<slug:slug>/', VerActivo.as_view(), name='ver_activo'),
 ]

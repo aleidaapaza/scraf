@@ -62,6 +62,18 @@ class RegistroActivo(LoginRequiredMixin, CreateView):
         else:
             return self.render_to_response(self.get_context_data(form=form))
 
+class VerActivo(LoginRequiredMixin, TemplateView):
+    template_name = 'Visualizar/activo.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        slug = self.kwargs.get('slug')
+        activo = Activo_responsable.objects.get(slug=slug)
+        activo_line = Activos_line.objects.filter(slug=slug).order_by('-fecha_registro')
+        context['titulo'] = 'INFORMACION DEL ACTIVO'
+        context['activo'] = activo
+        context['line'] = activo_line
+        return context
 
 class RegistroActivoResponsable(LoginRequiredMixin, CreateView):
     model = Activo_responsable

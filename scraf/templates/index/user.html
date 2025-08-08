@@ -19,28 +19,24 @@
             <thead class="bg-white">
               <tr>
                 <th>CODIGO</th>
-                <th>MOTIVO</th>
                 <th>NOMBRE</th>
                 <th>ENCARGADO</th>
                 <th>FECHA REGISTRO</th>
                 <th>ESTADO</th>
-                <th>VER/EDITAR</th>
-              </tr>
+                <th>VER</th>
+                <th>EDITAR</th>
+                </tr>
             </thead>
             <tbody>
               {% for rev in object_list %}
                 <tr>
-                  <td>{{ rev.slug }}</td>
-                  <td>{{ rev.motivo }}</td>
-                  <td>{{ rev.nombre }}</td>
-                  <td>{{ rev.encargado }}</td>
-                  <td>{{ rev.fecha_registro }}</td>
+                  <td>{{ rev.activo.codigo }}</td>
+                  <td>{{ rev.activo.descActivo }}</td>
+                  <td>{{ rev.responsable.persona.nombrecompleto}}</td>
+                  <td>{{ rev.ultima_fecha_registro }}</td>
                   <td>{{ rev.estado }}</td>
-                  <td>
-                    <a href="{% url 'revision:editar' rev.id %}" class="btn btn-sm btn-outline-primary">
-                      Ver/Editar
-                    </a>
-                  </td>
+                  <td><a href="{% url 'activos:ver_activo' rev.slug %}" class="btn btn-info">Ver</a></td>
+                  <td></td>
                 </tr>
               {% endfor %}
             </tbody>

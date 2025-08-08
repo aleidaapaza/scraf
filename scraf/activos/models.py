@@ -38,6 +38,11 @@ class Activo_responsable(models.Model):
         return f'{self.slug}-{self.activo}-{self.responsable}'
     def lugar(self):
         return f'{self.piso_ubicacion} {self.oficina_ubicacion}'
+    def ultima_fecha_registro(self):
+        from activos.models import Activos_line
+        ultimo = Activos_line.objects.filter(slug=self.slug).order_by('-fecha_registro').first()
+        return ultimo.fecha_registro if ultimo else None
+    
     class Meta:
         verbose_name = ('Activo_responsable')
         verbose_name_plural = ('Activos_responsables')

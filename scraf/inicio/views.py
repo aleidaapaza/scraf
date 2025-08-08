@@ -3,6 +3,7 @@ from django.views.generic import CreateView, UpdateView, ListView, TemplateView,
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from activos.models import Activo_responsable
 
 from inicio.form import LoginForm
 
@@ -10,9 +11,16 @@ from inicio.form import LoginForm
 class Index(TemplateView):
     template_name = 'index.html'
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            # Solo los activos designados al usuario autenticado
+            context['object_list'] = Activo_responsable.objects.filter(responsable__user=self.request.user)
+        return context
+
     def get(self, request):
         if request.user.is_authenticated:
-            return render(request, 'index.html')  # Renderiza la página principal
+            return render(request, 'index.html', self.get_context_data())
         else:
             form = LoginForm()
             entity = 'Inicio de sesión'

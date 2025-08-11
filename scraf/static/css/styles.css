@@ -91,8 +91,8 @@ a {
 }
 
 .paso.activo {
-    background: #007BFF; /* Color para el paso activo */
-    color: white; /* Color del texto para el paso activo */
+    background: #ffffff; /* Color para el paso activo */
+    color: rgb(255, 255, 255); /* Color del texto para el paso activo */
 }
 
 /* Responsividad */

@@ -7,7 +7,7 @@ class R_Activo(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for form in self.visible_fields():
-            form.field.widget.attrs['class'] = 'form-control form-control-sm font-weight-bold border border-info'
+            form.field.widget.attrs['class'] = 'form-control form-control-sm font-weight-bold'
             form.field.widget.attrs['autocomplete'] = 'off'
         #self.fields['estado'].widget.attrs['class'] = 'form-check font-weight-bold border border-info'
     
@@ -24,7 +24,7 @@ class R_Activo_responsable(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for form in self.visible_fields():
-            form.field.widget.attrs['class'] = 'form-control form-control-sm font-weight-bold border border-info'
+            form.field.widget.attrs['class'] = 'form-control form-control-sm font-weight-bold'
             form.field.widget.attrs['autocomplete'] = 'off'
         #self.fields['estado'].widget.attrs['class'] = 'form-check font-weight-bold border border-info'
     
@@ -43,7 +43,7 @@ class A_Activo(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for form in self.visible_fields():
-            form.field.widget.attrs['class'] = 'form-control form-control-sm font-weight-bold border border-info'
+            form.field.widget.attrs['class'] = 'form-control form-control-sm font-weight-bold'
             form.field.widget.attrs['autocomplete'] = 'off'
         self.fields['codigo'].disabled = True
         self.fields['descActivo'].disabled = True
@@ -62,7 +62,7 @@ class A_Activo_responsable(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for form in self.visible_fields():
-            form.field.widget.attrs['class'] = 'form-select font-weight-bold border border-info'
+            form.field.widget.attrs['class'] = 'form-select font-weight-bold'
             form.field.widget.attrs['autocomplete'] = 'off'
         self.fields['estado'].widget.attrs['disabled'] = True
         self.fields['responsable'].widget.attrs['disabled'] = True

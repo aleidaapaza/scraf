@@ -91,8 +91,7 @@ class RegistroActivoResponsable(LoginRequiredMixin, CreateView):
         context['titulo'] = 'REGISTRO INFORMACION ACTIVO Y RESPONSABLE DEL ACTIVO'
         context['subtitulo_1'] = 'DATOS DEL RESPONSABLE'
         context['subtitulo_2'] = 'DATOS DEL ACTIVO'
-        context['accion'] = 'GUARDAR'
-        context['accion2'] = 'CANCELAR'
+        context['accion'] = 'REGISTRAR ACTIVO'
         context['accion2_url'] = reverse_lazy('activos:lista_activos')
         context['activate'] = True
         return context

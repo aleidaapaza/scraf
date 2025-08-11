@@ -1,16 +1,46 @@
 {% extends 'base/base.html' %}
 {% load static %}
 {% block contenido %}
-    <div class="row">
-            <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-                <div class="row mt-2">
-                    <h3 class="text-center text-bg-primary">{{ entity }}</h3>
-                    <hr>
-                    <div class="row">
-                        <div class="col-sm-12 col-md-6 card card-body fw-bold">
-                            <h4 class="text-center">DATOS PERSONALES</h4>
-                            <hr>
+
+<style>
+  /* Aislar estilos a esta vista */
+  .registro-personal .card { border-radius: 14px; }
+  .registro-personal .card-header { border-bottom: 0; }
+  .registro-personal .title-green { color:#0b5d33; }           /* verde oscuro */
+  .registro-personal .bg-green-soft { background:#d7f4dc; }    /* verde pastel fondo */
+  /* Switch Bootstrap 5 coloreado en verde oscuro */
+  .registro-personal .form-check-input:checked {
+    background-color:#0b5d33;
+    border-color:#0b5d33;
+  }
+  .registro-personal .form-check-input:focus {
+    box-shadow:0 0 0 .2rem rgba(11,93,51,.25);
+    border-color:#0b5d33;
+  }
+</style>
+
+<div class="container-fluid registro-personal">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- TÍTULO -->
+    <div class="row mt-3">
+      <div class="col-12">
+        <h3 class="fw-bold title-green">REGISTRAR PERSONAL</h3>
+        <hr class="mt-2">
+      </div>
+    </div>
+
+    <!-- FILA 1-10-1: DATOS PERSONALES -->
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-1"></div>
+
+      <div class="col-12 col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white text-center">
+                <h5 class="m-0 fw-bold title-green">DATOS PERSONALES</h5>
+            </div>
+                    <div class="card-body">
                             {% for field in form %}
                                 <div class="mb-3 row">
                                     <label class="col-sm-4 col-form-label text-end">
@@ -35,49 +65,126 @@
                                     </div>
                                 </div>
                             {% endfor %}
-                        </div>
-                        <div class="col-sm-12 col-md-6 card card-body fw-bold bg-secondary text-white">
-                            <h4 class="text-center">USUARIO Y PERMISOS</h4>
-                            <hr>
-                            {% for field in form2 %}
-                                <div class="mb-3 row">
-                                    <label class="col-sm-6 col-form-label text-end lh-1">
-                                        {{ field.label_tag }}
-                                    </label>
-                                    <div class="col-sm-6">
-                                        {{ field }}
-
-                                        {% if field.help_text %}
-                                            <div class="form-text text-warning small text-muted">
-                                                {{ field.help_text }}
-                                            </div>
-                                        {% endif %}
-
-                                        {% if field.errors %}
-                                            <div class="text-danger small mt-1">
-                                                {% for error in field.errors %}
-                                                    <span>({{ error }})</span>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
                     </div>
-                    
-                     
-                    <hr>
-                <div class="row text-center row mt-2">
-                    <div class="col">
-                        <button class="btn btn-success" type="submit">
-                        <i class="fas fa-save"></i>GUARDAR</button>
-                    </div>
-                    <div class="col">
-                        <a href="{% url 'users:lista_personal' %}" class="btn btn-danger">
-                        <i class="fas fa-trash-alt"></i>CANCELAR</a>
-                    </div>
-                </div>
-            </form>
         </div>
+        
+        <div class="col-12 col-lg-1"></div>
+        </div>
+    </div>
+
+    <!-- FILA 1-10-1: USUARIO Y RESPONSABILIDADES -->
+    <div class="row justify-content-center mt-4">
+      <div class="col-12 col-lg-1"></div>
+
+      <div class="col-12 col-lg-10">
+        <div class="card shadow-sm bg-green-soft border-0">
+          <div class="card-header bg-transparent text-center">
+            <h5 class="m-0 fw-bold title-green">Usuario y Responsabilidades</h5>
+          </div>
+
+          <div class="card-body">
+
+            <!-- Usuario -->
+            <div class="mb-3 row">
+              <label class="col-sm-4 col-form-label fw-semibold text-sm-end">Nombre de usuario</label>
+              <div class="col-sm-8">
+                {{ form2.username }}  {# ajusta si tu campo se llama distinto #}
+              </div>
+            </div>
+
+            <!-- Grupo A (exclusivo): Revisión -->
+            <div class="row align-items-center gy-2 mt-2">
+              <label class="col-sm-4 col-form-label fw-semibold text-sm-end">Encargado de revisión</label>
+              <div class="col-sm-2">
+                <div class="form-check form-switch">
+                  <input class="form-check-input rev-switch" type="checkbox" id="rev_enc" value="encargado">
+                </div>
+              </div>
+
+              <label class="col-sm-4 col-form-label fw-semibold text-sm-end">Apoyo de revisión</label>
+              <div class="col-sm-2">
+                <div class="form-check form-switch">
+                  <input class="form-check-input rev-switch" type="checkbox" id="rev_apo" value="apoyo">
+                </div>
+              </div>
+              <input type="hidden" name="rol_revision" id="rol_revision">
+            </div>
+
+            <hr>
+
+            <!-- Grupo B (exclusivo): Permisos de activos -->
+            <div class="row align-items-center gy-3">
+              <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Personal:</label>
+              <div class="col-sm-6 col-lg-2">
+                <div class="form-check form-switch">
+                  <input class="form-check-input act-switch" type="checkbox" id="act_personal" value="personal">
+                </div>
+              </div>
+
+              <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Activos Fijos:</label>
+              <div class="col-sm-6 col-lg-2">
+                <div class="form-check form-switch">
+                  <input class="form-check-input act-switch" type="checkbox" id="act_gestion" value="gestion_activos">
+                </div>
+              </div>
+
+              <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Solo Visualiza los Activos Fijos:</label>
+              <div class="col-sm-6 col-lg-2">
+                <div class="form-check form-switch">
+                  <input class="form-check-input act-switch" type="checkbox" id="act_view" value="solo_visualiza">
+                </div>
+              </div>
+              <input type="hidden" name="rol_activos" id="rol_activos">
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-1"></div>
+    </div>
+
+    <!-- BOTÓN CENTRADO -->
+    <div class="row mt-4">
+      <div class="col-12 d-flex justify-content-center">
+        <button type="submit" class="btn btn-success px-4 py-2">
+          Registrar Personal
+        </button>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<script>
+
+  // Grupo B: sólo 1 de 3
+// Grupo B: exclusividad solo entre 'personal' y 'solo_visualiza'
+const exclusivosB = document.querySelectorAll('.act-switch[value="personal"], .act-switch[value="solo_visualiza"]');
+
+exclusivosB.forEach(chk => {
+  chk.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      exclusivosB.forEach(o => { if (o !== e.target) o.checked = false; });
+    }
+  });
+});
+
+// Actualiza el hidden cuando cambia cualquiera de los 3
+document.querySelectorAll('.act-switch').forEach(chk => {
+  chk.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      document.getElementById('rol_activos').value = e.target.value;  
+    } else {
+      // Si ninguno está marcado, limpiar el hidden
+      const algunoMarcado = Array.from(document.querySelectorAll('.act-switch')).some(o => o.checked);
+      if (!algunoMarcado) {
+        document.getElementById('rol_activos').value = '';
+      }
+    }
+  });
+});
+
+</script>
+
 {% endblock %}

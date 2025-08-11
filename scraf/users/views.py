@@ -46,22 +46,32 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
         form2 = self.second_form_class(request.POST)
-        if form.is_valid() and form2.is_valid():        
+
+        if form.is_valid() and form2.is_valid():
             carnet = form.cleaned_data.get('carnet')
+
             usuario = form2.save(commit=False)
             usuario.is_personal = True
-            usuario.password = '{}'.format(carnet)
+            usuario.password = f'{carnet}'
             usuario.set_password(usuario.password)
+            rol_rev = request.POST.get('rol_revision', '')
+            usuario.is_encargado = (rol_rev == 'encargado')
+            usuario.is_revisor   = (rol_rev == 'apoyo')
+
+            rol_act = request.POST.get('rol_activos', '')
+            usuario.g_personal  = (rol_act == 'personal')
+            usuario.g_Activos   = (rol_act == 'gestion_activos')
+            usuario.v_Activos   = (rol_act == 'solo_visualiza')
+
             usuario.save()
             persona = form.save()
-            Personal.objects.create(
-                persona=persona,
-                user=usuario,
-            )
+            Personal.objects.create(persona=persona, user=usuario)
+
             return HttpResponseRedirect(reverse('users:lista_personal', args=[]))
         else:
             self.object = None
-            return self.render_to_response(self.get_context_data(form=form, form2=form2,))
+            return self.render_to_response(self.get_context_data(form=form, form2=form2))
+
 
 
 class ActualizacionPersonal(LoginRequiredMixin, UpdateView):

@@ -11,7 +11,7 @@
                         <div class="col-sm-12 col-md-6 card card-body fw-bold">
                             <h4 class="text-center">DATOS PERSONALES</h4>
                             <hr>
-                            {% for field in form3 %}
+                            {% for field in form %}
                                 <div class="mb-3 row">
                                     <label class="col-sm-4 col-form-label text-end">
                                         {{ field.label_tag }}
@@ -72,10 +72,6 @@
                     <div class="col">
                         <button class="btn btn-success" type="submit">
                         <i class="fas fa-save"></i>GUARDAR</button>
-                    </div>
-                    <div class="col">
-                        <a href="{% url 'users:lista_personal' %}" class="btn btn-danger">
-                        <i class="fas fa-trash-alt"></i>CANCELAR</a>
                     </div>
                 </div>
             </form>

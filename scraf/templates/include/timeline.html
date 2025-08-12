@@ -1,92 +1,91 @@
 <style>
-        
-        .timeline {
-            position: relative;
-            margin: 0 auto;
-            padding: 20px 0;
-            width: 110%;
-            max-width: 800px;
-        }
+  /* ===== Timeline horizontal ===== */
+  .timeline {
+    --track: 56px;                 /* altura donde corre la línea central */
+    position: relative;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(260px, 1fr);
+    gap: 24px;
+    padding: 24px 12px 12px;
+    overflow-x: auto;              /* scroll horizontal si no entra */
+    scroll-snap-type: x proximity; /* agarre suave al hacer scroll */
+    scrollbar-gutter: stable both-edges;
+    width: 100%;
+    max-width: 100%;
+  }
 
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: #ccc;
-            transform: translateX(-50%);
-        }
+  /* línea horizontal centrada */
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: var(--track);
+    height: 4px;
+    background: #ccc;
+  }
 
-        .event {
-            position: relative;
-            width: 50%;
-            padding: 10px;
-            box-sizing: border-box;
-        }
+  /* cada evento en columna */
+  .event {
+    position: relative;
+    width: auto;                   /* ignora ancho fijo del diseño vertical */
+    left: 0 !important;            /* neutraliza el 'left' del vertical */
+    text-align: left;              /* neutraliza los 'left/right' previos */
+    scroll-snap-align: start;
+  }
 
-        .event.left {
-            left: 0;
-            text-align: right;
-        }
+  .event.left, .event.right { left: 0; text-align: left; }
 
-        .event.right {
-            left: 50%;
-        }
+  /* punto sobre la línea */
+  .event::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--track) - 7px); /* centra el punto sobre la línea */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 14px;
+    background: #3498db;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px rgba(52,152,219,.25);
+    z-index: 2;
+  }
 
-        .event-content {
-            background: white;
-            padding: 10px;
-            border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            position: relative;
-        }
+  /* tarjeta debajo de la línea */
+  .event-content {
+    background: #fff;
+    padding: 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    position: relative;
+    margin-top: calc(var(--track) + 16px);
+  }
 
-        .event::after {
-            content: '';
-            position: absolute;
-            top: 30px;
-            width: 10px;
-            height: 10px;
-            background: #3498db;
-            border-radius: 50%;
-            z-index: 1;
-        }
+  .event h4 { margin: 0 0 5px; color: #333; }
 
-        .event.left::after {
-            right: -5px;
-        }
+  .event p {
+    margin: 0;
+    font-size: 14px;
+    color: #555;
+  }
 
-        .event.right::after {
-            left: -5px;
-        }
+  .event time {
+    font-size: 12px;
+    color: #888;
+    display: block;
+    margin-top: 6px;
+  }
 
-        .event h4 {
-            margin: 0 0 5px;
-            color: #333;
-        }
+  /* Comportamiento de “ver más en hover” (tal como tenías) */
+  .event-content p { display: none; color: #333; margin-top: 10px; }
+  .event-content:hover p { display: block; }
 
-        .event p {
-            margin: 0;
-            font-size: 14px;
-            color: #555;
-        }
-
-        .event time {
-            font-size: 12px;
-            color: #888;
-            display: block;
-            margin-top: 3px;
-        }
-
-        .event-content p {
-            display: none;
-            color: #333;
-            margin-top: 10px;
-        }
-
-        .event-content:hover p {
-            display: block;
-        }
-    </style>
+  /* Responsive: reduce separación en pantallas chicas */
+  @media (max-width: 576px) {
+    .timeline { gap: 16px; --track: 48px; }
+    .event::after { top: calc(var(--track) - 7px); }
+    .event-content { margin-top: calc(var(--track) + 12px); }
+  }
+</style>

@@ -5,80 +5,136 @@
 {% endblock %}
 {% block contenido %}
     {% if user.is_authenticated %}
-        <div class="row bg-info rounded-4 py-2">
-            <h4>CODIGO IDENTIFICADOR: {{activo.slug}} </h4>
-        </div>
-        <div class="row rounded-4 py-2">
-            <div class="col-sm-12 col-md-6 rounded-4">
-                <h4>DATOS DEL ACTIVO </h4>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr class="table-info">
-                        <th scope="col">CODIGO DEL ACTIVO</th>
-                        <th scope="col">DESCRIPCION DEL ACTIVO</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td> {{activo.activo.codigo}} </td>
-                            <td> {{activo.activo.descActivo}} </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr class="table-info">
-                        <th scope="col">DESCRIPCION</th>
-                        <th scope="col">ESTADO</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td> {{activo.activo.descripcion}} </td>
-                            <td> {{activo.estado}} </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <h4>DATOS DEL RESPONSABLE Y UBICACION</h4>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr class="table-info">
-                        <th scope="col">NOMBRE DEL RESPONSABLE ACTUAL</th>
-                        <th scope="col">PISO</th>
-                        <th scope="col">OFICINA</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td> {{activo.responsable.persona.nombre}} {{activo.responsable.persona.apellido}}</td>
-                            <td> {{activo.piso_ubicacion}} </td>
-                            <td> {{activo.oficina_ubicacion}} </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="container-fluid">
+                <!-- TÍTULO -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h3 class="fw-bold text-success">INFORMACION DE ACTIVO</h3>
+                    <hr class="mt-2">
+                </div>
             </div>
-            <div class="col-sm-12 col-md-6 rounded-4 py-2">
-                <h4>Cambios</h4>
-                <div class="timeline">
-                {% for evento in line %}
-                    <div class="event {% cycle 'left' 'right' %}">
-                        <div class="event-content">
-                            <p><b>Registrado por:</b>{{ evento.creador }}</p>
-                            <hr>
-                            <p><b>Responsable:</b> {{ evento.responsable.persona.nombre }} {{ evento.responsable.persona.apellido }}</p>
-                            <p><b>Ubicacion:</b> {{ evento.piso_ubicacion }} - {{ evento.oficina_ubicacion }}</p>
-                            <p><b>Estado:</b> {{ evento.estado }}</p>
-                            <hr>
-                            <p>{{ evento.observacion }}</p>
-                            <time>{{ evento.fecha_registro}}</time>
+
+            <!-- CODIGO IDENTIFICADOR -->
+            <div class="row py-2" style="background:#006532">
+                <div class="col-6">
+                    <h4 class="text-white m-0">CODIGO IDENTIFICADOR: {{ activo.slug }}</h4>
+                </div>
+                <div class="col-6 text-end">
+                    <h4 class="text-white m-0">CODIGO DEL ACTIVO: {{ activo.activo.codigo }}</h4>
+                </div>
+            </div>
+
+
+            <!-- DATOS DEL ACTIVO -->
+            <div class="row py-2">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-10">
+                    <div class="border border-dark rounded-4 p-3">
+                        <div class=" bg-white text-center">
+                            <h5 class="m-0 fw-bold text-success">DATOS DEL ACTIVO</h5>
                         </div>
+
+                        <br>
+
+                        <div class="text-center">
+                            <h5><span class="fw-bold text-success">ESTADO:</span> {{activo.estado}}</h5>
+                        </div>
+
+                        <br>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!--CATEGORIA-->
+                                <div class="row">    
+                                    <div class="col-md-4">
+                                        <h5 class="fw-bold text-success">DESCRIPCION DEL ACTIVO:</h5>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h5>{{activo.activo.descActivo}}</h5>
+                                    </div>
+                                    <!--descripcion-->
+                                    <div class="col-md-4">
+                                        <h5 class="fw-bold text-success">DESCRIPCION:</h5>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h5>{{activo.activo.descripcion}}</h5>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-md-6">
+                                <div class=" bg-white text-center">
+                                    <h5 class="m-0 fw-bold text-success">DATOS DEL RESPONSABLE Y UBICACION</h5>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-4">
+                                        <h5 class="fw-bold text-success">RESPONSABLE:</h5>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h5>
+                                            {% if activo.responsable and activo.responsable.persona and activo.responsable.persona.nombre %}
+                                            {{ activo.responsable.persona.nombre }} {{ activo.responsable.persona.apellido }}
+                                            {% else %}
+                                            No tiene responsable
+                                            {% endif %}
+                                        </h5>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <h5 class="fw-bold text-success">PISO:</h5>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h5>{{activo.piso_ubicacion}}</h5>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <h5 class="fw-bold text-success">OFICINA:</h5>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h5>{{activo.oficina_ubicacion}}</h5>
+                                    </div>
+                                </div>
+                            </div>
                     </div>
-                {% empty %}
-                    <p>No hay observaciones disponibles para este proyecto.</p>
-                {% endfor %}
+                </div>
+                <div class="col-sm-1"></div>
             </div>
+            <div class="row py-2">
+                <div class="col-sm-1"></div>
+                <div class="col-sm-10">
+                    <div class="p-3">
+                        <h4 class="text-center">CAMBIOS REALIZADOS</h4>
+                        <hr>
+                        {% if line %}
+                            <div class="timeline">
+                                {% for evento in line %}
+                                    <div class="event {% cycle 'left' 'right' %}">
+                                        <div class="event-content">
+                                            <p><b>Registrado por:</b> {{ evento.creador }}</p>
+                                            <hr>
+                                            <p><b>Responsable:</b> {{ evento.responsable.persona.nombre }} {{ evento.responsable.persona.apellido }}</p>
+                                            <p><b>Ubicacion:</b> {{ evento.piso_ubicacion }} - {{ evento.oficina_ubicacion }}</p>
+                                            <p><b>Estado:</b> {{ evento.estado }}</p>
+                                            <hr>
+                                            <p>{{ evento.observacion }}</p>
+                                            <time>{{ evento.fecha_registro }}</time>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <p>No hay observaciones disponibles para este activo.</p>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p>No hay cambios registrados para este activo.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-sm-1"></div>
             </div>
         </div>
+    </div>
     {% else %}
     {% endif %}
 {% endblock  %}

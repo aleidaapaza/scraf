@@ -1,79 +1,173 @@
 {% extends 'base/base.html' %}
 {% load static %}
 {% block contenido %}
-    <div class="row">
-            <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-                <div class="row mt-2">
-                    <h3 class="text-center text-bg-primary">{{ entity }}</h3>
-                    <hr>
-                    <div class="row">
-                        <div class="col-sm-12 col-md-6 card card-body fw-bold">
-                            <h4 class="text-center">DATOS PERSONALES</h4>
-                            <hr>
-                            {% for field in form %}
-                                <div class="mb-3 row">
-                                    <label class="col-sm-4 col-form-label text-end">
-                                        {{ field.label_tag }}
-                                    </label>
-                                    <div class="col-sm-8">
-                                        {{ field }}
 
-                                        {% if field.help_text %}
-                                            <div class="form-text text-warning text-muted small">
-                                                {{ field.help_text }}
-                                            </div>
-                                        {% endif %}
+<style>
+  /* Aislar estilos a esta vista */
+  .registro-personal .card { border-radius: 14px; }
+  .registro-personal .card-header { border-bottom: 0; }
+  .registro-personal .title-green { color:#0b5d33; }           /* verde oscuro */
+  .registro-personal .bg-green-soft { background:#d7f4dc; }    /* verde pastel fondo */
 
-                                        {% if field.errors %}
-                                            <div class="text-danger small mt-1">
-                                                {% for error in field.errors %}
-                                                    <span>({{ error }})</span>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            {% endfor %}
+  /* Switch Bootstrap 5 coloreado en verde oscuro */
+  .registro-personal .form-check-input:checked {
+    background-color:#0b5d33;
+    border-color:#0b5d33;
+  }
+  .registro-personal .form-check-input:focus {
+    box-shadow:0 0 0 .2rem rgba(11,93,51,.25);
+    border-color:#0b5d33;
+  }
+</style>
+
+<div class="container-fluid registro-personal">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Título -->
+    <div class="row mt-3">
+      <div class="col-12">
+        <h3 class="fw-bold title-green">{{ entity|default:"REGISTRAR PERSONAL" }}</h3>
+        <hr class="mt-2">
+      </div>
+    </div>
+
+    <!-- 1-10-1: DATOS PERSONALES -->
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-1"></div>
+
+      <div class="col-12 col-lg-10">
+        <div class="card shadow-sm">
+          <div class="card-header bg-white text-center">
+            <h5 class="m-0 fw-bold title-green">DATOS PERSONALES</h5>
+          </div>
+          <div class="card-body">
+            {% for field in form3 %}
+                {% if field.name != 'slug' %}
+                    <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label text-end">
+                        {{ field.label_tag }}
+                    </label>
+                    <div class="col-sm-8">
+                        {{ field }}
+                        {% if field.help_text %}
+                        <div class="form-text text-warning text-muted small">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% if field.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in field.errors %}<span>({{ error }})</span>{% endfor %}
                         </div>
-                        <div class="col-sm-12 col-md-6 card card-body fw-bold bg-secondary text-white">
-                            <h4 class="text-center">USUARIO Y PERMISOS</h4>
-                            <hr>
-                            {% for field in form2 %}
-                                <div class="mb-3 row">
-                                    <label class="col-sm-6 col-form-label text-end lh-1">
-                                        {{ field.label_tag }}
-                                    </label>
-                                    <div class="col-sm-6">
-                                        {{ field }}
-
-                                        {% if field.help_text %}
-                                            <div class="form-text text-warning small text-muted">
-                                                {{ field.help_text }}
-                                            </div>
-                                        {% endif %}
-
-                                        {% if field.errors %}
-                                            <div class="text-danger small mt-1">
-                                                {% for error in field.errors %}
-                                                    <span>({{ error }})</span>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
+                        {% endif %}
                     </div>
-                    
-                     
-                    <hr>
-                <div class="row text-center row mt-2">
-                    <div class="col">
-                        <button class="btn btn-success" type="submit">
-                        <i class="fas fa-save"></i>GUARDAR</button>
                     </div>
-                </div>
-            </form>
+                {% else %}
+                    {# Si igual quieres enviar el slug, pero oculto: #}
+                    {{ field.as_hidden }}
+                {% endif %}
+            {% endfor %}
+          </div>
         </div>
+      </div>
+
+      <div class="col-12 col-lg-1"></div>
+    </div>
+
+    <!-- 1-10-1: USUARIO Y RESPONSABILIDADES -->
+    <div class="row justify-content-center mt-4">
+      <div class="col-12 col-lg-1"></div>
+
+      <div class="col-12 col-lg-10">
+        <div class="card shadow-sm bg-green-soft border-0 usuario-resp">
+          <div class="card-header bg-transparent text-center">
+            <h5 class="m-0 fw-bold title-green">Usuario y Responsabilidades</h5>
+          </div>
+
+          <div class="card-body">
+            {% for field in form2 %}
+              {% if field.field.widget.input_type == 'checkbox' %}
+                <!-- Render como SWITCH -->
+                <div class="mb-3 row align-items-center">
+                  <label class="col-sm-8 col-form-label text-sm-end">{{ field.label }}</label>
+                  <div class="col-sm-4">
+                    <div class="form-check form-switch m-0">
+                      {{ field }}
+                    </div>
+                    {% if field.help_text %}
+                      <div class="form-text small text-muted mt-1">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% if field.errors %}
+                      <div class="text-danger small mt-1">
+                        {% for error in field.errors %}<span>({{ error }})</span>{% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% else %}
+                <!-- Inputs normales -->
+                <div class="mb-3 row">
+                  <label class="col-sm-4 col-form-label fw-semibold text-sm-end">{{ field.label_tag }}</label>
+                  <div class="col-sm-8">
+                    {{ field }}
+                    {% if field.help_text %}
+                      <div class="form-text small text-muted">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% if field.errors %}
+                      <div class="text-danger small mt-1">
+                        {% for error in field.errors %}<span>({{ error }})</span>{% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-1"></div>
+    </div>
+
+    <!-- Botón -->
+    <div class="row mt-4">
+      <div class="col-12 d-flex justify-content-center">
+        <button type="submit" class="btn btn-success px-4 py-2">
+          GUARDAR
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Post-procesa los checkboxes de form2 para que parezcan switches de Bootstrap,
+  // aunque vengan con clases personalizadas desde forms.py
+  (function () {
+    const wrap = document.querySelector('.usuario-resp');
+    if (!wrap) return;
+
+    // Forzar clase 'form-check-input' en todos los checkbox de form2
+    wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.classList.add('form-check-input');
+      cb.classList.remove('form-check');     // por si viene así desde forms.py
+      cb.classList.remove('border', 'border-info');
+    });
+
+    // Exclusividad Grupo Revisión: is_encargado vs is_revisor (1 de 2)
+    const enc = wrap.querySelector('input[name="is_encargado"]');
+    const apo = wrap.querySelector('input[name="is_revisor"]');
+    if (enc && apo) {
+      const syncA = (a, b) => a.addEventListener('change', e => { if (e.target.checked) b.checked = false; });
+      syncA(enc, apo); syncA(apo, enc);
+    }
+
+    // Exclusividad Grupo Activos: g_personal vs v_Activos (1 de 2) — g_Activos libre
+    const gPersonal = wrap.querySelector('input[name="g_personal"]');
+    const vActivos  = wrap.querySelector('input[name="v_Activos"]');
+    if (gPersonal && vActivos) {
+      const syncB = (a, b) => a.addEventListener('change', e => { if (e.target.checked) b.checked = false; });
+      syncB(gPersonal, vActivos); syncB(vActivos, gPersonal);
+    }
+  })();
+</script>
+
 {% endblock %}

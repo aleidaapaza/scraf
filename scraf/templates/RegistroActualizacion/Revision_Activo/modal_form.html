@@ -1,54 +1,22 @@
 <div class="modal-header bg-primary text-white">
-    <h5 class="modal-title">Actualizar Activo</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <h5 class="modal-title">{{ titulo }}</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 </div>
 
 <div class="modal-body">
-    <!-- Información del activo -->
-    <div class="mb-3 row">
-        <label class="col-sm-4 col-form-label fw-bold">Código:</label>
-        <div class="col-sm-8 col-form-label">{{ activo.codigo }}</div>
-    <div class="mb-3 row">
-        <label class="col-sm-4 col-form-label fw-bold">Descripción:</label>
-        <div class="col-sm-8 col-form-label">{{ activo.descActivo }}</div>
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <div class="text-danger small mt-1">{% for e in field.errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <div class="text-end">
+      <button type="submit" class="btn btn-success">Guardar</button>
     </div>
-    <div class="mb-3 row">
-        <label class="col-sm-4 col-form-label fw-bold">Categoría:</label>
-        <div class="col-sm-8 col-form-label">{{ activo.descripcion }}</div>
-    </div>
-
-    <!-- Formulario -->
-    <form method="post" action="{% url 'revision:vactualizar_activo' slug codigo=activo.codigo %}">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label class="form-label fw-bold">{{ form2.responsable.label }}</label>
-            {{ form2.responsable }}
-            <input type="hidden" name="responsable" value="{{ form2.responsable.value }}">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label fw-bold">{{ form2.piso_ubicacion.label }}</label>
-            {{ form2.piso_ubicacion }}
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label fw-bold">{{ form2.oficina_ubicacion.label }}</label>
-            {{ form2.oficina_ubicacion }}
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label fw-bold">{{ form2.estado.label }}</label>
-            {{ form2.estado }}
-            <input type="hidden" name="estado" value="{{ form2.estado.value }}">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label fw-bold">{{ form.observacion.label }}</label>
-            {{ form.observacion }}
-        </div>
-
-        <div class="text-end">
-            <button type="submit" class="btn btn-success">Confirmar</button>
-        </div>
-    </form>
+  </form>
 </div>

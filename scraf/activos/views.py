@@ -7,6 +7,14 @@ from django.http import HttpResponseRedirect
 from users.models import User
 from activos.models import Activo, Activo_responsable, Activos_line
 from activos.forms import R_Activo, R_Activo_responsable, A_Activo
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
+
+from activos.forms import R_Activo, R_Activo_responsable
+from activos.models import Activo, Activo_responsable, Activos_line
 
 # Create your views here.
 class ListaActivos(LoginRequiredMixin, ListView):
@@ -19,9 +27,10 @@ class ListaActivos(LoginRequiredMixin, ListView):
         usuario = self.request.user
         usuario_d = User.objects.get(username = usuario)
         if usuario_d.g_Activos:
+            context['entity_registro'] = reverse_lazy('activos:ajax_r_activo')
             context['entity_registro'] = reverse_lazy('activos:registro_activos', args=[])
             context['entity_registro_nom'] = 'REGISTRAR NUEVO ACTIVO'
-            context['entity_registro2'] = reverse_lazy('activos:registro_activos_responsable', args=[])
+            context['entity_registro2'] = reverse_lazy('activos:ajax_r_activo_resp')
             context['entity_registro_nom2'] = 'REGISTRAR NUEVO ACTIVO CON RESPONSABLE'
         return context
     
@@ -210,3 +219,51 @@ class ActualizarActivoResponsable(LoginRequiredMixin, UpdateView):
             return HttpResponseRedirect(self.success_url)
         else:
             return self.render_to_response(self.get_context_data(form=form, form2=form2))
+        
+@login_required
+@require_http_methods(["GET", "POST"])
+def ajax_r_activo(request):
+    data = {}
+    if request.method == 'POST':
+        form = R_Activo(request.POST)
+        if form.is_valid():
+            activo = form.save()
+            # Si quieres crear Activo_responsable mínimo:
+            Activo_responsable.objects.create(
+                activo=activo,
+                piso_ubicacion="ALMACENES",
+                oficina_ubicacion="ALMACEN",
+            )
+            data['form_is_valid'] = True
+        else:
+            data['form_is_valid'] = False
+    else:
+        form = R_Activo()
+
+    context = {'form': form, 'titulo': 'REGISTRO DE ACTIVO'}
+    data['html_form'] = render_to_string('RegistroActualizacion/model_activo.html', context, request=request)
+    return JsonResponse(data)
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def ajax_r_activo_responsable(request):
+    data = {}
+    if request.method == 'POST':
+        f_resp = R_Activo_responsable(request.POST)
+        f_act  = R_Activo(request.POST)
+        if f_resp.is_valid() and f_act.is_valid():
+            activo = f_act.save()
+            obj = f_resp.save(commit=False)
+            obj.activo = activo
+            obj.save()
+            data['form_is_valid'] = True
+        else:
+            data['form_is_valid'] = False
+    else:
+        f_resp = R_Activo_responsable()
+        f_act  = R_Activo()
+
+    context = {'form': f_resp, 'form2': f_act, 'titulo': 'REGISTRO ACTIVO + RESPONSABLE'}
+    data['html_form'] = render_to_string('RegistroActualizacion/model_activo_responsable.html', context, request=request)
+    return JsonResponse(data)

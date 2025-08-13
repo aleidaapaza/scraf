@@ -15,15 +15,19 @@
     </div>
 
         <!-- 2. Botones de creacion de revisiones -->
-    {% if not user.is_superuser %}
-    <div class="row">
-        <div class="col-md-12 d-flex justify-content-center">
-            <button id="id_btn1" class="btn btn-success btn-block">
+        {% if not user.is_superuser %}
+        <div class="row">
+            <div class="col-md-12 d-flex justify-content-center">
+                <button id="id_btn1"
+                        type="button"
+                        class="btn btn-success"
+                        data-url="{{ entity_registro }}">
                 {{ entity_registro_nom }}
-            </button>
+                </button>
+            </div>
         </div>
-    </div>
-    {% endif %}
+        {% endif %}
+
 
     <!-- 3. Modales -->
     <div id="modal1" class="modal fade" tabindex="-1">
@@ -179,5 +183,85 @@
                 console.error(error);
             });
     }
+
+      // Enlazar botón 1
+  const btn1 = document.getElementById('id_btn1');
+  if (btn1) {
+    btn1.addEventListener('click', function (e) {
+      e.preventDefault();
+      const url = this.dataset.url;
+      if (!url) {
+        console.error('Falta data-url en #id_btn1');
+        return;
+      }
+      cargarFormularioModal(url);
+    });
+  }
+
+    // Abrir modal de VER (usa modal2 con contenido html)
+  document.querySelectorAll('.btn-ver').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      const url = this.dataset.url;
+      fetch(url)
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('modalContent2').innerHTML = data.html_form;
+          new bootstrap.Modal(document.getElementById('modal2')).show();
+        })
+        .catch(err => {
+          console.error(err);
+          alert('No se pudo cargar la vista.');
+        });
+    });
+  });
+
+  // Abrir modal de EDITAR (usa la función genérica que ya tienes)
+  document.querySelectorAll('.btn-editar').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      const url = this.dataset.url;
+
+      // Si tu base ya define actualizarFormularioModal, úsala
+      if (typeof actualizarFormularioModal === 'function') {
+        actualizarFormularioModal(url);
+        return;
+      }
+
+      // Fallback por si no existe la función en la base:
+      fetch(url)
+        .then(r => r.json())
+        .then(data => {
+          const modalEl = document.getElementById('modal2');
+          document.getElementById('modalContent2').innerHTML = data.html_form;
+          const modal = new bootstrap.Modal(modalEl);
+          modal.show();
+
+          const form = modalEl.querySelector('form');
+          form.addEventListener('submit', function (ev) {
+            ev.preventDefault();
+            const formData = new FormData(form);
+            fetch(url, { method: 'POST', body: formData })
+              .then(r => r.json())
+              .then(resp => {
+                if (resp.form_is_valid) {
+                  modal.hide();
+                  location.reload();
+                } else {
+                  document.getElementById('modalContent2').innerHTML = resp.html_form;
+                }
+              })
+              .catch(err => {
+                console.error(err);
+                alert('No se pudo guardar.');
+              });
+          });
+        })
+        .catch(err => {
+          console.error(err);
+          alert('No se pudo cargar el formulario de edición.');
+        });
+    });
+  });
 </script>
 {% endblock %}

@@ -47,17 +47,17 @@
                                 <!--CATEGORIA-->
                                 <div class="row">    
                                     <div class="col-md-4">
-                                        <h5 class="fw-bold text-success">DESCRIPCION DEL ACTIVO:</h5>
+                                        <h6 class="fw-bold text-success">DESCRIPCION DEL ACTIVO:</h6>
                                     </div>
                                     <div class="col-md-8">
-                                        <h5>{{activo.activo.descActivo}}</h5>
+                                        <h6>{{activo.activo.descActivo}}</h6>
                                     </div>
                                     <!--descripcion-->
                                     <div class="col-md-4">
-                                        <h5 class="fw-bold text-success">DESCRIPCION:</h5>
+                                        <h6 class="fw-bold text-success">DESCRIPCION:</h6>
                                     </div>
                                     <div class="col-md-8">
-                                        <h5>{{activo.activo.descripcion}}</h5>
+                                        <h6>{{activo.activo.descripcion}}</h6>
                                     </div>
                                 </div>
                             </div>
@@ -67,30 +67,30 @@
 
                                 <div class="row">
                                     <div class="col-md-4">
-                                        <h5 class="fw-bold text-success">RESPONSABLE:</h5>
+                                        <h6 class="fw-bold text-success">RESPONSABLE:</h6>
                                     </div>
                                     <div class="col-md-8">
-                                        <h5>
+                                        <h6>
                                             {% if activo.responsable and activo.responsable.persona and activo.responsable.persona.nombre %}
                                             {{ activo.responsable.persona.nombre }} {{ activo.responsable.persona.apellido }}
                                             {% else %}
                                             No tiene responsable
                                             {% endif %}
-                                        </h5>
+                                        </h6>
                                     </div>
 
                                     <div class="col-md-4">
-                                        <h5 class="fw-bold text-success">PISO:</h5>
+                                        <h6 class="fw-bold text-success">PISO:</h6>
                                     </div>
                                     <div class="col-md-8">
-                                        <h5>{{activo.piso_ubicacion}}</h5>
+                                        <h6>{{activo.piso_ubicacion}}</h6>
                                     </div>
 
                                     <div class="col-md-4">
-                                        <h5 class="fw-bold text-success">OFICINA:</h5>
+                                        <h6 class="fw-bold text-success">OFICINA:</h6>
                                     </div>
                                     <div class="col-md-8">
-                                        <h5>{{activo.oficina_ubicacion}}</h5>
+                                        <h6>{{activo.oficina_ubicacion}}</h6>
                                     </div>
                                 </div>
                             </div>

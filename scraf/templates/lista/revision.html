@@ -51,9 +51,9 @@
         <th scope="col">INICIO/FIN</th>
         {% endif %}
         <th scope="col">LISTA COMPLETA</th>
-        {% if revisionr %}
-        <th scope="col">FORMULARIO DE REVISION</th>    
-        {% endif %}        
+        <th id="th-form-rev" class="{% if not revisionr %}d-none{% endif %}">
+        FORMULARIO DE REVISION
+        </th>   
     </tr>
 
 {% endblock %}
@@ -112,18 +112,18 @@
                    <i class="fas fa-edit"></i> 
                 </a>
             </td>
-            {% if revision_datos %}
-                <td>
-                {% if revision.slug == revision_datos.slug %}                
-                    <a href="{% url 'revision:revision_activo' revision.slug %}" type="button"
-                    class="btn btn-primary btn-xs">
-                    <i class="fas fa-edit"></i> 
-                    </a>
-                {% else %}
-                <p>-</p>
-                {% endif %}
-                </td>
-            {% endif %}            
+            <td class="td-form-rev {% if not revisionr %}d-none{% endif %}" data-slug="{{ revision.slug }}">
+            {% if revisionr and revision.slug == revision_datos.slug %}
+                <button
+                type="button"
+                class="btn btn-primary btn-xs btn-form-revision-activo"
+                data-url="{% url 'revision:revision_activo' revision.slug %}?ajax=1">
+                <i class="fas fa-edit"></i>
+                </button>
+            {% else %}
+                <span>-</span>
+            {% endif %}
+            </td>          
         </tr>
     {% endfor %}
 {% endblock %}
@@ -198,6 +198,82 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!btn) return;
     e.preventDefault();
     new bootstrap.Modal(document.getElementById('modalAdvertenciaRevision')).show();
+  });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const table = document.getElementById('myTable') || document;
+
+  table.addEventListener('click', function (e) {
+    const btn = e.target.closest('.iniciar-finalizar-revision');
+    if (!btn) return;
+
+    e.preventDefault();
+    const url  = btn.getAttribute('data-url');
+    const slug = btn.getAttribute('data-slug');
+
+    fetch(url)
+      .then(r => r.ok ? r.json() : r.text().then(t => { throw new Error(t); }))
+      .then(data3 => {
+        // ----- construir/mostrar modal de estado (lo que ya tienes) -----
+        // ... tu código modal aquí ...
+
+        // ----- ACTUALIZAR la columna "FORMULARIO DE REVISION" dinámicamente -----
+        const th = document.getElementById('th-form-rev');
+        const tds = document.querySelectorAll('.td-form-rev');
+
+        if (data3.status === 'iniciada') {
+          // Mostrar la columna (th y todos los td)
+          th && th.classList.remove('d-none');
+          tds.forEach(td => td.classList.remove('d-none'));
+
+          // Poner botón SOLO en la fila del slug activo; el resto "-".
+          tds.forEach(td => {
+            const rowSlug = td.getAttribute('data-slug');
+            if (rowSlug === slug) {
+              td.innerHTML = `
+                <button type="button"
+                        class="btn btn-primary btn-xs btn-form-revision-activo"
+                        data-url="/revision/RevisionActivo/${slug}/?ajax=1">
+                  <i class="fas fa-edit"></i>
+                </button>`;
+            } else {
+              td.innerHTML = `<span>-</span>`;
+            }
+          });
+        }
+
+        if (data3.status === 'finalizada' || data3.status === 'ya_finalizada') {
+          // Ocultar de nuevo toda la columna
+          th && th.classList.add('d-none');
+          tds.forEach(td => {
+            td.classList.add('d-none');
+            td.innerHTML = `<span>-</span>`; // limpiar por si acaso
+          });
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        // muestra tu modal de error si quieres
+      });
+  });
+
+  // (Opcional) abrir el modal de "Formulario de revisión" vía AJAX
+  table.addEventListener('click', function (e) {
+    const b = e.target.closest('.btn-form-revision-activo');
+    if (!b) return;
+
+    e.preventDefault();
+    fetch(b.dataset.url)
+      .then(r => r.ok ? r.text() : r.text().then(t => { throw new Error(t); }))
+      .then(html => {
+        document.getElementById('modalContent2').innerHTML = html;
+        new bootstrap.Modal(document.getElementById('modal2')).show();
+      })
+      .catch(err => {
+        console.error(err);
+        alert('No se pudo cargar el formulario de revisión.');
+      });
   });
 });
 </script>

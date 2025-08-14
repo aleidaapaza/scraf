@@ -73,195 +73,96 @@
 {% endblock %}
 {% block funcScript %}
 <script>
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                cookie = cookie.trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
         }
-        return cookieValue;
-    }
-    const csrftoken = getCookie('csrftoken');
-
-    function cargarFormularioModal(url) {
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('modalContent1').innerHTML = data.html_form;
-                const modal = new bootstrap.Modal(document.getElementById('modal1'));
-                modal.show();
-
-                const form = document.querySelector('#modal1 form');
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    const formData = new FormData(form);
-
-                    fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': csrftoken,
-                        },
-                        body: formData,
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.text().then(text => {
-                                console.error("Respuesta HTML del servidor:", text);
-                                throw new Error(`Error HTTP ${response.status}`);
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.form_is_valid) {
-                            modal.hide();
-                            location.reload();
-                        } else {
-                            document.getElementById('modalContent1').innerHTML = data.html_form;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error en la solicitud:', error);
-                        alert('Error al enviar el formulario');
-                    });
-                });
-            });
-    }
-
-    function actualizarFormularioModal(url) {
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error al cargar el formulario: ${response.status} ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                document.getElementById('modalContent2').innerHTML = data.html_form;
-                const modal = new bootstrap.Modal(document.getElementById('modal2'));
-                modal.show();
-                setTimeout(() => {
-                    const firstInput = document.querySelector('#modal2 input, #modal2 button');
-                    if (firstInput) firstInput.focus();
-                }, 300);
-                const form = document.querySelector('#modal2 form');
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    const formData = new FormData(form);
-                    fetch(url, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Error al enviar el formulario: ${response.status} ${response.statusText}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.form_is_valid) {
-                            modal.hide();
-                            location.reload();
-                        } else {
-                            document.getElementById('modalContent2').innerHTML = data.html_form;
-                        }
-                    })
-                    .catch(error => {
-                        alert(error.message);
-                        console.error(error);
-                    });
-                });
-            })
-            .catch(error => {
-                alert(error.message);
-                console.error(error);
-            });
-    }
-
-      // Enlazar botón 1
-  const btn1 = document.getElementById('id_btn1');
-  if (btn1) {
-    btn1.addEventListener('click', function (e) {
-      e.preventDefault();
-      const url = this.dataset.url;
-      if (!url) {
-        console.error('Falta data-url en #id_btn1');
-        return;
       }
-      cargarFormularioModal(url);
-    });
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  function cargarFormularioModal(url) {
+    fetch(url)
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('modalContent1').innerHTML = data.html_form;
+        const modal = new bootstrap.Modal(document.getElementById('modal1'));
+        modal.show();
+
+        const form = document.querySelector('#modal1 form');
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          const formData = new FormData(form);
+
+          fetch(url, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrftoken},
+            body: formData,
+          })
+          .then(r => r.ok ? r.json() : r.text().then(t => { throw new Error(t); }))
+          .then(data => {
+            if (data.form_is_valid) {
+              modal.hide();
+              location.reload();
+            } else {
+              document.getElementById('modalContent1').innerHTML = data.html_form;
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            alert('Error al enviar el formulario');
+          });
+        });
+      });
   }
 
-    // Abrir modal de VER (usa modal2 con contenido html)
-  document.querySelectorAll('.btn-ver').forEach(btn => {
-    btn.addEventListener('click', function (e) {
-      e.preventDefault();
-      const url = this.dataset.url;
-      fetch(url)
-        .then(r => r.json())
-        .then(data => {
-          document.getElementById('modalContent2').innerHTML = data.html_form;
-          new bootstrap.Modal(document.getElementById('modal2')).show();
-        })
-        .catch(err => {
-          console.error(err);
-          alert('No se pudo cargar la vista.');
+  function actualizarFormularioModal(url) {
+    fetch(url)
+      .then(r => r.ok ? r.json() : Promise.reject(r))
+      .then(data => {
+        document.getElementById('modalContent2').innerHTML = data.html_form;
+        const modal = new bootstrap.Modal(document.getElementById('modal2'));
+        modal.show();
+        setTimeout(() => {
+          const firstInput = document.querySelector('#modal2 input, #modal2 button');
+          if (firstInput) firstInput.focus();
+        }, 300);
+
+        const form = document.querySelector('#modal2 form');
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          const formData = new FormData(form);
+          fetch(url, { method: 'POST', body: formData })
+            .then(r => r.ok ? r.json() : Promise.reject(r))
+            .then(data => {
+              if (data.form_is_valid) {
+                modal.hide();
+                location.reload();
+              } else {
+                document.getElementById('modalContent2').innerHTML = data.html_form;
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              alert('Error al enviar el formulario');
+            });
         });
-    });
-  });
-
-  // Abrir modal de EDITAR (usa la función genérica que ya tienes)
-  document.querySelectorAll('.btn-editar').forEach(btn => {
-    btn.addEventListener('click', function (e) {
-      e.preventDefault();
-      const url = this.dataset.url;
-
-      // Si tu base ya define actualizarFormularioModal, úsala
-      if (typeof actualizarFormularioModal === 'function') {
-        actualizarFormularioModal(url);
-        return;
-      }
-
-      // Fallback por si no existe la función en la base:
-      fetch(url)
-        .then(r => r.json())
-        .then(data => {
-          const modalEl = document.getElementById('modal2');
-          document.getElementById('modalContent2').innerHTML = data.html_form;
-          const modal = new bootstrap.Modal(modalEl);
-          modal.show();
-
-          const form = modalEl.querySelector('form');
-          form.addEventListener('submit', function (ev) {
-            ev.preventDefault();
-            const formData = new FormData(form);
-            fetch(url, { method: 'POST', body: formData })
-              .then(r => r.json())
-              .then(resp => {
-                if (resp.form_is_valid) {
-                  modal.hide();
-                  location.reload();
-                } else {
-                  document.getElementById('modalContent2').innerHTML = resp.html_form;
-                }
-              })
-              .catch(err => {
-                console.error(err);
-                alert('No se pudo guardar.');
-              });
-          });
-        })
-        .catch(err => {
-          console.error(err);
-          alert('No se pudo cargar el formulario de edición.');
-        });
-    });
-  });
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Error al cargar el formulario');
+      });
+  }
 </script>
 {% endblock %}
+
+{% block scripfun %}{% endblock %}
+{% block funScript %}{% endblock %}

@@ -16,6 +16,8 @@ from django.views.decorators.http import require_http_methods
 from activos.forms import R_Activo, R_Activo_responsable
 from activos.models import Activo, Activo_responsable, Activos_line
 
+from django.contrib import messages
+
 # Create your views here.
 class ListaActivos(LoginRequiredMixin, ListView):
     model = Activo_responsable
@@ -49,27 +51,30 @@ class RegistroActivo(LoginRequiredMixin, CreateView):
         context['accion2'] = 'CANCELAR'
         context['accion2_url'] = reverse_lazy('activos:lista_activos')
         return context
-    def post(self, request, *args, **kwargs):
-        usuario = self.request.user
-        form = self.form_class(request.POST)
-        if form.is_valid():
-            codigo = form.cleaned_data.get('codigo')
-            form.save()
-            activos = Activo.objects.get(codigo = codigo)
-            Activo_responsable.objects.create(
-                activo = activos,
-                piso_ubicacion = "ALMACENES",
-                oficina_ubicacion = "ALMACEN",
-            )
-            activos_responsable = Activo_responsable.objects.get(activo = activos)
-            Activos_line.objects.create(
-                slug = activos_responsable.slug,
-                observacion = 'Se registro solo los datos del activo',
-                creador = usuario,
-            )
-            return HttpResponseRedirect(reverse('activos:lista_activos', args=[]))
-        else:
+def post(self, request, *args, **kwargs):
+    usuario = self.request.user
+    form = self.form_class(request.POST)
+    if form.is_valid():
+        codigo = form.cleaned_data.get('codigo')
+        if Activo.objects.filter(codigo=codigo).exists():
+            messages.error(request, f'El código "{codigo}" ya está registrado.')
             return self.render_to_response(self.get_context_data(form=form))
+        form.save()
+        activos = Activo.objects.get(codigo=codigo)
+        Activo_responsable.objects.create(
+            activo=activos,
+            piso_ubicacion="ALMACENES",
+            oficina_ubicacion="ALMACEN",
+        )
+        activos_responsable = Activo_responsable.objects.get(activo=activos)
+        Activos_line.objects.create(
+            slug=activos_responsable.slug,
+            observacion='Se registró solo los datos del activo',
+            creador=usuario,
+        )
+        return HttpResponseRedirect(reverse('activos:lista_activos'))
+    else:
+        return self.render_to_response(self.get_context_data(form=form))
 
 class VerActivo(LoginRequiredMixin, TemplateView):
     template_name = 'Visualizar/activo.html'
@@ -91,6 +96,7 @@ class RegistroActivoResponsable(LoginRequiredMixin, CreateView):
     form_class = R_Activo_responsable
     second_form_class = R_Activo
     success_url = reverse_lazy('activos:lista_activos')
+
     def get_context_data(self, **kwargs):
         context = super(RegistroActivoResponsable, self).get_context_data(**kwargs)
         if 'form' not in context:
@@ -100,36 +106,55 @@ class RegistroActivoResponsable(LoginRequiredMixin, CreateView):
         context['titulo'] = 'REGISTRO INFORMACION ACTIVO Y RESPONSABLE DEL ACTIVO'
         context['subtitulo_1'] = 'DATOS DEL RESPONSABLE'
         context['subtitulo_2'] = 'DATOS DEL ACTIVO'
-        context['accion'] = 'REGISTRAR ACTIVO'
+        context['accion'] = 'GUARDAR'
+        context['accion2'] = 'CANCELAR'
         context['accion2_url'] = reverse_lazy('activos:lista_activos')
         context['activate'] = True
         return context
+
     def post(self, request, *args, **kwargs):
+        self.object = None
         usuario = self.request.user
         form = self.form_class(request.POST)
         form2 = self.second_form_class(request.POST)
+
         if form.is_valid() and form2.is_valid():
             codigo = form2.cleaned_data.get('codigo')
-            responsable = form.cleaned_data.get('responsable')
-            piso_ubicacion = form.cleaned_data.get('piso_ubicacion')
-            oficina_ubicacion = form.cleaned_data.get('oficina_ubicacion')
-            form2.save()
-            activos = Activo.objects.get(codigo = codigo)
-            activo_responsable = form.save(commit=False)
-            activo_responsable.activo = activos
-            activo_responsable.save()
-            activos_responsable = Activo_responsable.objects.get(activo = activos)
-            Activos_line.objects.create(
-                slug = activos_responsable.slug,
-                responsable = responsable,
-                piso_ubicacion = piso_ubicacion,
-                oficina_ubicacion = oficina_ubicacion,
-                observacion = 'Se registro los datos del activo y del responsable',
-                creador = usuario,
-            )
-            return HttpResponseRedirect(reverse('activos:lista_activos', args=[]))
+
+            # ✅ Verificamos si ya existe un activo con ese código
+            if Activo.objects.filter(codigo=codigo).exists():
+                messages.error(request, "⚠️ El código ya existe, por favor ingrese otro código.")
+                return self.render_to_response(self.get_context_data(form=form, form2=form2))
+
+            try:
+                responsable = form.cleaned_data.get('responsable')
+                piso_ubicacion = form.cleaned_data.get('piso_ubicacion')
+                oficina_ubicacion = form.cleaned_data.get('oficina_ubicacion')
+                form2.save()
+                activos = Activo.objects.get(codigo=codigo)
+                activo_responsable = form.save(commit=False)
+                activo_responsable.activo = activos
+                activo_responsable.save()
+                activos_responsable = Activo_responsable.objects.get(activo=activos)
+                Activos_line.objects.create(
+                    slug=activos_responsable.slug,
+                    responsable=responsable,
+                    piso_ubicacion=piso_ubicacion,
+                    oficina_ubicacion=oficina_ubicacion,
+                    observacion='Se registró los datos del activo y del responsable',
+                    creador=usuario,
+                )
+                messages.success(request, "✅ El activo con responsable fue registrado correctamente.")
+                return HttpResponseRedirect(reverse('activos:lista_activos'))
+
+            except IntegrityError:
+                messages.error(request, "⚠️ Ocurrió un error al registrar el activo. Verifique los datos e intente nuevamente.")
+                return self.render_to_response(self.get_context_data(form=form, form2=form2))
+
         else:
+            messages.error(request, "⚠️ Por favor complete todos los campos correctamente.")
             return self.render_to_response(self.get_context_data(form=form, form2=form2))
+
 
 class VerActivo(LoginRequiredMixin, TemplateView):
     template_name = 'Visualizar/activo.html'

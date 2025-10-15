@@ -25,13 +25,15 @@
                 </div>
             {% endif %}
         </div>
-        <div class="col-md-6 d-flex justify-content-center">
-            {% if entity_registro2 %}
-                <div class="col-md-6 mt-2">
-                    <a href="{{ entity_registro2 }}" class="btn btn-success btn-block">{{ entity_registro_nom2 }}</a>
-                </div>
-            {% endif %}
-        </div>
+    <div class="col-md-6 d-flex justify-content-center">
+        {% if entity_registro2 %}
+            <div class="col-md-6 mt-2">
+                <a href="{% url 'activos:registro_activos_responsable' %}" class="btn btn-success btn-block">
+                    {{ entity_registro_nom2 }}
+                </a>
+            </div>
+        {% endif %}
+    </div>
     </div>
 
     <!-- 3. Tabla -->

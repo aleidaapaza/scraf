@@ -17,6 +17,13 @@ from activos.models import Activo, Activo_responsable, Activos_line
 from revision.forms import R_Revision, A_Revision_P, R_Revision_ACtivo
 from activos.forms import A_Activo_responsable
 
+
+from django.template.loader import render_to_string
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerError # Importar HttpResponseServerError
+from django.db.models import ObjectDoesNotExist # Importar para manejo de errores de ORM
+
+
 class ListaCambiosRevision(LoginRequiredMixin, ListView):
     model = Revision_line
     template_name = 'lista/revision_line.html'
@@ -249,42 +256,62 @@ class Revision_RActivos(LoginRequiredMixin, TemplateView):
         return context
 
 def buscar_activo(request, slug):
-    print(slug, 'slug')
     if request.method == 'POST':
         codigo = request.POST.get('codigo')
-        print(codigo, 'codigo')
+        
+        if not codigo:
+            return HttpResponse('Código no proporcionado', status=400)
+
+        # La ruta CRÍTICA, basada en tu estructura de carpetas
+        TEMPLATE_BASE_PATH = 'RegistroActualizacion/Revision_Activo/' 
+        
         try:
-            activo = Activo.objects.get(codigo=codigo)
-            revision = Revision.objects.get(slug=slug)
-            revisado = Revision_Activo.objects.filter(
-                revision=revision,
-                activo_res__activo=activo,
-                estado=True
-            )
-            ya_revisado=revisado.exists()
-            if ya_revisado:
-                return render(request, 'RegistroActualizacion/Revision_Activo/modal_ya_revisado.html', {
-                    'activo': activo,
-                    'revision':revisado.first()
-                })
-            else:
-                activo_resp = Activo_responsable.objects.get(activo__codigo=activo.codigo)
+            # 1. Obtener objetos base
+            activo = get_object_or_404(Activo, codigo=codigo)
+            revision = get_object_or_404(Revision, slug=slug, estado=True)
+            activo_resp = get_object_or_404(Activo_responsable, activo=activo)
+
+            # 2. Verificar si el activo YA fue revisado
+            try:
+                revision_activo = Revision_Activo.objects.get(revision=revision, activo_res=activo_resp)
+                
+                # --- CASO 1: ACTIVO YA REVISADO ---
+                context = {
+                    'activo': activo, 
+                    'revision': revision_activo, 
+                    'titulo': 'Activo ya revisado',
+                }
+                # RUTA CORRECTA ⬇️
+                html = render_to_string(TEMPLATE_BASE_PATH + 'modal_ya_revisado.html', context, request=request) 
+                
+            except Revision_Activo.DoesNotExist:
+                # --- CASO 2: ACTIVO NO REVISADO ---
                 form = R_Revision_ACtivo()
-                form2 = A_Activo_responsable(instance=activo_resp)
-
-                return render(request, 'RegistroActualizacion/Revision_Activo/modal_form.html', {
+                context = {
+                    'activo': activo, 
+                    'slug': slug, 
                     'form': form,
-                    'form2': form2,
-                    'revision': revision,
-                    'activo': activo,
-                    'slug': slug,
-                })
-        except Activo.DoesNotExist:
-            return JsonResponse({'error': 'Activo no encontrado'}, status=404)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    return JsonResponse({'error': 'Método no permitido'}, status=405)
+                    'titulo': 'OBSERVACIÓN DE LA REVISIÓN'
+                }
+                # RUTA CORRECTA ⬇️
+                html = render_to_string(TEMPLATE_BASE_PATH + 'modal_form.html', context, request=request) 
 
+            return HttpResponse(html) 
+        
+        # 3. Manejo de errores de Servidor/Templating
+        except TemplateDoesNotExist as e:
+            # Si el error persiste, esta excepción lo manejará correctamente
+            print(f"Error FATAL: Template no encontrado. Ruta esperada: {e}")
+            return HttpResponseServerError('Error de Servidor: No se pudo cargar la plantilla HTML del modal. Verifique la ruta.')
+        
+        except ObjectDoesNotExist:
+             return HttpResponseNotFound('Activo, Revisión o Responsable no encontrado.')
+        
+        except Exception as e:
+            print(f"Error interno inesperado en buscar_activo: {e}")
+            return HttpResponseServerError(f'Error interno inesperado: {e}')
+    
+    return HttpResponse('Método no permitido', status=405)
 def actualizar_activo(request, slug, codigo):
     user = request.user
     personal_user = User.objects.get(username=user)

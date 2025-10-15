@@ -4,7 +4,7 @@
 </div>
 
 <div class="modal-body">
-  <form method="post">
+  <form method="post" action="{% url 'revision:vactualizar_activo' slug=slug codigo=activo.codigo %}">
     {% csrf_token %}
     {% for field in form %}
       <div class="mb-3">

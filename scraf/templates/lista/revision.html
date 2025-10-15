@@ -130,234 +130,285 @@
 
 {% block scripfun %}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  // REGISTRAR NUEVA REVISION
-  document.addEventListener('click', function(e){
-    const btn = e.target.closest('#id_btn1');
-    if (!btn) return;
-    e.preventDefault();
-    const url = btn.dataset.url || "{{ entity_registro|default:'' }}";
-    if (!url) return console.error('Falta data-url en #id_btn1');
-    if (typeof cargarFormularioModal === 'function') {
-      cargarFormularioModal(url);
+// ==========================================================
+// FUNCIÓN DE ÁMBITO GLOBAL (Necesaria para el formulario de activo, mantener)
+// ==========================================================
+function abrirModal() {
+    // Nota: El modalContent ahora debe apuntar al lugar donde se cargó el formulario, 
+    // que idealmente es el contenedor en revision.html. Asumiremos que el formulario 
+    // se carga en un elemento con ID 'cuerpoFormularioRevision' si no es un modal.
+    // Si sigue usando el modal anidado, el código original es válido.
+    
+    // Aquí el código se mantiene igual que antes de que lo tocara.
+    const modalContent = $('#modalContent2'); 
+    
+    let codigo = modalContent.find('#campo').val();
+    let slug = modalContent.find('#revision-slug-data').val();
+    let csrfToken = modalContent.find('input[name="csrfmiddlewaretoken"]').val(); 
+
+    if (!codigo) {
+        alert('Por favor, ingresa el código del activo.');
+        return;
     }
-  });
 
-  // VER (usa modal2)
-  document.addEventListener('click', function(e){
-    const btn = e.target.closest('.btn-ver');
-    if (!btn) return;
-    e.preventDefault();
-    const url = btn.getAttribute('data-url');
-    fetch(url)
-      .then(r => r.json())
-      .then(data => {
-        document.getElementById('modalContent2').innerHTML = data.html_form;
-        new bootstrap.Modal(document.getElementById('modal2')).show();
-      })
-      .catch(err => console.error(err));
-  });
-
-  // EDITAR (usa modal2 con POST)
-  document.addEventListener('click', function(e){
-    const btn = e.target.closest('.btn-editar');
-    if (!btn) return;
-    e.preventDefault();
-    const url = btn.dataset.url;
-    if (typeof actualizarFormularioModal === 'function') {
-      actualizarFormularioModal(url);
-    } else {
-      // Fallback (rara vez necesario)
-      fetch(url)
-        .then(r => r.json())
-        .then(data => {
-          const modalEl = document.getElementById('modal2');
-          document.getElementById('modalContent2').innerHTML = data.html_form;
-          const modal = new bootstrap.Modal(modalEl);
-          modal.show();
-          const form = modalEl.querySelector('form');
-          form.addEventListener('submit', function (ev) {
-            ev.preventDefault();
-            const formData = new FormData(form);
-            fetch(url, { method: 'POST', body: formData })
-              .then(r => r.json())
-              .then(resp => {
-                if (resp.form_is_valid) { modal.hide(); location.reload(); }
-                else { document.getElementById('modalContent2').innerHTML = resp.html_form; }
-              })
-              .catch(err => console.error(err));
-          });
-        })
-        .catch(err => console.error(err));
+    if (!slug || !csrfToken) {
+        alert('Error: Datos de revisión (SLUG/CSRF) no encontrados.');
+        console.error("Fallo de datos:", { slug: slug, csrfToken: csrfToken });
+        return;
     }
-  });
 
-  // ADVERTENCIA si hay otra revisión activa
-  document.addEventListener('click', function(e){
-    const btn = e.target.closest('.iniciar-finalizar-true');
-    if (!btn) return;
-    e.preventDefault();
-    new bootstrap.Modal(document.getElementById('modalAdvertenciaRevision')).show();
-  });
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-  const table = document.getElementById('myTable') || document;
-
-  table.addEventListener('click', function (e) {
-    const btn = e.target.closest('.iniciar-finalizar-revision');
-    if (!btn) return;
-
-    e.preventDefault();
-    const url  = btn.getAttribute('data-url');
-    const slug = btn.getAttribute('data-slug');
-
-    fetch(url)
-      .then(r => r.ok ? r.json() : r.text().then(t => { throw new Error(t); }))
-      .then(data3 => {
-        // ----- construir/mostrar modal de estado (lo que ya tienes) -----
-        // ... tu código modal aquí ...
-
-        // ----- ACTUALIZAR la columna "FORMULARIO DE REVISION" dinámicamente -----
-        const th = document.getElementById('th-form-rev');
-        const tds = document.querySelectorAll('.td-form-rev');
-
-        if (data3.status === 'iniciada') {
-          // Mostrar la columna (th y todos los td)
-          th && th.classList.remove('d-none');
-          tds.forEach(td => td.classList.remove('d-none'));
-
-          // Poner botón SOLO en la fila del slug activo; el resto "-".
-          tds.forEach(td => {
-            const rowSlug = td.getAttribute('data-slug');
-            if (rowSlug === slug) {
-              td.innerHTML = `
-                <button type="button"
-                        class="btn btn-primary btn-xs btn-form-revision-activo"
-                        data-url="/revision/RevisionActivo/${slug}/?ajax=1">
-                  <i class="fas fa-edit"></i>
-                </button>`;
+    const url = `/revision/buscar_activo/${slug}/`;
+    
+    $.ajax({
+        url: url, 
+        method: "POST",
+        data: {
+            'codigo': codigo,
+            'csrfmiddlewaretoken': csrfToken
+        },
+        success: function(data) {
+            // Carga el HTML en el modal anidado '#modalActivo'
+            $('#modalContent').html(data); 
+            $('#modalActivo').modal('show');
+            $('#campo').val(''); // Limpia el campo
+        },
+        error: function(xhr, status, error) {
+            if (xhr.status === 404) {
+                alert('404: Activo no encontrado o código incorrecto.');
+            } else if (xhr.status === 403) {
+                 alert('403: Error de seguridad CSRF. Revise el token.');
+            } else if (xhr.status === 500) {
+                 alert('500: Error interno del servidor. Revise la consola del servidor (F12) o los logs.');
             } else {
-              td.innerHTML = `<span>-</span>`;
+                alert(`Error ${xhr.status} en la petición. Revise F12 para más detalles.`);
+                console.error("AJAX Error:", xhr.responseText, status, error);
             }
-          });
         }
+    });
+}
+// ----------------------------------------------------------------
 
-        if (data3.status === 'finalizada' || data3.status === 'ya_finalizada') {
-          // Ocultar de nuevo toda la columna
-          th && th.classList.add('d-none');
-          tds.forEach(td => {
-            td.classList.add('d-none');
-            td.innerHTML = `<span>-</span>`; // limpiar por si acaso
-          });
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        // muestra tu modal de error si quieres
-      });
-  });
-
-  // (Opcional) abrir el modal de "Formulario de revisión" vía AJAX
-  table.addEventListener('click', function (e) {
-    const b = e.target.closest('.btn-form-revision-activo');
-    if (!b) return;
-
-    e.preventDefault();
-    fetch(b.dataset.url)
-      .then(r => r.ok ? r.text() : r.text().then(t => { throw new Error(t); }))
-      .then(html => {
-        document.getElementById('modalContent2').innerHTML = html;
-        new bootstrap.Modal(document.getElementById('modal2')).show();
-      })
-      .catch(err => {
-        console.error(err);
-        alert('No se pudo cargar el formulario de revisión.');
-      });
-  });
+$(document).ready(function() {
+    // Inicialización de jQuery
+    $('#btn-enviar-activo').on('click', abrirModal); 
 });
-</script>
 
-{% endblock %}
+document.addEventListener('DOMContentLoaded', function () {
+    const table = document.getElementById('myTable') || document;
 
-{% block funScript %}
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const table = document.getElementById('myTable') || document;
+    // ----------------------------------------------------
+    // 1. REGISTRAR NUEVA REVISION (Botón #id_btn1) - (Restaurado)
+    // ----------------------------------------------------
+    document.addEventListener('click', function(e){
+        const btn = e.target.closest('#id_btn1');
+        if (!btn) return;
+        e.preventDefault();
+        const url = btn.dataset.url || "{{ entity_registro|default:'' }}";
+        if (!url) return console.error('Falta data-url en #id_btn1');
+        if (typeof cargarFormularioModal === 'function') {
+            cargarFormularioModal(url);
+        }
+    });
 
-  table.addEventListener('click', function (e) {
-    const btn = e.target.closest('.iniciar-finalizar-revision');
-    if (!btn) return;
+    // ----------------------------------------------------
+    // 2. VER y EDITAR (Botones de la tabla) - (Restaurado)
+    // ----------------------------------------------------
+    // VER (usa modal2)
+    document.addEventListener('click', function(e){
+        const btn = e.target.closest('.btn-ver');
+        if (!btn) return;
+        e.preventDefault();
+        const url = btn.getAttribute('data-url');
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('modalContent2').innerHTML = data.html_form;
+                new bootstrap.Modal(document.getElementById('modal2')).show();
+            })
+            .catch(err => console.error(err));
+    });
 
-    e.preventDefault();
-    const url  = btn.getAttribute('data-url');
-    const slug = btn.getAttribute('data-slug');
-
-    fetch(url)
-      .then(r => r.ok ? r.json() : r.text().then(t => { throw new Error(t); }))
-      .then(data3 => {
-        // Construir modal
-        let titulo = 'Estado de la revisión';
-        let headerClass = 'bg-primary text-white';
-        let contenido = '';
-
-        if (data3.status === 'iniciada') {
-          titulo = 'Revisión iniciada';
-          headerClass = 'bg-success text-white';
-          contenido = `
-            <p class="mb-1"><strong>Estado:</strong> En Curso</p>
-            ${data3.fechaHora_inicio ? `<p class="mb-0"><strong>Fecha/Hora de inicio:</strong> ${data3.fechaHora_inicio}</p>` : ''}
-          `;
-        } else if (data3.status === 'finalizada') {
-          titulo = 'Revisión finalizada';
-          headerClass = 'bg-success text-white';
-          contenido = `
-            <p class="mb-1"><strong>Estado:</strong> Finalizado</p>
-            ${data3.fechaHora_finalizacion ? `<p class="mb-0"><strong>Fecha/Hora de finalización:</strong> ${data3.fechaHora_finalizacion}</p>` : ''}
-          `;
-        } else if (data3.status === 'ya_finalizada') {
-          titulo = 'Revisión ya finalizada';
-          headerClass = 'bg-info text-white';
-          contenido = `<p class="mb-0">Esta revisión ya estaba finalizada.</p>`;
+    // EDITAR (usa modal2 con POST)
+    document.addEventListener('click', function(e){
+        const btn = e.target.closest('.btn-editar');
+        if (!btn) return;
+        e.preventDefault();
+        const url = btn.dataset.url;
+        if (typeof actualizarFormularioModal === 'function') {
+            actualizarFormularioModal(url);
         } else {
-          headerClass = 'bg-secondary text-white';
-          contenido = `<p class="mb-0">Estado: ${data3.status ?? 'Desconocido'}</p>`;
+            // Fallback (restaurado)
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    const modalEl = document.getElementById('modal2');
+                    document.getElementById('modalContent2').innerHTML = data.html_form;
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                    const form = modalEl.querySelector('form');
+                    form.addEventListener('submit', function (ev) {
+                        ev.preventDefault();
+                        const formData = new FormData(form);
+                        fetch(url, { method: 'POST', body: formData })
+                            .then(r => r.json())
+                            .then(resp => {
+                                if (resp.form_is_valid) { modal.hide(); location.reload(); }
+                                else { document.getElementById('modalContent2').innerHTML = resp.html_form; }
+                            })
+                            .catch(err => console.error(err));
+                    });
+                })
+                .catch(err => console.error(err));
         }
+    });
+    
+    // ADVERTENCIA si hay otra revisión activa (Restaurado)
+    document.addEventListener('click', function(e){
+        const btn = e.target.closest('.iniciar-finalizar-true');
+        if (!btn) return;
+        e.preventDefault();
+        new bootstrap.Modal(document.getElementById('modalAdvertenciaRevision')).show();
+    });
+    
+    // ----------------------------------------------------
+    // 3. INICIO/FIN REVISION (Mantenido)
+    // ----------------------------------------------------
+    table.addEventListener('click', function (e) {
+        const btn = e.target.closest('.iniciar-finalizar-revision');
+        if (!btn) return;
 
-        // Pintar modal
-        const header = document.getElementById('statusHeader');
-        header.className = 'modal-header ' + headerClass;
-        document.getElementById('modalStatusLabel').textContent = titulo;
-        document.getElementById('statusBody').innerHTML = contenido;
-        new bootstrap.Modal(document.getElementById('modalStatusRevision')).show();
+        // ... (Toda la lógica AJAX de inicio/fin revisión se mantiene igual)
+        e.preventDefault();
+        const url  = btn.getAttribute('data-url');
+        const slug = btn.getAttribute('data-slug');
+        
+        fetch(url)
+            .then(r => r.ok ? r.json() : r.text().then(t => { throw new Error(t); }))
+            .then(data3 => {
+                // ... (Lógica de pintado de modal de estado) ...
+                let titulo = 'Estado de la revisión';
+                let headerClass = 'bg-primary text-white';
+                let contenido = '';
 
-        // Actualizar fila sin recargar
-        const estadoCell = document.getElementById(`estado-${slug}`);
-        const inicioCell = document.getElementById(`fecha-inicio-${slug}`);
-        const finCell    = document.getElementById(`fecha-fin-${slug}`);
+                if (data3.status === 'iniciada') {
+                    titulo = 'Revisión iniciada';
+                    headerClass = 'bg-success text-white';
+                    contenido = `
+                        <p class="mb-1"><strong>Estado:</strong> En Curso</p>
+                        ${data3.fechaHora_inicio ? `<p class="mb-0"><strong>Fecha/Hora de inicio:</strong> ${data3.fechaHora_inicio}</p>` : ''}
+                    `;
+                } else if (data3.status === 'finalizada') {
+                    titulo = 'Revisión finalizada';
+                    headerClass = 'bg-success text-white';
+                    contenido = `
+                        <p class="mb-1"><strong>Estado:</strong> Finalizado</p>
+                        ${data3.fechaHora_finalizacion ? `<p class="mb-0"><strong>Fecha/Hora de finalización:</strong> ${data3.fechaHora_finalizacion}</p>` : ''}
+                    `;
+                } else if (data3.status === 'ya_finalizada') {
+                    titulo = 'Revisión ya finalizada';
+                    headerClass = 'bg-info text-white';
+                    contenido = `<p class="mb-0">Esta revisión ya estaba finalizada.</p>`;
+                } else {
+                    headerClass = 'bg-secondary text-white';
+                    contenido = `<p class="mb-0">Estado: ${data3.status ?? 'Desconocido'}</p>`;
+                }
 
-        if (data3.status === 'iniciada') {
-          if (estadoCell) estadoCell.textContent = 'En Curso';
-          if (inicioCell && data3.fechaHora_inicio) inicioCell.textContent = data3.fechaHora_inicio;
-          const icon = btn.querySelector('i'); if (icon) icon.className = 'fas fa-play-circle text-primary';
-        }
-        if (data3.status === 'finalizada') {
-          if (estadoCell) estadoCell.textContent = 'Finalizado';
-          if (finCell && data3.fechaHora_finalizacion) finCell.textContent = data3.fechaHora_finalizacion;
-          const icon = btn.querySelector('i'); if (icon) icon.className = 'fas fa-check-circle text-success';
-        }
-      })
-      .catch(err => {
-        const header = document.getElementById('statusHeader');
-        header.className = 'modal-header bg-danger text-white';
-        document.getElementById('modalStatusLabel').textContent = 'Error';
-        document.getElementById('statusBody').innerHTML = `<p class="mb-0">Ocurrió un error al iniciar/finalizar la revisión.</p>`;
-        new bootstrap.Modal(document.getElementById('modalStatusRevision')).show();
-        console.error(err);
-      });
-  });
-});
+                const header = document.getElementById('statusHeader');
+                header.className = 'modal-header ' + headerClass;
+                document.getElementById('modalStatusLabel').textContent = titulo;
+                document.getElementById('statusBody').innerHTML = contenido;
+                new bootstrap.Modal(document.getElementById('modalStatusRevision')).show();
+                
+                // --- B. Actualizar la fila de la tabla (Estado, Fechas, Icono) ---
+                const estadoCell = document.getElementById(`estado-${slug}`);
+                const inicioCell = document.getElementById(`fecha-inicio-${slug}`);
+                const finCell    = document.getElementById(`fecha-fin-${slug}`);
+                const th = document.getElementById('th-form-rev');
+                const tds = document.querySelectorAll('.td-form-rev');
+
+
+                if (data3.status === 'iniciada') {
+                    // 1. Actualiza el icono a PLAY AZUL
+                    const icon = btn.querySelector('i'); 
+                    if (icon) icon.className = 'fas fa-play-circle text-primary';
+                    
+                    // 2. Actualiza celdas
+                    if (estadoCell) estadoCell.textContent = 'En Curso';
+                    if (inicioCell && data3.fechaHora_inicio) inicioCell.textContent = data3.fechaHora_inicio;
+                    
+                    // 3. Muestra la columna FORMULARIO DE REVISION
+                    th && th.classList.remove('d-none');
+                    tds.forEach(td => td.classList.remove('d-none'));
+
+                    // 4. Pone el botón SOLO en la fila activa
+                    tds.forEach(td => {
+                        const rowSlug = td.getAttribute('data-slug');
+                        if (rowSlug === slug) {
+                            // Se asume la URL del botón del formulario de revisión
+                            td.innerHTML = `
+                                <button type="button"
+                                        class="btn btn-primary btn-xs btn-form-revision-activo"
+                                        data-url="/revision/RevisionActivo/${slug}/">
+                                    <i class="fas fa-edit"></i>
+                                </button>`;
+                        } else {
+                            td.innerHTML = `<span>-</span>`;
+                        }
+                    });
+                }
+
+                if (data3.status === 'finalizada') {
+                    // 1. Actualiza el icono a CHECK VERDE
+                    const icon = btn.querySelector('i'); 
+                    if (icon) icon.className = 'fas fa-check-circle text-success';
+                    
+                    // 2. Actualiza celdas
+                    if (estadoCell) estadoCell.textContent = 'Finalizado';
+                    if (finCell && data3.fechaHora_finalizacion) finCell.textContent = data3.fechaHora_finalizacion;
+                    
+                    // 3. Oculta la columna FORMULARIO DE REVISION
+                    th && th.classList.add('d-none');
+                    tds.forEach(td => {
+                        td.classList.add('d-none');
+                        td.innerHTML = `<span>-</span>`; 
+                    });
+                }
+                
+                if (data3.status === 'ya_finalizada') {
+                    th && th.classList.add('d-none');
+                    tds.forEach(td => td.classList.add('d-none'));
+                }
+                
+                // Recarga la página después de iniciar/finalizar una revisión para que los iconos de
+                // 'VER/EDITAR' se actualicen correctamente
+                location.reload(); 
+            })
+            .catch(err => {
+                const header = document.getElementById('statusHeader');
+                header.className = 'modal-header bg-danger text-white';
+                document.getElementById('modalStatusLabel').textContent = 'Error';
+                document.getElementById('statusBody').innerHTML = `<p class="mb-0">Ocurrió un error al iniciar/finalizar la revisión.</p>`;
+                new bootstrap.Modal(document.getElementById('modalStatusRevision')).show();
+                console.error(err);
+            });
+    });
+
+    // ----------------------------------------------------
+    // 4. ABRIR FORMULARIO DE REVISION EN EL CUERPO PRINCIPAL (CORREGIDO)
+    // ----------------------------------------------------
+    table.addEventListener('click', function (e) {
+        const b = e.target.closest('.btn-form-revision-activo');
+        if (!b) return;
+
+        e.preventDefault();
+        // Usamos la URL de la data-url, pero nos aseguramos de no enviar el parámetro AJAX.
+        // Asumimos que la vista de Django usará esta URL para renderizar la página completa.
+        const url = b.dataset.url.replace('?ajax=1', ''); 
+
+        // REDIRECCIÓN COMPLETA
+        window.location.href = url;
+    });
+
+}); // <--- Cierre del DOMContentLoaded
 </script>
-
-{% endblock %}
-
+{% endblock scripfun %}

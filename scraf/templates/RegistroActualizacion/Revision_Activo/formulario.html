@@ -1,99 +1,166 @@
 {% extends 'base/base.html' %}
 {% load static %}
+
+{% block modalExtra %}
+<!-- Modal de advertencia -->
+<div class="modal fade" id="modalAdvertenciaRevision" tabindex="-1" aria-labelledby="modalAdvertenciaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title text-dark" id="modalAdvertenciaLabel">Advertencia</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body text-dark">
+        Ya hay una revisión activa en proceso. No puedes iniciar otra hasta que finalice la actual.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Entendido</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de estado -->
+<div class="modal fade" id="modalStatusRevision" tabindex="-1" aria-labelledby="modalStatusLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div id="statusHeader" class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalStatusLabel">Estado de la revisión</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" id="statusBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
 {% block contenido %}
-    <div class="row content-header text-center bg bg-primary">
-        <h4 class="text-uppercase font-weight-bold text-white">{{ titulo }}</h4>
+<div class="container-fluid my-4">
+  <div class="row text-center bg-primary py-3 rounded shadow-sm">
+    <h4 class="text-uppercase fw-bold text-white m-0">{{ titulo }}</h4>
+  </div>
+
+  <div class="row mt-4 g-4">
+    <!-- Sección izquierda -->
+    <div class="col-md-4">
+      <div class="card bg-light shadow-sm p-3">
+        <h6 class="fw-bold text-center mb-3 text-dark">Ingresa el código del activo</h6>
+        <div class="input-group">
+          <input type="text" id="campo" class="form-control form-control-sm border border-info" placeholder="Código del activo">
+          <button id="btn-enviar-activo" class="btn btn-primary btn-sm">Enviar</button>
+        </div>
+        <input type="hidden" id="revision-slug-data" value="{{ slug }}">
+        {% csrf_token %}
+      </div>
     </div>
-    <div class="row">
-        <div class="col-sm-12 col-md-4">
-            <div class="row card mt-3 p-4 bg-secondary">
-                <div class="col-md-12 col-sm-4 py-2 fw-bold col-form-label">INGRESA EL CODIGO DEL ACTIVO</div>
-                <div class="col-md-12 col-sm-8 py-3 align-items-center ">
-                    <div class="row">
-                        <div class="col-md-6 col-sm-6">
-                            <input type="text" id="campo" class='form-control form-control-sm font-weight-bold border border-info' placeholder="Escribe aquí el codigo">
-                        </div>
-                        <div class="col-md-6 col-sm-6">
-                            <button onclick="abrirModal()" class="btn btn-primary">Enviar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal fade" id="modalActivo" tabindex="-1" aria-labelledby="modalActivoLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content" id="modalContent">
-                <!-- Contenido dinámico desde Django -->
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-12 col-md-8">
-            <div class="card card-default mt-3 mb-3">
-                <div class="card-body p-0 mt-3">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered table-hover text-center text-wrap" id="myTable">
-                            <thead class="bg-info">
-                                <tr>
-                                    <th scope="col">ACTIVO</th>
-                                    <th scope="col">DESCRIPCION DEL ACTIVO</th>
-                                    <th scope="col">USUARIO ENCARGADO DE LA REVISION</th>
-                                    <th scope="col">FECHA/HORA REVISION</th>
-                                    <th scope="col">RESPONSABLE DEL ACTIVO</th>
-                                    <th scope="col">LUGAR DEL ACTIVO</th>
-                                    <th scope="col">OBSERVACIONES</th>
-                                </tr>
-                            </thead>
-                            <tbody class="font-weight-bold">
-                            {% for activo in object_list %}
-                                <tr>
-                                    <td> {{ activo.activo_res.activo.codigo }}</td>                            
-                                    <td> {{ activo.activo_res.activo.descActivo }}</td>
-                                    <td> {{ activo.encargado }}</td>                           
-                                    <td> {{ activo.fecha_registro }}</td> 
-                                    <td> {{ activo.activo_res.responsable.persona.nombrecompleto }}</td>
-                                    <td> {{ activo.activo_res.lugar }}</td>
-                                    <td> {{ activo.observacion }}</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>                    
-                </div>
-            </div>            
-        </div>
+
+    <!-- Modal dinámico para los activos -->
+    <div class="modal fade" id="modalActivo" tabindex="-1" aria-labelledby="modalActivoLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" id="modalContent"></div>
+      </div>
     </div>
+
+    <!-- Sección derecha: tabla -->
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped table-bordered align-middle text-center" id="myTable">
+              <thead class="bg-info text-white">
+                <tr>
+                  <th>Activo</th>
+                  <th>Descripción</th>
+                  <th>Usuario Encargado</th>
+                  <th>Fecha / Hora</th>
+                  <th>Responsable</th>
+                  <th>Lugar</th>
+                  <th>Observaciones</th>
+                </tr>
+              </thead>
+              <tbody class="fw-semibold">
+                {% for activo in object_list %}
+                <tr>
+                  <td>{{ activo.activo_res.activo.codigo }}</td>
+                  <td>{{ activo.activo_res.activo.descActivo }}</td>
+                  <td>{{ activo.encargado }}</td>
+                  <td>{{ activo.fecha_registro }}</td>
+                  <td>{{ activo.activo_res.responsable.persona.nombrecompleto }}</td>
+                  <td>{{ activo.activo_res.lugar }}</td>
+                  <td>{{ activo.observacion }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
+
 {% block script %}
-    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
 {% endblock %}
+
 {% block funcScript %}
-    <script type="application/javascript">
-        $(function () {
-            $(document).ready( function () {
-                $('#myTable').DataTable();
-            } );
-            });
-    </script>
-    <script>
-    function abrirModal() {
-        let codigo = $('#campo').val();
-        let slug = "{{ slug }}";
-        console.log(slug)
-        $.ajax({
-            url: "{% url 'revision:buscar_activo' slug=slug %}",
-            method: "POST",
-            data: {
-                'codigo': codigo,
-                'csrfmiddlewaretoken': '{{ csrf_token }}'
-            },
-            success: function(data) {
-                $('#modalContent').html(data);
-                $('#modalActivo').modal('show');
-            },
-            error: function(error) {
-                alert('Activo no encontrado.');
-            }
-        });
+<script type="application/javascript">
+$(document).ready(function () {
+    $('#myTable').DataTable();
+
+    $('#btn-enviar-activo').on('click', function (e) {
+        e.preventDefault();
+        abrirModal();
+    });
+});
+
+function abrirModal() {
+    const modalContent = $('#modalContent');
+    const codigo = $('#campo').val();
+    const slug = $('#revision-slug-data').val();
+    const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    if (!codigo) {
+        alert('Por favor, ingresa el código del activo.');
+        return;
     }
-    </script>
+
+    if (!slug || !csrfToken) {
+        alert('Error: No se encontraron los datos de revisión.');
+        console.error("Datos faltantes:", { slug, csrfToken });
+        return;
+    }
+
+    const url = `/revision/buscar_activo/${slug}/`;
+
+    $.ajax({
+        url: url,
+        method: "POST",
+        data: {
+            'codigo': codigo,
+            'csrfmiddlewaretoken': csrfToken
+        },
+        success: function (data) {
+            modalContent.html(data);
+            $('#modalActivo').modal('show');
+            $('#campo').val('');
+        },
+        error: function (xhr, status, error) {
+            let msg;
+            switch (xhr.status) {
+                case 404: msg = 'Activo no encontrado o código incorrecto.'; break;
+                case 403: msg = 'Error de seguridad (CSRF).'; break;
+                case 500: msg = 'Error interno del servidor.'; break;
+                default: msg = `Error ${xhr.status}. Revisa la consola.`; break;
+            }
+            alert(msg);
+            console.error("AJAX Error:", xhr.responseText, status, error);
+        }
+    });
+}
+</script>
 {% endblock %}

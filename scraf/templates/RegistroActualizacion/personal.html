@@ -157,7 +157,24 @@
 </div>
 
 <script>
+const revSwitches = document.querySelectorAll('.rev-switch');
+  const rolRevisionInput = document.getElementById('rol_revision');
 
+  revSwitches.forEach(chk => {
+    chk.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        // 1. Aplicar exclusividad (solo uno puede estar marcado)
+        revSwitches.forEach(o => {
+          if (o !== e.target) o.checked = false;
+        });
+        // 2. Escribir el valor ('encargado' o 'apoyo') en el campo oculto
+        rolRevisionInput.value = e.target.value;
+      } else {
+        // Si el switch se desmarca, limpiar el campo oculto
+        rolRevisionInput.value = '';
+      }
+    });
+  });
   // Grupo B: sólo 1 de 3
 // Grupo B: exclusividad solo entre 'personal' y 'solo_visualiza'
 const exclusivosB = document.querySelectorAll('.act-switch[value="personal"], .act-switch[value="solo_visualiza"]');

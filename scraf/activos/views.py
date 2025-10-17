@@ -18,6 +18,15 @@ from activos.models import Activo, Activo_responsable, Activos_line
 
 from django.contrib import messages
 
+# ... (asegúrate de que Activo y Activo_responsable estén importados) ...
+from activos.models import Activo, Activo_responsable
+from activos.forms import R_Activo
+from django.utils import timezone # Asegúrate de importar esto
+import uuid # Asegúrate de importar esto
+from activos.models import Activo_responsable # Asegúrate de importar esto
+from revision.views import get_menu_context 
+
+
 # Create your views here.
 class ListaActivos(LoginRequiredMixin, ListView):
     model = Activo_responsable
@@ -28,6 +37,7 @@ class ListaActivos(LoginRequiredMixin, ListView):
         context['object_list'] = self.model.objects.all()
         usuario = self.request.user
         usuario_d = User.objects.get(username = usuario)
+        context.update(get_menu_context(self.request))
         if usuario_d.g_Activos:
             context['entity_registro'] = reverse_lazy('activos:ajax_r_activo')
             context['entity_registro'] = reverse_lazy('activos:registro_activos', args=[])
@@ -41,6 +51,45 @@ class RegistroActivo(LoginRequiredMixin, CreateView):
     template_name = 'RegistroActualizacion/activo.html'
     form_class = R_Activo
     success_url = reverse_lazy('activos:lista_activos')
+    
+    # 1. MÉTODO CORREGIDO: get_context_data
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = 'REGISTRO DE SOLO INFORMACION ACTIVO'
+        context['subtitulo_1'] = 'DATOS DEL ACTIVO'
+        context['accion'] = 'GUARDAR'
+        context['accion2'] = 'CANCELAR'
+        context['accion2_url'] = reverse_lazy('activos:lista_activos')
+        return context
+
+    # 2. MÉTODO CORREGIDO: form_valid (para crear el registro en Activo_responsable)
+    def form_valid(self, form):
+        activo = form.save()
+        
+        try:
+            new_slug = str(uuid.uuid4())
+            
+            Activo_responsable.objects.create(
+                activo=activo,
+                slug=new_slug,                   # Obligatorio
+                estado="Bueno",                  # Obligatorio (asumiendo valor inicial)
+                responsable=None,                # Nulo
+                piso_ubicacion="ALMACENES",
+                oficina_ubicacion="ALMACEN",
+            )
+            
+            return HttpResponseRedirect(self.success_url)
+            
+        except Exception as e:
+            try: activo.delete() 
+            except: pass
+            
+            print(f"Error al crear Activo_responsable: {e}")
+            messages.error(self.request, f"Error al registrar activo en almacén. Revise la consola.")
+            
+            return self.form_invalid(form)
+
+
     def get_context_data(self, **kwargs):
         context = super(RegistroActivo, self).get_context_data(**kwargs)
         if 'form' not in context:
@@ -245,6 +294,22 @@ class ActualizarActivoResponsable(LoginRequiredMixin, UpdateView):
         else:
             return self.render_to_response(self.get_context_data(form=form, form2=form2))
         
+# EN activos/views.py - dentro de la función ajax_r_activo
+
+# EN activos/views.py - dentro de la función ajax_r_activo
+
+# EN activos/views.py
+
+from django.utils import timezone
+import uuid 
+# ... otros imports ...
+
+# EN activos/views.py - dentro de la función ajax_r_activo
+
+from django.utils import timezone
+import uuid 
+# ... otros imports ...
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def ajax_r_activo(request):
@@ -252,24 +317,44 @@ def ajax_r_activo(request):
     if request.method == 'POST':
         form = R_Activo(request.POST)
         if form.is_valid():
-            activo = form.save()
-            # Si quieres crear Activo_responsable mínimo:
-            Activo_responsable.objects.create(
-                activo=activo,
-                piso_ubicacion="ALMACENES",
-                oficina_ubicacion="ALMACEN",
-            )
-            data['form_is_valid'] = True
+            
+            try:
+                # 1. Guardar el Activo
+                activo = form.save()
+                
+                # 2. Generar campos obligatorios
+                new_slug = str(uuid.uuid4())
+                current_datetime = timezone.now()
+                
+                # 3. ⚠️ CREAR ACTIVO_RESPONSABLE MÍNIMO (Almacén)
+                Activo_responsable.objects.create(
+                    activo=activo,
+                    slug=new_slug,                   # <-- Obligatorio
+                    fecha_registro=current_datetime, # <-- Obligatorio
+                    
+                    # ⚠️ CAMBIO CRÍTICO: INCLUIR ESTADO
+                    estado="Bueno",                  # <-- Asumiendo que es el valor inicial ("Bueno")
+                    
+                    responsable=None,                # <-- Nulo, ya que no tiene responsable
+                    piso_ubicacion="ALMACENES",
+                    oficina_ubicacion="ALMACEN",
+                )
+                
+                data['form_is_valid'] = True
+                
+            except Exception as e:
+                # Si falla, devolvemos el error y eliminamos el Activo huérfano.
+                try: activo.delete() 
+                except: pass
+                
+                data['form_is_valid'] = False
+                data['error_message'] = f"Error al registrar Activo_responsable: {str(e)}" 
+                
         else:
             data['form_is_valid'] = False
-    else:
-        form = R_Activo()
-
-    context = {'form': form, 'titulo': 'REGISTRO DE ACTIVO'}
-    data['html_form'] = render_to_string('RegistroActualizacion/model_activo.html', context, request=request)
+            
+    # ... (el resto del código de la función) ...
     return JsonResponse(data)
-
-
 @login_required
 @require_http_methods(["GET", "POST"])
 def ajax_r_activo_responsable(request):

@@ -1,9 +1,15 @@
 from django.urls import path
 from revision.views import (ListaRevisiones, ListaCambiosRevision, Revision_RActivos,
                             ajax_r_Revision, ajax_editar_revision, inicio_fin_Revision,ajax_ver_revision,
-                            buscar_activo, actualizar_activo)
+                            buscar_activo, actualizar_activo,RegistroRevisionActivoView)
 app_name = 'revision'
 urlpatterns = [ 
+
+    
+    path('registro-revision-activo/', RegistroRevisionActivoView.as_view(), name='registro_revision_activo'), # <--- AGREGAR
+
+
+
     path('listaRevisiones/<slug:slug>/', ListaCambiosRevision.as_view(), name='lista_revisiones_line'),
     path('listaRevisiones/', ListaRevisiones.as_view(), name='lista_revisiones'),
     path('RevisionActivo/<slug:slug>/', Revision_RActivos.as_view(), name='revision_activo'),

@@ -6,17 +6,33 @@ from django.contrib import messages
 from activos.models import Activo_responsable
 
 from inicio.form import LoginForm
+from revision.views import MenuContextMixin # <--- AGREGAR
+# EN inicio/views.py
+from django.shortcuts import render
+from django.views.generic import TemplateView
+# Importa la función directamente (asumiendo que está en revision/views.py)
+from revision.views import get_menu_context 
 
-# Create your views here.
-class Index(TemplateView):
+
+
+
+
+class Index(TemplateView): 
     template_name = 'index.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        # ⚠️ LLAMADA DIRECTA: Inyectamos el contexto aquí
+        context.update(get_menu_context(self.request)) 
+        
         if self.request.user.is_authenticated:
             # Solo los activos designados al usuario autenticado
             context['object_list'] = Activo_responsable.objects.filter(responsable__user=self.request.user)
+            
         return context
+# ... (El resto de la vista Index: get, post, cierreSesion quedan iguales)
+
 
     def get(self, request):
         if request.user.is_authenticated:

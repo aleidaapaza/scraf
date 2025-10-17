@@ -6,7 +6,8 @@ from django.http import HttpResponseRedirect
 
 from users.models import Personal, Persona, User
 from users.forms import R_User, R_Persona, A_User, A_Personal
-# Create your views here.
+
+from revision.views import get_menu_context 
 
 class ListaPersonal(LoginRequiredMixin, ListView):
     model = Personal
@@ -18,6 +19,7 @@ class ListaPersonal(LoginRequiredMixin, ListView):
         context['object_list'] = self.model.objects.all()
         context['entity_registro'] = reverse_lazy('users:registro_personal', args=[])
         context['entity_registro_nom'] = 'REGISTRAR PERSONAL'
+        context.update(get_menu_context(self.request))
         return context
     
 class RegistroPersonal(LoginRequiredMixin, CreateView):
@@ -25,7 +27,8 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
     template_name = 'RegistroActualizacion/personal.html'
     form_class = R_Persona
     second_form_class = R_User
-    success_url = reverse_lazy('user:lista_personal')
+    # ⚠️ CORRECCIÓN DE NAMESPACE
+    success_url = reverse_lazy('users:lista_personal')
 
     def get_context_data(self, **kwargs):
         context = super(RegistroPersonal, self).get_context_data(**kwargs)
@@ -39,7 +42,8 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
         context['titulo'] = 'REGISTRO DE PERSONAL'
         context['accion'] = 'GUARDAR'
         context['accion2'] = 'CANCELAR'
-        context['accion2_url'] = reverse_lazy('user:lista_personal')
+        # ⚠️ CORRECCIÓN DE NAMESPACE
+        context['accion2_url'] = reverse_lazy('users:lista_personal')
         context['activate'] = True
         return context
 
@@ -54,10 +58,24 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
             usuario.is_personal = True
             usuario.password = f'{carnet}'
             usuario.set_password(usuario.password)
+            
             rol_rev = request.POST.get('rol_revision', '')
-            usuario.is_encargado = (rol_rev == 'encargado')
-            usuario.is_revisor   = (rol_rev == 'apoyo')
+            
+            # ⚠️ LÓGICA DE ASIGNACIÓN DIRECTA (Basada en tu último requerimiento) ⚠️
+            
+            # Inicializamos ambos a False por seguridad
+            usuario.is_encargado = False
+            usuario.is_revisor = False
 
+            if rol_rev == 'encargado':
+                # Si el usuario seleccionó 'encargado', is_encargado es True
+                usuario.is_encargado = True
+            elif rol_rev == 'apoyo':
+                # Si el usuario seleccionó 'apoyo', is_revisor es True
+                usuario.is_revisor = True
+            
+            # ----------------------------------------
+            
             rol_act = request.POST.get('rol_activos', '')
             usuario.g_personal  = (rol_act == 'personal')
             usuario.g_Activos   = (rol_act == 'gestion_activos')
@@ -71,7 +89,6 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
         else:
             self.object = None
             return self.render_to_response(self.get_context_data(form=form, form2=form2))
-
 
 
 class ActualizacionPersonal(LoginRequiredMixin, UpdateView):

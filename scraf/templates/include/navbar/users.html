@@ -76,6 +76,13 @@
         </a>
         <hr class="my-1">
       {% endif %}
+{% if mostrar_menu_registro_encargado %}
+    <a class="nav-link px-3" href="{% url 'revision:registro_revision_activo' %}">
+      <i class="fas fa-clipboard-list me-2"></i>REGISTRO DE REVISIÓN DE ACTIVO
+    </a>
+    <hr class="my-1">
+{% endif %}
+
     </nav>
   </div>
 </div>

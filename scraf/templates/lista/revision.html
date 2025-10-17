@@ -130,16 +130,7 @@
 
 {% block scripfun %}
 <script>
-// ==========================================================
-// FUNCIÓN DE ÁMBITO GLOBAL (Necesaria para el formulario de activo, mantener)
-// ==========================================================
 function abrirModal() {
-    // Nota: El modalContent ahora debe apuntar al lugar donde se cargó el formulario, 
-    // que idealmente es el contenedor en revision.html. Asumiremos que el formulario 
-    // se carga en un elemento con ID 'cuerpoFormularioRevision' si no es un modal.
-    // Si sigue usando el modal anidado, el código original es válido.
-    
-    // Aquí el código se mantiene igual que antes de que lo tocara.
     const modalContent = $('#modalContent2'); 
     
     let codigo = modalContent.find('#campo').val();

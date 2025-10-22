@@ -2,6 +2,8 @@ estados= [
     ("Bueno", "Bueno"),
     ("Regular", "Regular"),
     ("Malo", "Malo"),
+    ("Baja", "Baja"),
+    ("Perdido", "Perdido"),
 ]
 pisos_ubicacion = [
     ("ALMACENES", "ALMACENES"),

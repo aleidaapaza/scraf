@@ -17,7 +17,7 @@ class Persona(models.Model):
     apellido = models.CharField(max_length=100, null=False, blank=False)
     cargo = models.CharField(max_length=255, null=False, blank=False)
     contacto = models.IntegerField(null=False, blank=False)
-    carnet = models.IntegerField(null=False, blank=False)
+    carnet = models.IntegerField(null=False, blank=False, unique=True)
 
     def __str__(self):
         return f'{self.nombre} {self.apellido}'
@@ -86,10 +86,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_revisor = models.BooleanField(_('Estado Revisor'), default=False)
     is_superuser = models.BooleanField(_('Estado Superuser'), default=False)
     is_encargado = models.BooleanField(default=False)
-    g_personal = models.BooleanField(default=False)
-    g_Activos = models.BooleanField(default=False)
-    v_Activos = models.BooleanField(default=False)
-
+    g_personal = models.BooleanField(default=False) #gestionPersonal
+    g_Activos = models.BooleanField(default=False) #gestionaActivos
+    v_Activos = models.BooleanField(default=False)  #VisualizaTodosActivos
+    g_mantenimiento = models.BooleanField(default=False) #Puede poner en mantenimiento un activo
+    
     objects = AccountManager()
 
     USERNAME_FIELD = 'username'
@@ -134,3 +135,18 @@ class SuperUser(models.Model):
 
 pre_save.connect(set_slug, sender=SuperUser)
  
+class LinePersona(models.Model):
+    persona = models.ForeignKey(Persona, on_delete=models.CASCADE, related_name='LinePersona')
+    fechaRegistro = models.DateField(auto_now_add=True)
+    cargo_anterior = models.CharField(max_length=150, null=True, blank=True)
+    contacto_anterior = models.CharField(max_length=150, null=True, blank=True)
+    encargado = models.ForeignKey(User, on_delete=models.CASCADE, related_name='LinePersonaResponsable')
+
+    def __str__(self):
+        return f'Línea de {self.persona} - {self.fechaRegistro}'
+    
+    class Meta:
+        verbose_name = _('LinePersona')
+        verbose_name_plural = _('LinePersona')
+        ordering = ['-fechaRegistro']
+        db_table = 'LinePersona'

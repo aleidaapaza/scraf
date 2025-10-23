@@ -18,7 +18,8 @@ class Persona(models.Model):
     cargo = models.CharField(max_length=255, null=False, blank=False)
     contacto = models.IntegerField(null=False, blank=False)
     carnet = models.IntegerField(null=False, blank=False, unique=True)
-
+    rubrica = models.CharField(max_length=10, null=False, blank=False)
+    
     def __str__(self):
         return f'{self.nombre} {self.apellido}'
     

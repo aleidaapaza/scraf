@@ -85,42 +85,19 @@ class MantenimientoActivo(models.Model):
         verbose_name_plural = ('MantenimientosActivos')
         db_table = 'MantenimientoActivo'
 
-class Activo_responsable(models.Model):
-    slug = models.SlugField(null=True, blank=True, unique=False) #CodigoAsignacion
-    activo = models.ForeignKey(Activo, to_field='codigo', on_delete=models.CASCADE, related_name = 'activoresponsablet')
-    responsable = models.ForeignKey(Personal, to_field='slug', on_delete=models.CASCADE, null=True, blank=True, related_name = 'personaResponsable')
-    piso_ubicacion = models.CharField(choices=pisos_ubicacion, null=True, blank=True)
-    oficina_ubicacion = models.CharField(choices=oficinas_ubicacion, null=True, blank=True)
-    
-    def __str__(self):
-        return f'{self.slug}-{self.activo}-{self.responsable}'
-    def lugar(self):
-        return f'{self.piso_ubicacion} {self.oficina_ubicacion}'
-    def ultima_fecha_registro(self):
-        from activos.models import Activos_line
-        ultimo = Activos_line.objects.filter(slug=self.slug).order_by('-fecha_registro').first()
-        return ultimo.fecha_registro if ultimo else None
-    
-    class Meta:
-        verbose_name = ('Activo_responsable')
-        verbose_name_plural = ('Activos_responsables')
-        db_table = 'Activo_responsable'
-
-pre_save.connect(set_slug, sender=Activo_responsable)
-
-class Activos_line(models.Model):
+class Line_Activo(models.Model):
     slug = models.SlugField(null=True, blank=True, unique=False)
     creador = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha_registro = models.DateTimeField(auto_now_add=True)
-    responsable = models.ForeignKey(Personal, to_field='slug', on_delete=models.PROTECT, null=True, blank=True)
-    piso_ubicacion = models.CharField(choices=pisos_ubicacion)
-    oficina_ubicacion = models.CharField(choices=oficinas_ubicacion)
     estado = models.CharField(choices=estados)
+    estadoActivo = models.CharField(choices=estados, null=True, blank=True)
+    estadoDesignacion = models.BooleanField() #asignado/sindesignar
+    mantenimiento = models.BooleanField()
     observacion= models.TextField()
     
     def __str__(self):
         return f'{self.slug}-{self.estado}'    
     class Meta:
-        verbose_name = ('Activo_line')
-        verbose_name_plural = ('Activos_line')
-        db_table = 'Activo_line'
+        verbose_name = ('Line_Activo')
+        verbose_name_plural = ('Line_Activos')
+        db_table = 'Line_Activo'

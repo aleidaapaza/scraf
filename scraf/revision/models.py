@@ -4,7 +4,7 @@ from django.utils.text import slugify
 from django.db.models.signals import pre_save
 
 from users.models import Personal, User
-from activos.models import Activo_responsable
+from activos.models import Activo
 from revision.upload import doc_respaldo
 from revision.choices import motivos
 # Create your models here.
@@ -37,8 +37,8 @@ class Revision(models.Model):
 pre_save.connect(set_slug, sender=Revision)
 
 class Revision_line(models.Model):
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
     revision = models.ForeignKey(Revision, related_name='revision_datos', on_delete=models.CASCADE)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
     estado = models.CharField(max_length=255, blank=False, null=False)
     creador = models.CharField(max_length=255, blank=False, null=False)
     observacion = models.TextField()
@@ -52,7 +52,7 @@ class Revision_line(models.Model):
 
 class Revision_Activo(models.Model):
     revision = models.ForeignKey(Revision, on_delete=models.CASCADE, related_name='revision_activos')
-    activo_res = models.ForeignKey(Activo_responsable, on_delete=models.CASCADE, related_name='activo_responsable')
+    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, related_name='ActivoRevision')
     estado = models.BooleanField(default=False)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     encargado = models.ForeignKey(User, on_delete=models.CASCADE, related_name='encargadoRevision', blank=True)

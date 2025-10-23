@@ -12,6 +12,28 @@ a {
     color: inherit; /* Hereda el color del texto */
     text-decoration: none; /* Elimina el subrayado */
 }
+h2 {
+    color: rgb(255, 255, 255);
+    text-shadow: 
+        -2px -2px 0 #000,
+         2px -2px 0 #000,
+        -2px  2px 0 #000,
+         2px  2px 0 #000,
+         3px 4px 2px rgba(85, 240, 38, 0.76);
+}
+
+.texto-sombra {
+    text-shadow: 3px 4px 2px rgba(85, 240, 38, 0.76);
+}
+
+.texto-borde {
+    color: rgb(255, 255, 255);
+    text-shadow: 
+        -2px -2px 0 #000,
+         2px -2px 0 #000,
+        -2px  2px 0 #000,
+         2px  2px 0 #000,
+}
 
 .cuadro {
     font-family: Arial, sans-serif;

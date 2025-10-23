@@ -226,7 +226,6 @@ class RegistroActivoResponsable(LoginRequiredMixin, CreateView):
 
 class VerActivo(LoginRequiredMixin, TemplateView):
     template_name = "Visualizar/activo.html"
-
     def get_context_data(self, **kwargs):
         context = super(VerActivo, self).get_context_data(**kwargs)
         slug = self.kwargs.get("slug", None)

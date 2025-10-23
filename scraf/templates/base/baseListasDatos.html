@@ -11,34 +11,34 @@
     <!-- 1. Título y línea -->
     <div class="row mb-2">
       <div class="col">
-        <h2 class="text-success fw-bold">Lista de Activos Fijos Designados</h2>
+        <!--<h2 class="text-white fw-bold">Lista de Activos Fijos Designados</h2>-->
+        <h2 class="text-white fw-bold">{{ titulo }}</h2>
         <hr>
       </div>
     </div>
-
     <!-- 2. Botones de creacion de activos -->
     <div class="row">
         <div class="col-md-6 d-flex justify-content-center">
             {% if entity_registro %}
-                <div class="col-md-6 mt-2">
-                    <a href="{{ entity_registro }}" class="btn btn-success btn-block">{{ entity_registro_nom }}</a>
+                <div class="col-md-6 mt-2 ">
+                    <a href="{{ entity_registro }}" class="btn btn-success btn-block border border-light fw-bold">{{ entity_registro_nom }}</a>
                 </div>
             {% endif %}
         </div>
-    <div class="col-md-6 d-flex justify-content-center">
-        {% if entity_registro2 %}
-            <div class="col-md-6 mt-2">
-                <a href="{% url 'activos:registro_activos_responsable' %}" class="btn btn-success btn-block">
-                    {{ entity_registro_nom2 }}
-                </a>
-            </div>
-        {% endif %}
+        <div class="col-md-6 d-flex justify-content-center">
+            {% if entity_registro2 %}
+                <div class="col-md-6 mt-2">
+                    <a href="{{ entity_registro2 }}" class="btn btn-success btn-block">
+                     <!--<a href="{% url 'activos:registro_activos_responsable' %}" class="btn btn-success btn-block">-->
+                        {{ entity_registro_nom2 }}
+                    </a>
+                </div>
+            {% endif %}
+        </div>
     </div>
-    </div>
-
     <!-- 3. Tabla -->
-    <div class="card card-default mt-3 mb-3">
-        <div class="card-body p-0 mt-3">
+    <div class="card card-default mt-3">
+        <div class="card-body p-0 mt-3 p-4">
             <div class="table-responsive">
                 <table class="table table-striped table-bordered table-hover text-center text-wrap" id="myTable">
                     <thead class="bg-info">

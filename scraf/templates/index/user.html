@@ -5,18 +5,14 @@
     <!-- 1. Título y línea -->
     <div class="row mb-2">
       <div class="col">
-        <h2 class="text-success fw-bold">Lista de Activos Fijos Designados</h2>
+        <h2 class="text-white fw-bold">Lista de Activos Fijos Designados</h2>
         <hr>
       </div>
-    </div>
-
+  </div>
         <!-- 2. Tabla -->
-        <div class="table-responsive">
-          <table
-            id="myTable"
-            class="table table-bordered text-center align-middle mb-0 table-striped-custom"
-          >
-            <thead class="bg-white">
+  <div class="table-responsive bg-white p-4 rounded-md">
+    <table id="myTable" class="table table-bordered text-center align-middle mb-0 table-striped-custom">
+      <thead class="bg-white">
               <tr>
                 <th>CODIGO</th>
                 <th>NOMBRE</th>
@@ -25,26 +21,21 @@
                 <th>ESTADO</th>
                 <th>VER</th>  
                 </tr>
-            </thead>
-            <tbody>
-              {% for rev in object_list %}
-                <tr>
+      </thead>
+      <tbody>
+        {% for rev in object_list %}
+          <tr>
                   <td>{{ rev.activo.codigo }}</td>
                   <td>{{ rev.activo.descActivo }}</td>
                   <td>{{ rev.responsable.persona.nombrecompleto}}</td>
                   <td>{{ rev.ultima_fecha_registro }}</td>
                   <td>{{ rev.estado }}</td>
                   <td><a href="{% url 'activos:ver_activo' rev.slug %}" class="btn btn-info">Ver</a></td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        
-      </div>
-    </div>
+          </tr>
+            {% endfor %}
+      </tbody>
+    </table>
   </div>
-
   <style>
     .table-striped-custom tbody tr:nth-of-type(odd) {
         background-color: rgba(19, 158, 89, 0.671);

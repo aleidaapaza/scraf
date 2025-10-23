@@ -22,68 +22,62 @@
 <div class="container-fluid registro-personal">
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-
     <!-- TÍTULO -->
     <div class="row mt-3">
       <div class="col-12">
-        <h3 class="fw-bold title-green">REGISTRAR PERSONAL</h3>
+        <h2 class="fw-bold text-white">REGISTRAR PERSONAL</h3>
         <hr class="mt-2">
       </div>
     </div>
-
-    <!-- FILA 1-10-1: DATOS PERSONALES -->
+    <!-- FILA: DATOS PERSONALES -->
     <div class="row justify-content-center">
-      <div class="col-12 col-lg-1"></div>
-
       <div class="col-12 col-lg-10">
         <div class="card shadow-sm">
-            <div class="card-header bg-white text-center">
-                <h5 class="m-0 fw-bold title-green">DATOS PERSONALES</h5>
-            </div>
-                    <div class="card-body">
-                            {% for field in form %}
-                                <div class="mb-3 row">
-                                    <label class="col-sm-4 col-form-label text-end">
-                                        {{ field.label_tag }}
-                                    </label>
-                                    <div class="col-sm-8">
-                                        {{ field }}
-
-                                        {% if field.help_text %}
-                                            <div class="form-text text-warning text-muted small">
-                                                {{ field.help_text }}
-                                            </div>
-                                        {% endif %}
-
-                                        {% if field.errors %}
-                                            <div class="text-danger small mt-1">
-                                                {% for error in field.errors %}
-                                                    <span>({{ error }})</span>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            {% endfor %}
-                    </div>
+          <div class="card-header bg-white text-center">
+            <h5 class="m-0 fw-bold title-green">DATOS PERSONALES</h5>
+          </div>
+          {% for field in form %}
+            {% if field.help_text %}
+              <div class="form-text text-warning text-muted small">
+                {{ field.help_text }}
+              </div>
+            {% endif %}
+            {% if field.errors %}
+              <div class="text-danger small mt-1">
+              {% for error in field.errors %}
+                {# Excluir errores que contengan "obligatorio" #}
+                {% if "obligatorio" not in error|lower %}
+                  <span>{{ error }}</span><br>
+                {% endif %}
+              {% endfor %}
+              </div>
+            {% endif %}
+          {% endfor %}
+          <div class="card-body row">
+                <label class="col-md-2 col-form-label fw-semibold text-sm-end">{{ form.nombre.label_tag }}</label>
+                <div class="col-md-4">{{  form.nombre }}</div>
+                <label class="col-md-2 col-form-label fw-semibold text-sm-end">{{ form.apellido.label_tag }}</label>
+                <div class="col-md-4">{{  form.apellido }}</div>
+                <label class="col-md-2 col-form-label fw-semibold text-sm-end">{{ form.cargo.label_tag }}</label>
+                <div class="col-md-10">{{  form.cargo }}</div>
+                <label class="col-md-2 col-form-label fw-semibold text-sm-end">{{ form.contacto.label_tag }}</label>
+                <div class="col-md-4">{{  form.contacto }}</div>
+                <label class="col-md-2 col-form-label fw-semibold text-sm-end">{{ form.carnet.label_tag }}</label>
+                <div class="col-md-4">{{  form.carnet }}</div>
+                <label class="col-md-2 col-form-label fw-semibold text-sm-end">{{ form.rubrica.label_tag }}</label>
+                <div class="col-md-4">{{  form.rubrica }}</div>
+          </div>
         </div>
-        
-        <div class="col-12 col-lg-1"></div>
-        </div>
+      </div>
     </div>
-
     <!-- FILA 1-10-1: USUARIO Y RESPONSABILIDADES -->
     <div class="row justify-content-center mt-4">
-      <div class="col-12 col-lg-1"></div>
-
       <div class="col-12 col-lg-10">
         <div class="card shadow-sm bg-green-soft border-0">
           <div class="card-header bg-transparent text-center">
-            <h5 class="m-0 fw-bold title-green">Usuario y Responsabilidades</h5>
+            <h5 class="m-0 fw-bold title-green">Tipo de Usuario y Responsabilidades</h5>
           </div>
-
           <div class="card-body">
-
             <!-- Usuario -->
             <div class="mb-3 row">
               <label class="col-sm-4 col-form-label fw-semibold text-sm-end">Nombre de usuario</label>
@@ -100,7 +94,6 @@
                   <input class="form-check-input rev-switch" type="checkbox" id="rev_enc" value="encargado">
                 </div>
               </div>
-
               <label class="col-sm-4 col-form-label fw-semibold text-sm-end">Apoyo de revisión</label>
               <div class="col-sm-2">
                 <div class="form-check form-switch">
@@ -109,9 +102,7 @@
               </div>
               <input type="hidden" name="rol_revision" id="rol_revision">
             </div>
-
             <hr>
-
             <!-- Grupo B (exclusivo): Permisos de activos -->
             <div class="row align-items-center gy-3">
               <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Personal:</label>
@@ -120,14 +111,19 @@
                   <input class="form-check-input act-switch" type="checkbox" id="act_personal" value="personal">
                 </div>
               </div>
-
+              <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Mantenimiento:</label>
+              <div class="col-sm-6 col-lg-2">
+                <div class="form-check form-switch">
+                  <input class="form-check-input act-switch" type="checkbox" id="act_personal" value="personal">
+                </div>
+              </div>
+              <hr>
               <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Activos Fijos:</label>
               <div class="col-sm-6 col-lg-2">
                 <div class="form-check form-switch">
                   <input class="form-check-input act-switch" type="checkbox" id="act_gestion" value="gestion_activos">
                 </div>
               </div>
-
               <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Solo Visualiza los Activos Fijos:</label>
               <div class="col-sm-6 col-lg-2">
                 <div class="form-check form-switch">
@@ -136,14 +132,10 @@
               </div>
               <input type="hidden" name="rol_activos" id="rol_activos">
             </div>
-
           </div>
         </div>
       </div>
-
-      <div class="col-12 col-lg-1"></div>
     </div>
-
     <!-- BOTÓN CENTRADO -->
     <div class="row mt-4">
       <div class="col-12 d-flex justify-content-center">

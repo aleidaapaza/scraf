@@ -19,6 +19,7 @@ class R_Persona(forms.ModelForm):
             'cargo' : 'CARGO',
             'contacto' : 'CONTACTO',
             'carnet' : 'CARNET DE IDENTIDAD',
+            'rubrica' : 'MOSCA',
         }
 
 class R_User(forms.ModelForm):

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'activos.apps.ActivosConfig',
     'revision.apps.RevisionConfig',
     'inicio.apps.InicioConfig',
+    'designacion.apps.DesignacionConfig',
     'widget_tweaks',
 ]
 

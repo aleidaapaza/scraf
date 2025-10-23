@@ -1,7 +1,8 @@
 from django.forms import *
 from django import forms
 
-from activos.models import Activo, Activo_responsable
+from activos.models import Activo
+from designacion.models import Activo_responsable
 
 class R_Activo(forms.ModelForm):
     def __init__(self, *args, **kwargs):

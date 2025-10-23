@@ -19,7 +19,7 @@ def set_slug1(sender, instance, *args, **kwargs):
         instance.slug = slug
 
 class Asignacion_Devolucion(models.Model):
-    slug = models.SlugField(null=True, blank=True, unique=False) 
+    slug = models.SlugField(unique=True) 
     estado = models.BooleanField() #activo_inactivo
     fecha_asignacion = models.DateField(auto_now_add=True)
     carnet = models.IntegerField()
@@ -47,7 +47,7 @@ class Asignacion_Devolucion(models.Model):
 pre_save.connect(set_slug1, sender=Asignacion_Devolucion)
     
 class Activo_responsable(models.Model):
-    asig_devol = models.ForeignKey(Asignacion_Devolucion,  to_field='slug', on_delete=models.CASCADE, related_name='asignacionResponsable') #CodigoAsignacion
+    asig_devol = models.ForeignKey(Asignacion_Devolucion,  on_delete=models.CASCADE, related_name='asignacionResponsable') #CodigoAsignacion
     activo = models.ForeignKey(Activo, to_field='codigo', on_delete=models.CASCADE, related_name = 'activoResponsable')
     responsable = models.ForeignKey(Personal, to_field='slug', on_delete=models.CASCADE, null=True, blank=True, related_name = 'personaResponsable')
     piso_ubicacion = models.CharField(choices=pisos_ubicacion, null=True, blank=True)

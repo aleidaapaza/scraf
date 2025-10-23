@@ -28,7 +28,8 @@ from django.views.generic import (
 )
 
 from activos.forms import A_Activo_responsable
-from activos.models import Activo, Activo_responsable, Activos_line
+from activos.models import Activo
+from designacion.models import Activo_responsable, Line_Activo_Responsable
 from revision.forms import R_Revision, A_Revision_P, R_Revision_ACtivo
 from revision.models import Revision, Revision_line, Revision_Activo
 from users.models import User, Personal
@@ -58,7 +59,7 @@ def get_menu_context(request):
     return data
 
 
-class MenuContextMixin:
+class MenuContextMixin():
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(get_menu_context(self.request))
@@ -457,7 +458,7 @@ def actualizar_activo(request, slug, codigo):
                 )
 
             if cambios:
-                Activos_line.objects.create(
+                Line_Activo_Responsable.objects.create(
                     slug=activo_resp.slug,
                     responsable=activo_resp.responsable,
                     piso_ubicacion=activo_resp.piso_ubicacion,

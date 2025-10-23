@@ -3,6 +3,7 @@ import uuid
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import IntegrityError
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -12,7 +13,8 @@ from django.views.decorators.http import require_http_methods
 from django.views.generic import CreateView, View, ListView, UpdateView, TemplateView
 
 from activos.forms import R_Activo, R_Activo_responsable, A_Activo
-from activos.models import Activo, Activo_responsable, Activos_line
+from activos.models import Activo
+from designacion.models import Activo_responsable, Line_Activo_Responsable
 from revision.views import get_menu_context
 from users.models import User
 
@@ -115,7 +117,7 @@ def post(self, request, *args, **kwargs):
             oficina_ubicacion="ALMACEN",
         )
         activos_responsable = Activo_responsable.objects.get(activo=activos)
-        Activos_line.objects.create(
+        Line_Activo_Responsable.objects.create(
             slug=activos_responsable.slug,
             observacion="Se registró solo los datos del activo",
             creador=usuario,
@@ -132,7 +134,7 @@ class VerActivo(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         slug = self.kwargs.get("slug")
         activo = Activo_responsable.objects.get(slug=slug)
-        activo_line = Activos_line.objects.filter(slug=slug).order_by("-fecha_registro")
+        activo_line = Line_Activo_Responsable.objects.filter(slug=slug).order_by("-fecha_registro")
         context["titulo"] = "INFORMACION DEL ACTIVO"
         context["activo"] = activo
         context["line"] = activo_line
@@ -190,7 +192,7 @@ class RegistroActivoResponsable(LoginRequiredMixin, CreateView):
                 activo_responsable.activo = activos
                 activo_responsable.save()
                 activos_responsable = Activo_responsable.objects.get(activo=activos)
-                Activos_line.objects.create(
+                Line_Activo_Responsable.objects.create(
                     slug=activos_responsable.slug,
                     responsable=responsable,
                     piso_ubicacion=piso_ubicacion,
@@ -229,7 +231,7 @@ class VerActivo(LoginRequiredMixin, TemplateView):
         context = super(VerActivo, self).get_context_data(**kwargs)
         slug = self.kwargs.get("slug", None)
         activo = Activo_responsable.objects.get(slug=slug)
-        activo_line = Activos_line.objects.filter(slug=slug).order_by("-fecha_registro")
+        activo_line = Line_Activo_Responsable.objects.filter(slug=slug).order_by("-fecha_registro")
         context["titulo"] = "INFORMACION DEL ACTIVO"
         context["activo"] = activo
         context["line"] = activo_line
@@ -309,7 +311,7 @@ class ActualizarActivoResponsable(LoginRequiredMixin, UpdateView):
             else:
                 observacion = "No se realizaron cambios relevantes"
 
-            Activos_line.objects.create(
+            Line_Activo_Responsable.objects.create(
                 slug=activo_responsable.slug,
                 responsable=nuevo_responsable,
                 piso_ubicacion=nuevo_piso,

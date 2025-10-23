@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import pre_save
 import uuid
+import random
+
 from django.utils.text import slugify
 # Create your models here.
 def set_slug(sender, instance, *args, **kwargs):
@@ -64,7 +66,12 @@ class AccountManager(BaseUserManager):
         return self._create_user(username, password, **extra_fields)
     
     def create_superuser(self, username, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_encargado', True)
+        extra_fields.setdefault('g_personal', True)
+        extra_fields.setdefault('g_Activos', True)
+        extra_fields.setdefault('g_mantenimiento', True)
         extra_fields.setdefault('is_personal', False)
         extra_fields.setdefault('is_revisor', False)
         if extra_fields.get('is_personal') is True:
@@ -75,13 +82,14 @@ class AccountManager(BaseUserManager):
             raise ValueError('El Superuser debe tener is_superuser=True.')
         
         return SuperUser.objects.create(
-            persona = Persona.objects.create(nombre = 'NOMBRE', apellido = 'APELLIDO', cargo = 'CARGO', contacto = '000000', carnet = '1111111'),
+            persona = Persona.objects.create(nombre = 'NOMBRE', apellido = 'APELLIDO', cargo = 'CARGO', contacto = '000000', carnet = f"{random.randint(1000, 9999)}"),
             user=self._create_user(username, password, **extra_fields),
             )
         
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(_('Usuario'), max_length=255, unique=True)
     fecha_registro = models.DateTimeField(_('Fecha Registro'), auto_now_add=True)
+    is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(_('Activo'), default=True)
     is_personal = models.BooleanField(_('Estado Personal'), default=False)    
     is_revisor = models.BooleanField(_('Estado Revisor'), default=False)

@@ -3,19 +3,15 @@ from django.views.generic import CreateView, UpdateView, ListView, TemplateView,
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from activos.models import Activo_responsable
+from designacion.models import Activo_responsable
 
 from inicio.form import LoginForm
-from revision.views import MenuContextMixin # <--- AGREGAR
+#from revision.views import MenuContextMixin # <--- AGREGAR
 # EN inicio/views.py
 from django.shortcuts import render
 from django.views.generic import TemplateView
 # Importa la función directamente (asumiendo que está en revision/views.py)
-from revision.views import get_menu_context 
-
-
-
-
+from revision.views import get_menu_context
 
 class Index(TemplateView): 
     template_name = 'index.html'

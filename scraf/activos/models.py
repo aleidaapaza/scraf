@@ -31,13 +31,13 @@ class AuxiliarContable(models.Model):
     grupocontable = models.ForeignKey(GrupoContable, on_delete=models.CASCADE, related_name='auxiliares')
     
     def __str__(self):
-        return f"{self.nombre} - {self.grupo_contable.nombre}"
+        return f"{self.nombre} - {self.grupocontable.nombre}"
     
     class Meta:
         verbose_name = "Auxiliar Contable"
         verbose_name_plural = "Auxiliares Contables"
         # Opcional: evitar duplicados dentro del mismo grupo
-        unique_together = ['nombre', 'grupo_contable']
+        unique_together = ['nombre', 'grupocontable']
         db_table = 'AuxiliarContable'
 
 class Activo(models.Model):
@@ -68,14 +68,14 @@ class Activo(models.Model):
         db_table = 'Activo'
 
 class MantenimientoActivo(models.Model):
-    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, related_name='mantenimiento')
+    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, related_name='mantenimientosactivos')
     estado = models.BooleanField() #Activo/Inactivo
     fechaInicio = models.DateField()
     fechaFin=models.DateField(null=True, blank=True)
     descripcionInicio = models.TextField()
     descripcionFin = models.TextField(null=True, blank=True)
-    asignadorInicio = models.ForeignKey(Personal, to_field='slug', on_delete=models.CASCADE, related_name = 'mantenimientoAsignador')
-    asignadorFin = models.ForeignKey(Personal, to_field='slug', on_delete=models.CASCADE, null=True, blank=True, related_name = 'mantenimientoAsignador')
+    asignadorInicio = models.ForeignKey(Personal, to_field='slug', on_delete=models.CASCADE, related_name = 'mantenimientoAsignadorInicio')
+    asignadorFin = models.ForeignKey(Personal, to_field='slug', on_delete=models.CASCADE, null=True, blank=True, related_name = 'mantenimientoAsignadorFin')
     
     def __str__(self):
         return f'{self.activo.codigo}-{self.estado}'

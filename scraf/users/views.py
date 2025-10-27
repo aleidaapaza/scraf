@@ -1,3 +1,4 @@
+from django.forms import ValidationError
 from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, View, ListView, UpdateView
@@ -27,7 +28,6 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
     template_name = 'RegistroActualizacion/personal.html'
     form_class = R_Persona
     second_form_class = R_User
-    # ⚠️ CORRECCIÓN DE NAMESPACE
     success_url = reverse_lazy('users:lista_personal')
 
     def get_context_data(self, **kwargs):
@@ -42,7 +42,6 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
         context['titulo'] = 'REGISTRO DE PERSONAL'
         context['accion'] = 'GUARDAR'
         context['accion2'] = 'CANCELAR'
-        # ⚠️ CORRECCIÓN DE NAMESPACE
         context['accion2_url'] = reverse_lazy('users:lista_personal')
         context['activate'] = True
         return context
@@ -59,28 +58,23 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
             usuario.password = f'{carnet}'
             usuario.set_password(usuario.password)
             
+            # Grupo A: Revisión (exclusivo)
             rol_rev = request.POST.get('rol_revision', '')
-            
-            # ⚠️ LÓGICA DE ASIGNACIÓN DIRECTA (Basada en tu último requerimiento) ⚠️
-            
-            # Inicializamos ambos a False por seguridad
-            usuario.is_encargado = False
-            usuario.is_revisor = False
+            usuario.is_encargado = (rol_rev == 'encargado')
+            usuario.is_revisor = (rol_rev == 'apoyo')
 
-            if rol_rev == 'encargado':
-                # Si el usuario seleccionó 'encargado', is_encargado es True
-                usuario.is_encargado = True
-            elif rol_rev == 'apoyo':
-                # Si el usuario seleccionó 'apoyo', is_revisor es True
-                usuario.is_revisor = True
-            
-            # ----------------------------------------
-            
-            rol_act = request.POST.get('rol_activos', '')
-            usuario.g_personal  = (rol_act == 'personal')
-            usuario.g_Activos   = (rol_act == 'gestion_activos')
-            usuario.v_Activos   = (rol_act == 'solo_visualiza')
+            # Grupo B: Independientes (múltiples valores)
+            rol_independientes = request.POST.get('rol_independientes', '')
+            roles_independientes = rol_independientes.split(',') if rol_independientes else []
 
+            usuario.g_personal = 'personal' in roles_independientes
+            usuario.g_mantenimiento = 'mantenimiento' in roles_independientes
+
+            # Grupo C: Activos (exclusivo - solo uno)
+            rol_activos_exclusivo = request.POST.get('rol_activos_exclusivo', '')
+            usuario.g_Activos = (rol_activos_exclusivo == 'gestion_activos')
+            usuario.v_Activos = (rol_activos_exclusivo == 'solo_visualiza')
+            
             usuario.save()
             persona = form.save()
             Personal.objects.create(persona=persona, user=usuario)
@@ -104,18 +98,24 @@ class ActualizacionPersonal(LoginRequiredMixin, UpdateView):
         context = super(ActualizacionPersonal, self).get_context_data(**kwargs)
         slug = self.kwargs.get('slug', None)        
         personal_p = self.model.objects.get(slug=slug)
+        
+        # AGREGAR ESTA LÍNEA CLAVE:
+        context['personal'] = personal_p
+        
         user_p = self.second_model.objects.get(id=personal_p.user.pk)
         persona_p = self.third_model.objects.get(id=personal_p.persona.pk)
+        
         if 'form2' not in context:
             context['form2'] = self.second_form_class(instance=user_p)
         if 'form3' not in context:
             context['form3'] = self.third_form_class(instance=persona_p)
+            
         context['titulo'] = 'ACTUALIZAR DATOS DEL PERSONAL'
         context['accion2'] = 'Cancelar'
         context['accion2_url'] = reverse_lazy('users:lista_personal')
         context['entity'] = 'ACTUALIZAR DATOS'
         context['entity_url'] = reverse_lazy('users:lista_personal') 
-        return context 
+        return context
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()

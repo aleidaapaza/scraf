@@ -85,8 +85,23 @@
                 {{ form2.username }}  {# ajusta si tu campo se llama distinto #}
               </div>
             </div>
-
-            <!-- Grupo A (exclusivo): Revisión -->
+<!-- Grupo A (Independientes): Poder o no gestionar personal y Poder o no poner en mantenimiento -->            
+            <div class="row align-items-center gy-3">
+              <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Personal:</label>
+              <div class="col-sm-6 col-lg-2">
+                <div class="form-check form-switch">
+                  <input class="form-check-input act-switch" type="checkbox" id="act_personal" value="personal">
+                </div>
+              </div>
+              <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Mantenimiento:</label>
+              <div class="col-sm-6 col-lg-2">
+                <div class="form-check form-switch">
+                  <input class="form-check-input act-switch" type="checkbox" id="act_mante" value="mantenimiento">
+                </div>
+              </div>
+              <input type="hidden" name="rol_independientes" id="rol_independientes">
+              <hr>
+            <!-- Grupo B (exclusivo): Revisión -->
             <div class="row align-items-center gy-2 mt-2">
               <label class="col-sm-4 col-form-label fw-semibold text-sm-end">Encargado de revisión</label>
               <div class="col-sm-2">
@@ -103,35 +118,23 @@
               <input type="hidden" name="rol_revision" id="rol_revision">
             </div>
             <hr>
-            <!-- Grupo B (exclusivo): Permisos de activos -->
-            <div class="row align-items-center gy-3">
-              <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Personal:</label>
-              <div class="col-sm-6 col-lg-2">
+<!-- Grupo C (exclusivo): Permisos de activos -->
+            <div class="row align-items-center gy-2 mt-2">
+              <label class="col-sm-4 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Activos Fijos:</label>
+              <div class="col-sm-2 col-lg-2">
                 <div class="form-check form-switch">
-                  <input class="form-check-input act-switch" type="checkbox" id="act_personal" value="personal">
+                  <input class="form-check-input exclusivo-activos-switch" type="checkbox" id="act_gestion" value="gestion_activos">
                 </div>
               </div>
-              <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Mantenimiento:</label>
-              <div class="col-sm-6 col-lg-2">
+              <label class="col-sm-4 col-lg-4 col-form-label fw-semibold text-sm-end">Solo Visualiza los Activos Fijos:</label>
+              <div class="col-sm-2 col-lg-2">
                 <div class="form-check form-switch">
-                  <input class="form-check-input act-switch" type="checkbox" id="act_personal" value="personal">
+                  <input class="form-check-input exclusivo-activos-switch" type="checkbox" id="act_view" value="solo_visualiza">
                 </div>
               </div>
-              <hr>
-              <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Activos Fijos:</label>
-              <div class="col-sm-6 col-lg-2">
-                <div class="form-check form-switch">
-                  <input class="form-check-input act-switch" type="checkbox" id="act_gestion" value="gestion_activos">
-                </div>
-              </div>
-              <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Solo Visualiza los Activos Fijos:</label>
-              <div class="col-sm-6 col-lg-2">
-                <div class="form-check form-switch">
-                  <input class="form-check-input act-switch" type="checkbox" id="act_view" value="solo_visualiza">
-                </div>
-              </div>
-              <input type="hidden" name="rol_activos" id="rol_activos">
-            </div>
+              <input type="hidden" name="rol_activos_exclusivo" id="rol_activos_exclusivo">
+            </div>              
+          </div>
           </div>
         </div>
       </div>
@@ -149,49 +152,58 @@
 </div>
 
 <script>
+// =============================================
+// GRUPO A: REVISIÓN (EXCLUSIVO)
+// =============================================
 const revSwitches = document.querySelectorAll('.rev-switch');
-  const rolRevisionInput = document.getElementById('rol_revision');
+const rolRevisionInput = document.getElementById('rol_revision');
 
-  revSwitches.forEach(chk => {
+revSwitches.forEach(chk => {
     chk.addEventListener('change', (e) => {
-      if (e.target.checked) {
-        // 1. Aplicar exclusividad (solo uno puede estar marcado)
-        revSwitches.forEach(o => {
-          if (o !== e.target) o.checked = false;
-        });
-        // 2. Escribir el valor ('encargado' o 'apoyo') en el campo oculto
-        rolRevisionInput.value = e.target.value;
-      } else {
-        // Si el switch se desmarca, limpiar el campo oculto
-        rolRevisionInput.value = '';
-      }
+        if (e.target.checked) {
+            revSwitches.forEach(o => {
+                if (o !== e.target) o.checked = false;
+            });
+            rolRevisionInput.value = e.target.value;
+        } else {
+            rolRevisionInput.value = '';
+        }
     });
-  });
-  // Grupo B: sólo 1 de 3
-// Grupo B: exclusividad solo entre 'personal' y 'solo_visualiza'
-const exclusivosB = document.querySelectorAll('.act-switch[value="personal"], .act-switch[value="solo_visualiza"]');
-
-exclusivosB.forEach(chk => {
-  chk.addEventListener('change', (e) => {
-    if (e.target.checked) {
-      exclusivosB.forEach(o => { if (o !== e.target) o.checked = false; });
-    }
-  });
 });
 
-// Actualiza el hidden cuando cambia cualquiera de los 3
-document.querySelectorAll('.act-switch').forEach(chk => {
-  chk.addEventListener('change', (e) => {
-    if (e.target.checked) {
-      document.getElementById('rol_activos').value = e.target.value;  
-    } else {
-      // Si ninguno está marcado, limpiar el hidden
-      const algunoMarcado = Array.from(document.querySelectorAll('.act-switch')).some(o => o.checked);
-      if (!algunoMarcado) {
-        document.getElementById('rol_activos').value = '';
-      }
-    }
-  });
+// =============================================
+// GRUPO B: INDEPENDIENTES (Personal y Mantenimiento)
+// =============================================
+const independientesSwitches = document.querySelectorAll('.independiente-switch');
+const rolIndependientesInput = document.getElementById('rol_independientes');
+
+independientesSwitches.forEach(chk => {
+    chk.addEventListener('change', () => {
+        const seleccionados = Array.from(independientesSwitches)
+            .filter(checkbox => checkbox.checked)
+            .map(checkbox => checkbox.value);
+        
+        rolIndependientesInput.value = seleccionados.join(',');
+    });
+});
+
+// =============================================
+// GRUPO C: ACTIVOS (EXCLUSIVO)
+// =============================================
+const exclusivoActivosSwitches = document.querySelectorAll('.exclusivo-activos-switch');
+const rolActivosExclusivoInput = document.getElementById('rol_activos_exclusivo');
+
+exclusivoActivosSwitches.forEach(chk => {
+    chk.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            exclusivoActivosSwitches.forEach(o => {
+                if (o !== e.target) o.checked = false;
+            });
+            rolActivosExclusivoInput.value = e.target.value;
+        } else {
+            rolActivosExclusivoInput.value = '';
+        }
+    });
 });
 
 </script>

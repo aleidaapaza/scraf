@@ -1,7 +1,17 @@
 {% extends 'base/base.html' %}
 {% load static %}
 {% block contenido %}
-
+<!-- En tu base.html o personal_a.html -->
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 <style>
   /* Aislar estilos a esta vista */
   .registro-personal .card { border-radius: 14px; }
@@ -89,27 +99,25 @@
                 {{ form2.username }}
               </div>
             </div>
-
             <!-- Grupo A (Independientes): Personal y Mantenimiento -->            
             <div class="row align-items-center gy-3">
               <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Personal:</label>
               <div class="col-sm-6 col-lg-2">
                 <div class="form-check form-switch">
                   <input class="form-check-input independiente-switch" type="checkbox" id="act_personal" value="personal"
-                         {% if form2.g_personal %}checked{% endif %}>
+                        {% if personal.user.g_personal %}checked{% endif %}>
                 </div>
               </div>
               <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Mantenimiento:</label>
               <div class="col-sm-6 col-lg-2">
                 <div class="form-check form-switch">
                   <input class="form-check-input independiente-switch" type="checkbox" id="act_mante" value="mantenimiento"
-                         {% if form2.g_mantenimiento %}checked{% endif %}>
+                        {% if personal.user.g_mantenimiento %}checked{% endif %}>
                 </div>
               </div>
               <input type="hidden" name="rol_independientes" id="rol_independientes"
-                     value="{% if form2.g_personal %}personal{% if form2.g_mantenimiento %},mantenimiento{% endif %}{% elif form2.g_mantenimiento %}mantenimiento{% endif %}">
+                    value="{% if personal.user.g_personal %}personal{% if personal.user.g_mantenimiento %},mantenimiento{% endif %}{% elif personal.user.g_mantenimiento %}mantenimiento{% endif %}">  <!-- ✅ CAMBIADO -->
             </div>
-            <hr>
 
             <!-- Grupo B (exclusivo): Revisión -->
             <div class="row align-items-center gy-2 mt-2">
@@ -117,20 +125,19 @@
               <div class="col-sm-2">
                 <div class="form-check form-switch">
                   <input class="form-check-input rev-switch" type="checkbox" id="rev_enc" value="encargado"
-                         {% if form2.is_encargado %}checked{% endif %}>
+                        {% if personal.user.is_encargado %}checked{% endif %}> 
                 </div>
               </div>
               <label class="col-sm-4 col-form-label fw-semibold text-sm-end">Apoyo de revisión</label>
               <div class="col-sm-2">
                 <div class="form-check form-switch">
                   <input class="form-check-input rev-switch" type="checkbox" id="rev_apo" value="apoyo"
-                         {% if form2.is_revisor %}checked{% endif %}>
+                        {% if personal.user.is_revisor %}checked{% endif %}>
                 </div>
               </div>
               <input type="hidden" name="rol_revision" id="rol_revision"
-                     value="{% if form2.is_encargado %}encargado{% elif form2.is_revisor %}apoyo{% endif %}">
+                    value="{% if personal.user.is_encargado %}encargado{% elif personal.user.is_revisor %}apoyo{% endif %}">  <!-- ✅ CAMBIADO -->
             </div>
-            <hr>
 
             <!-- Grupo C (exclusivo): Permisos de activos -->
             <div class="row align-items-center gy-2 mt-2">
@@ -138,19 +145,19 @@
               <div class="col-sm-2 col-lg-2">
                 <div class="form-check form-switch">
                   <input class="form-check-input exclusivo-activos-switch" type="checkbox" id="act_gestion" value="gestion_activos"
-                         {% if form2.g_Activos %}checked{% endif %}>
+                        {% if personal.user.g_Activos %}checked{% endif %}>
                 </div>
               </div>
               <label class="col-sm-4 col-lg-4 col-form-label fw-semibold text-sm-end">Solo Visualiza los Activos Fijos:</label>
               <div class="col-sm-2 col-lg-2">
                 <div class="form-check form-switch">
                   <input class="form-check-input exclusivo-activos-switch" type="checkbox" id="act_view" value="solo_visualiza"
-                         {% if form2.v_Activos %}checked{% endif %}>
+                        {% if personal.user.v_Activos %}checked{% endif %}>
                 </div>
               </div>
               <input type="hidden" name="rol_activos_exclusivo" id="rol_activos_exclusivo"
-                     value="{% if form2.g_Activos %}gestion_activos{% elif form2.v_Activos %}solo_visualiza{% endif %}">
-            </div>              
+                    value="{% if personal.user.g_Activos %}gestion_activos{% elif personal.user.v_Activos %}solo_visualiza{% endif %}">  <!-- ✅ CAMBIADO -->
+            </div>         
           </div>
         </div>
       </div>
@@ -169,85 +176,6 @@
     </div>
   </form>
 </div>
-
-<script>
-// =============================================
-// GRUPO A: INDEPENDIENTES (Personal y Mantenimiento)
-// =============================================
-const independientesSwitches = document.querySelectorAll('.independiente-switch');
-const rolIndependientesInput = document.getElementById('rol_independientes');
-
-independientesSwitches.forEach(chk => {
-    chk.addEventListener('change', () => {
-        const seleccionados = Array.from(independientesSwitches)
-            .filter(checkbox => checkbox.checked)
-            .map(checkbox => checkbox.value);
-        
-        rolIndependientesInput.value = seleccionados.join(',');
-    });
-});
-
-// =============================================
-// GRUPO B: REVISIÓN (EXCLUSIVO)
-// =============================================
-const revSwitches = document.querySelectorAll('.rev-switch');
-const rolRevisionInput = document.getElementById('rol_revision');
-
-revSwitches.forEach(chk => {
-    chk.addEventListener('change', (e) => {
-        if (e.target.checked) {
-            revSwitches.forEach(o => {
-                if (o !== e.target) o.checked = false;
-            });
-            rolRevisionInput.value = e.target.value;
-        } else {
-            rolRevisionInput.value = '';
-        }
-    });
-});
-
-// =============================================
-// GRUPO C: ACTIVOS (EXCLUSIVO)
-// =============================================
-const exclusivoActivosSwitches = document.querySelectorAll('.exclusivo-activos-switch');
-const rolActivosExclusivoInput = document.getElementById('rol_activos_exclusivo');
-
-exclusivoActivosSwitches.forEach(chk => {
-    chk.addEventListener('change', (e) => {
-        if (e.target.checked) {
-            exclusivoActivosSwitches.forEach(o => {
-                if (o !== e.target) o.checked = false;
-            });
-            rolActivosExclusivoInput.value = e.target.value;
-        } else {
-            rolActivosExclusivoInput.value = '';
-        }
-    });
-});
-
-// Inicializar valores desde los campos hidden al cargar la página
-document.addEventListener('DOMContentLoaded', function() {
-    // Grupo A: Independientes
-    const rolesIndep = rolIndependientesInput.value.split(',').filter(Boolean);
-    rolesIndep.forEach(valor => {
-        const checkbox = document.querySelector(`.independiente-switch[value="${valor}"]`);
-        if (checkbox) checkbox.checked = true;
-    });
-
-    // Grupo B: Revisión
-    const rolRev = rolRevisionInput.value;
-    if (rolRev) {
-        document.querySelector(`.rev-switch[value="${rolRev}"]`).checked = true;
-    }
-
-    // Grupo C: Activos
-    const rolActEx = rolActivosExclusivoInput.value;
-    if (rolActEx) {
-        document.querySelector(`.exclusivo-activos-switch[value="${rolActEx}"]`).checked = true;
-    }
-});
-</script>
-
 <script>
 // =============================================
 // GRUPO A: REVISIÓN (EXCLUSIVO)

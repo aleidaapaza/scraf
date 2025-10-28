@@ -3,7 +3,9 @@ from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, View, ListView, UpdateView
 from django.urls import reverse, reverse_lazy
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
+from django.contrib import messages
+from django.shortcuts import redirect
 
 from users.models import Personal, Persona, User
 from users.forms import R_User, R_Persona, A_User, A_Personal
@@ -52,7 +54,6 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
 
         if form.is_valid() and form2.is_valid():
             carnet = form.cleaned_data.get('carnet')
-
             usuario = form2.save(commit=False)
             usuario.is_personal = True
             usuario.password = f'{carnet}'
@@ -65,6 +66,7 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
 
             # Grupo B: Independientes (múltiples valores)
             rol_independientes = request.POST.get('rol_independientes', '')
+            print(rol_independientes)
             roles_independientes = rol_independientes.split(',') if rol_independientes else []
 
             usuario.g_personal = 'personal' in roles_independientes
@@ -73,12 +75,10 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
             # Grupo C: Activos (exclusivo - solo uno)
             rol_activos_exclusivo = request.POST.get('rol_activos_exclusivo', '')
             usuario.g_Activos = (rol_activos_exclusivo == 'gestion_activos')
-            usuario.v_Activos = (rol_activos_exclusivo == 'solo_visualiza')
-            
+            usuario.v_Activos = (rol_activos_exclusivo == 'solo_visualiza')        
             usuario.save()
             persona = form.save()
             Personal.objects.create(persona=persona, user=usuario)
-
             return HttpResponseRedirect(reverse('users:lista_personal', args=[]))
         else:
             self.object = None
@@ -86,49 +86,61 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
 
 
 class ActualizacionPersonal(LoginRequiredMixin, UpdateView):
-    model = Personal
-    second_model = User 
-    third_model = Persona
-    template_name = 'RegistroActualizacion/personal_a.html'
-    form_class = A_Personal
-    second_form_class = A_User
-    third_form_class = R_Persona
+   model = Personal
+   second_model = User
+   third_model = Persona
+   template_name = 'RegistroActualizacion/personal_a.html'
+   form_class = A_Personal
+   second_form_class = A_User
+   third_form_class = R_Persona
 
-    def get_context_data(self, **kwargs):
+   def get_context_data(self, **kwargs):
         context = super(ActualizacionPersonal, self).get_context_data(**kwargs)
         slug = self.kwargs.get('slug', None)        
         personal_p = self.model.objects.get(slug=slug)
-        
-        # AGREGAR ESTA LÍNEA CLAVE:
-        context['personal'] = personal_p
-        
         user_p = self.second_model.objects.get(id=personal_p.user.pk)
         persona_p = self.third_model.objects.get(id=personal_p.persona.pk)
-        
         if 'form2' not in context:
             context['form2'] = self.second_form_class(instance=user_p)
         if 'form3' not in context:
             context['form3'] = self.third_form_class(instance=persona_p)
-            
+        context['personal'] = personal_p
         context['titulo'] = 'ACTUALIZAR DATOS DEL PERSONAL'
         context['accion2'] = 'Cancelar'
         context['accion2_url'] = reverse_lazy('users:lista_personal')
         context['entity'] = 'ACTUALIZAR DATOS'
         context['entity_url'] = reverse_lazy('users:lista_personal') 
         return context
+   
+   def post(self, request, *args, **kwargs):
+            self.object = self.get_object()
+            slug = self.kwargs.get('slug', None)
+            revisor_p = self.model.objects.get(slug=slug)
+            user_p = self.second_model.objects.get(id=revisor_p.user.pk)
+            persona_p = self.third_model.objects.get(id=revisor_p.persona.pk)
+            form = self.form_class(request.POST)
+            form2 = self.second_form_class(request.POST, request.FILES, instance=user_p)
+            form3 = self.third_form_class(request.POST, instance=persona_p)
+            if form2.is_valid() and form3.is_valid():          
+                usuario = form2.save(commit=False)
+                rol_rev = request.POST.get('rol_revision', '')
+                usuario.is_encargado = (rol_rev == 'encargado')
+                usuario.is_revisor = (rol_rev == 'apoyo')
 
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        slug = self.kwargs.get('slug', None)
-        revisor_p = self.model.objects.get(slug=slug)
-        user_p = self.second_model.objects.get(id=revisor_p.user.pk)
-        persona_p = self.third_model.objects.get(id=revisor_p.persona.pk)
-        form = self.form_class(request.POST)
-        form2 = self.second_form_class(request.POST, request.FILES, instance=user_p)
-        form3 = self.third_form_class(request.POST, instance=persona_p)
-        if form2.is_valid() and form3.is_valid():          
-            form2.save()
-            form3.save()
-            return HttpResponseRedirect(reverse('users:lista_personal', args=[]))
-        else:
-            return self.render_to_response(self.get_context_data(form=form, form2=form2, form3=form3))
+                # Grupo B: Independientes (múltiples valores)
+                rol_independientes = request.POST.get('rol_independientes', '')
+                print(rol_independientes)
+                roles_independientes = rol_independientes.split(',') if rol_independientes else []
+
+                usuario.g_personal = 'personal' in roles_independientes
+                usuario.g_mantenimiento = 'mantenimiento' in roles_independientes
+
+                # Grupo C: Activos (exclusivo - solo uno)
+                rol_activos_exclusivo = request.POST.get('rol_activos_exclusivo', '')
+                usuario.g_Activos = (rol_activos_exclusivo == 'gestion_activos')
+                usuario.v_Activos = (rol_activos_exclusivo == 'solo_visualiza')        
+                usuario.save()
+                form3.save()
+                return HttpResponseRedirect(reverse('users:lista_personal', args=[]))
+            else:
+                return self.render_to_response(self.get_context_data(form=form, form2=form2, form3=form3))

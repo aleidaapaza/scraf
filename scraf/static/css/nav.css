@@ -1,0 +1,195 @@
+.main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+            background-color: #006532 !important;
+            height: 70px;
+        }
+
+        /* MENÚ LATERAL ESTÁTICO */
+        .static-sidebar {
+            background-color: #2c3e50;
+            color: white;
+            width: 280px;
+            height: calc(100vh - 70px);
+            position: fixed;
+            top: 70px;
+            left: 0;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 1020;
+        }
+
+        .navbar-header {
+            padding: 15px 20px;
+            background-color: #34495e;
+            border-bottom: 1px solid #4a607a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-header h1 {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+            color: white;
+        }
+
+        /* BOTÓN CERRAR - Solo visible en móvil */
+        .sidebar-close-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar-close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-section {
+            padding: 15px 0;
+            border-bottom: 1px solid #4a607a;
+        }
+
+        .menu-title {
+            padding: 10px 20px;
+            font-weight: bold;
+            color: #bdc3c7;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .menu-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border-left: 3px solid transparent;
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+
+        .menu-item:hover {
+            background-color: #34495e;
+            border-left: 3px solid #3498db;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logout-section {
+            margin-top: auto;
+            padding: 15px 0;
+            border-top: 1px solid #4a607a;
+        }
+
+        .logout-btn {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            color: #e74c3c;
+            font-weight: bold;
+            display: block;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            background-color: #c0392b;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content {
+            margin-left: 280px;
+            margin-top: 70px;
+            padding: 20px;
+            min-height: calc(100vh - 70px);
+            transition: margin-left 0.3s ease;
+        }
+
+        /* BOTÓN HAMBURGUESA (solo visible en móvil) */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        /* RESPONSIVE - MÓVIL */
+        @media (max-width: 768px) {
+            /* Oculta el menú estático en móvil */
+            .static-sidebar {
+                transform: translateX(-100%);
+            }
+
+            .static-sidebar.active {
+                transform: translateX(0);
+            }
+
+            /* Muestra el botón hamburguesa en móvil */
+            .hamburger-btn {
+                display: block;
+            }
+
+            /* Muestra el botón cerrar en móvil */
+            .sidebar-close-btn {
+                display: block;
+            }
+
+            /* Ajusta el contenido principal */
+            .main-content {
+                margin-left: 0;
+            }
+
+            /* Overlay para móvil */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1015;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
+        /* ESCRITORIO - Siempre visible */
+        @media (min-width: 769px) {
+            .static-sidebar {
+                transform: translateX(0) !important;
+            }
+            
+            .sidebar-overlay {
+                display: none !important;
+            }
+            
+            .sidebar-close-btn {
+                display: none !important;
+            }
+        }

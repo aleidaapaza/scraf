@@ -423,3 +423,5 @@ def ajax_r_activo_responsable(request):
         "RegistroActualizacion/model_activo_responsable.html", context, request=request
     )
     return JsonResponse(data)
+
+

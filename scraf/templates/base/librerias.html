@@ -8,6 +8,7 @@
   <title>{{ titulo }}</title>
 
   <!-- CSS propios -->
+  <link rel="stylesheet" href="{% static 'css/nav.css' %}">
   <link rel="stylesheet" href="{% static 'css/styles.css' %}">
   <link rel="stylesheet" href="{% static 'css/messages.css' %}">
 
@@ -30,14 +31,17 @@
   <div>
     {% block navbar %}
       {% if user.is_authenticated %}
-        {% include "include/navbar/users.html" %}
+        {% include "include/navbar/user_nav.html" %}
       {% endif %}
     {% endblock %}
   </div>
-
+  <main class="main-content" id="mainContent">
+        <div class="container-fluid">
   {% block cuerpo %}{% endblock cuerpo %}
   {% block footer %}{% endblock footer %}
-
+  </div>
+    </main>
+  
   <!-- (Opcional) jQuery si lo usas en otras vistas -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
@@ -70,8 +74,58 @@
         });
       }
     });
-  </script>
 
+  </script>
+<script>
+        // CONTROL DEL MENÚ RESPONSIVE
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+        const staticSidebar = document.getElementById('staticSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const mainContent = document.getElementById('mainContent');
+
+        // Función para abrir el menú en móvil
+        function openSidebar() {
+            staticSidebar.classList.add('active');
+            sidebarOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Previene scroll del body
+        }
+
+        // Función para cerrar el menú en móvil
+        function closeSidebar() {
+            staticSidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = ''; // Restaura scroll del body
+        }
+
+        // Event listeners
+        hamburgerBtn.addEventListener('click', openSidebar);
+        sidebarCloseBtn.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // Cerrar menú al redimensionar (si se vuelve a escritorio)
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeSidebar();
+            }
+        });
+
+        // Cerrar menú al hacer clic en un item (opcional para móvil)
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        // Cerrar menú con tecla ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && window.innerWidth <= 768) {
+                closeSidebar();
+            }
+        });
+    </script>
   <!-- Bloque para scripts de librerías extras de cada vista -->
   {% block script %}{% endblock %}
 

@@ -41,8 +41,6 @@
         <hr class="mt-2">
       </div>
     </div>
-
-    <!-- 1-10-1: DATOS PERSONALES -->
     <div class="row justify-content-center">
       <div class="col-12 col-lg-10">
         <div class="card shadow-sm">
@@ -58,7 +56,6 @@
             {% if field.errors %}
               <div class="text-danger small mt-1">
               {% for error in field.errors %}
-                {# Excluir errores que contengan "obligatorio" #}
                 {% if "obligatorio" not in error|lower %}
                   <span>{{ error }}</span><br>
                 {% endif %}
@@ -83,8 +80,6 @@
         </div>
       </div>
     </div>
-
-    <!-- FILA 1-10-1: USUARIO Y RESPONSABILIDADES -->
     <div class="row justify-content-center mt-4">
       <div class="col-12 col-lg-10">
         <div class="card shadow-sm bg-green-soft border-0">
@@ -95,8 +90,15 @@
             <!-- Usuario -->
             <div class="mb-3 row">
               <label class="col-sm-4 col-form-label fw-semibold text-sm-end">Nombre de usuario</label>
-              <div class="col-sm-8">
+              <div class="col-sm-2">
                 {{ form2.username }}
+              </div>
+              <label class="col-sm-4 col-form-label fw-semibold text-sm-end">Usuario Activo</label>
+              <div class="col-sm-2">
+                <div class="form-check form-switch">
+                  <input class="form-check-input independiente-switch" type="checkbox" id="act_Useractivo" value="Useractivo"
+                        {% if personal.user.is_active %}checked{% endif %}>
+                </div>
               </div>
             </div>
             <!-- Grupo A (Independientes): Personal y Mantenimiento -->            
@@ -116,7 +118,14 @@
                 </div>
               </div>
               <input type="hidden" name="rol_independientes" id="rol_independientes"
-                    value="{% if personal.user.g_personal %}personal{% if personal.user.g_mantenimiento %},mantenimiento{% endif %}{% elif personal.user.g_mantenimiento %}mantenimiento{% endif %}">  <!-- ✅ CAMBIADO -->
+                    value="{% if personal.user.g_personal %}personal
+                                      {% if personal.user.g_mantenimiento %},mantenimiento{% endif %}
+                                      {% if personal.user.is_active %},Useractivo{% endif %}
+                                  {% elif personal.user.g_mantenimiento %},mantenimiento
+                                      {% if personal.user.g_personal %},personal{% endif %}
+                                      {% if personal.user.is_active %},Useractivo{% endif %}
+                                  {% elif personal.user.is_active%}Useractivo
+                                  {% endif %}"> 
             </div>
 
             <!-- Grupo B (exclusivo): Revisión -->

@@ -145,11 +145,10 @@ class SuperUser(models.Model):
 pre_save.connect(set_slug, sender=SuperUser)
  
 class LinePersona(models.Model):
-    persona = models.ForeignKey(Persona, on_delete=models.CASCADE, related_name='LinePersona')
+    persona = models.ForeignKey(Personal, on_delete=models.CASCADE, related_name='LinePersona')
     fechaRegistro = models.DateField(auto_now_add=True)
-    cargo_anterior = models.CharField(max_length=150, null=True, blank=True)
-    contacto_anterior = models.CharField(max_length=150, null=True, blank=True)
     encargado = models.ForeignKey(User, on_delete=models.CASCADE, related_name='LinePersonaResponsable')
+    observacion= models.TextField(default="df")
 
     def __str__(self):
         return f'Línea de {self.persona} - {self.fechaRegistro}'

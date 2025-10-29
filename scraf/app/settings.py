@@ -15,7 +15,6 @@ import app.db as db
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'django-insecure-sry_0xfq6ke=5zcit&l3go&mh&#$lgd^v=@81&o$te4$o6rp!2
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -43,6 +41,7 @@ INSTALLED_APPS = [
     'inicio.apps.InicioConfig',
     'designacion.apps.DesignacionConfig',
     'widget_tweaks',
+    'django_select2',
 ]
 
 MIDDLEWARE = [
@@ -100,6 +99,43 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+if DEBUG:
+    # Configuración para DESARROLLO
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': 'redis://127.0.0.1:6379/1',
+        },
+        'select2': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': 'redis://127.0.0.1:6379/2',
+        }
+    }
+else:
+    # Configuración para PRODUCCIÓN
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': 'redis://127.0.0.1:6379/1',
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'PASSWORD': 'tu-password-redis',  # Solo en producción
+            }
+        },
+        'select2': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': 'redis://127.0.0.1:6379/2',
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'PASSWORD': 'tu-password-redis',  # Solo en producción
+            }
+        }
+    }
+
+SELECT2_CACHE_BACKEND = 'select2'
+
+# Opcional: Tiempo de cache para Select2 (en segundos)
+SELECT2_CACHE_TIMEOUT = 3600  # 1 hora
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -138,3 +174,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 X_FRAME_OPTIONS = 'ALLOWALL'
+

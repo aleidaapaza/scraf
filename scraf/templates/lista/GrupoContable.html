@@ -1,0 +1,24 @@
+{% extends 'base/baseListasDatos.html' %}
+{% load static %}
+{% block thead %}
+    <tr>
+        <th scope="col">ID</th>
+        <th scope="col">NOMBRE</th>
+        <th scope="col">VER AUXILIARES</th>
+    </tr>
+
+{% endblock %}
+{% block tbody %}
+    {% for activo in object_list %}
+        <tr>
+            <td> {{ activo.id }}</td>
+            <td> {{ activo.nombre }} </td>
+            <td>
+                <a href="{% url 'activos:ver_grupoAux' activo.id %} " type="button"
+                   class="btn btn-primary btn-xs">
+                   <i class="bi bi-eye"></i>
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}

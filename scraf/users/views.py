@@ -217,7 +217,13 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
             usuario.save()
             persona = form.save()
             personal = Personal.objects.create(persona=persona, user=usuario)
-            
+            line = registrar_line_Persona(
+                    datos_antiguos_user, 
+                    datos_antiguos_persona, 
+                    personal.slug, 
+                    request.user  # El usuario que está haciendo la modificación
+                )
+            print(line)
             return HttpResponseRedirect(reverse('users:lista_personal', args=[]))
         else:
             self.object = None

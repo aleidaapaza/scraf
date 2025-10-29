@@ -22,6 +22,7 @@ from django.conf import settings
 
 urlpatterns = [
     path('',include('inicio.urls')),
+    path("select2/", include("django_select2.urls")),
     path('users/',include('users.urls')),
     path('revision/',include('revision.urls')),
     path('activos/',include('activos.urls')),

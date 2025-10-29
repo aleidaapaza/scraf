@@ -7,40 +7,65 @@
      <br>
     <div class="row mb-2">
       <div class="col">
-        <h2 class="text-success fw-bold">{{titulo}}</h2>
+        <h2 class="text-white fw-bold">{{titulo}}</h2>
         <hr>
       </div>
     </div>
-
-            <div class="row">
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="row">
-                    <div class="col-md-1"></div>
-                    <!-- formulario izquierdo-->
-                    <div class="col-md-4 card">
-                        {% block formulario %}                    
-                        {% endblock formulario %}
+</div>
+<div class="container-fluid py-4">
+    <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+        {% block alert %}
+        {% endblock alert %}        
+        <hr>
+        <div class="row align-items-center">
+            <div class="col-md-8 col-sm-12 align-self-center">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                            <br> {{subtitulo_1}} </br>   
+                        </h5>
                     </div>
-                    <!-- espacio entre formularios -->
-                    <div class="col-md-1"></div>
-                    <!-- formulario derecho-->
-                    <div class="col-md-5 card rounded " style="background:#C7F1C2">
-                        {% block formulario2 %}                    
-                        {% endblock formulario2 %}
+                    <div class="card-body">
+                        <div class="mb-3">
+                                {% block formulario %}                    
+                                {% endblock formulario %}
+                        </div>
                     </div>
-                    <div class="col-md-1"></div>
-                </div>
-            <!-- 3. Botones de acción -->
-
-            <div class="row text-center py-2">
-                <div class="col">
-                    <button class="btn btn-success" type="submit">
-                    <i class="bi bi-check2"></i> {{accion}} </button>
                 </div>
             </div>
-        </form>
-    </div>    
+            {% if subtitulo_2 %}
+                <div class="col-md-4 col-sm-12 align-self-center">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                                <br> {{subtitulo_2}} </br>   
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                {% block formulario2 %}
+
+                                {% endblock formulario2 %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <div class="row text-center py-2">
+                <div class="col">
+                    <button class="btn btn-success border-white fw-bold" type="submit">
+                    <i class="fa-solid fa-floppy-disk"></i> {{accion}} </button>
+                </div>
+                <div class="col">
+                    <a class="btn btn-success border-white fw-bold" hr="">
+                    <i class="fa-solid fa-floppy-disk"></i> CANCELAR</a>
+                </div>
+            </div>
+    </form>
 </div>
 {% else %}
 {% endif %}

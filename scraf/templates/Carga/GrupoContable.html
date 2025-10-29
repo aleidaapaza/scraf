@@ -1,0 +1,179 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block contenido %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4 text-white">Carga Masiva - Contabilidad</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Carga de Grupos Contables -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-layer-group me-2"></i>
+                        Cargar Grupos Contables
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="formGrupo">
+                        {% csrf_token %}
+                        <input type="hidden" name="tipo_carga" value="grupo">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Archivo CSV</label>
+                            {{ form_grupo.archivo }}
+                            {% if form_grupo.archivo.errors %}
+                                <div class="text-danger small">
+                                    {{ form_grupo.archivo.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <h6>Formato requerido:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>nombre</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Activo Corriente</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Pasivo No Corriente</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="btnGrupo">
+                            <i class="fas fa-upload me-2"></i>
+                            Cargar Grupos Contables
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carga de Auxiliares Contables -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cubes me-2"></i>
+                        Cargar Auxiliares Contables
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="formAuxiliar">
+                        {% csrf_token %}
+                        <input type="hidden" name="tipo_carga" value="auxiliar">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Archivo CSV</label>
+                            {{ form_auxiliar.archivo }}
+                            {% if form_auxiliar.archivo.errors %}
+                                <div class="text-danger small">
+                                    {{ form_auxiliar.archivo.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <h6>Formato requerido:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>nombre</th>
+                                            <th>grupocontable</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Caja</td>
+                                            <td>Activo Corriente</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bancos</td>
+                                            <td>Activo Corriente</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="alert alert-info">
+                                <small>
+                                    <strong>Nota:</strong> El "grupocontable" debe existir previamente en el sistema.
+                                </small>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success" id="btnAuxiliar">
+                            <i class="fas fa-upload me-2"></i>
+                            Cargar Auxiliares
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensajes -->
+    {% if messages %}
+    <div class="row mt-3">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Procesando...</span>
+    </div>
+    <p class="mt-2 text-white">Procesando archivo, por favor espere...</p>
+</div>
+
+<style>
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+</style>
+
+<script>
+document.getElementById('formGrupo').addEventListener('submit', function() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.getElementById('btnGrupo').disabled = true;
+});
+
+document.getElementById('formAuxiliar').addEventListener('submit', function() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.getElementById('btnAuxiliar').disabled = true;
+});
+</script>
+{% endblock %}

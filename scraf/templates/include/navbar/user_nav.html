@@ -64,12 +64,17 @@
                 <div class="menu-title">GESTION DE ACTIVOS DE LA INSTITUCION </div>
                 <ul class="menu-items">
                     <li>
-                        <a class="nav-link px-3" href="{% url 'activos:lista_activos' %}">
+                        <a class="nav-link px-3" href="{% url 'activos:cargarInformacion' %}">
+                            <i class="fas fa-list-alt me-2"></i>Cargar Informacion Grupos y auxiliares Contables
+                        </a>
+                    </li>
+                    <li>
+                        <a class="nav-link px-3" href="{% url 'activos:lista_GrupoContable' %}">
                             <i class="fas fa-list-alt me-2"></i>Grupos Contables
                         </a>
                     </li>
                     <li>
-                        <a class="nav-link px-3" href="{% url 'activos:lista_activos' %}">
+                        <a class="nav-link px-3" href="{% url 'activos:lista_AuxiliaresContable' %}">
                             <i class="fas fa-list-alt me-2"></i>Auxiliares Contables
                         </a>
                     </li>

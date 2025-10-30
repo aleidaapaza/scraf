@@ -2,35 +2,35 @@
 {% load static %}
 {% block thead %}
     <tr>
-        <th scope="col">SLUG</th>
+        <th scope="col">LINE</th>
         <th scope="col">CODIGO</th>
         <th scope="col">DESCRIPCION</th>
-        <th scope="col">UBICACION OFICINA</th>
-        <th scope="col">RESPONSABLE ACTUAL</th>
         <th scope="col">VER</th>
         {% if user.g_Activos %}
             <th scope="col">MODIFICAR</th>
         {% endif %}        
     </tr>
-
 {% endblock %}
 {% block tbody %}
     {% for activo in object_list %}
         <tr>
-            <td> {{ activo.slug }}</td>
-            <td> {{ activo.activo.codigo }} </td>
-            <td> {{ activo.activo.descActivo }}</td>
-            <td> {{ activo.oficina_ubicacion }}</td>
-            <td> {{ activo.responsable }}</td>
             <td>
-                <a href=" {% url 'activos:ver_activos_responsable' activo.slug %} " type="button"
+                <a href='{% url "activos:lista_lineactivo" %}' type="button"
+                   class="btn btn-primary btn-xs">
+                   <i class="bi bi-eye"></i>
+                </a>
+            </td>
+            <td> {{ activo.codigo }} </td>
+            <td> {{ activo.descActivo }}</td>
+            <td>
+                <a href=" " type="button"
                    class="btn btn-primary btn-xs">
                    <i class="bi bi-eye"></i>
                 </a>
             </td>
             {% if user.g_Activos %}
             <td>
-                <a href=" {% url 'activos:actualizar_activos_responsable' activo.slug %} " type="button"
+                <a href=" " type="button"
                    class="btn btn-primary btn-xs">
                    <i class="bi bi-brush-fill"></i>
                 </a>

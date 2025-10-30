@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import app.db as db
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -35,13 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_select2',
     'users.apps.UsersConfig',
     'activos.apps.ActivosConfig',
     'revision.apps.RevisionConfig',
     'inicio.apps.InicioConfig',
     'designacion.apps.DesignacionConfig',
     'widget_tweaks',
-    'django_select2',
 ]
 
 MIDDLEWARE = [
@@ -100,42 +102,37 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 if DEBUG:
-    # Configuración para DESARROLLO
+    # ✅ DESARROLLO - Configuración que nunca falla
     CACHES = {
         'default': {
-            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-            'LOCATION': 'redis://127.0.0.1:6379/1',
-        },
-        'select2': {
-            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-            'LOCATION': 'redis://127.0.0.1:6379/2',
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'scraf-development',
         }
     }
+    # Django-Select2 funcionará perfectamente con cache en memoria
+    # No necesitas SELECT2_USE_CACHE = False a menos que tengas problemas
+    
 else:
-    # Configuración para PRODUCCIÓN
+    # ✅ PRODUCCIÓN - Redis
     CACHES = {
         'default': {
-            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'BACKEND': 'django_redis.cache.RedisCache',
             'LOCATION': 'redis://127.0.0.1:6379/1',
             'OPTIONS': {
                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-                'PASSWORD': 'tu-password-redis',  # Solo en producción
+                'PASSWORD': 'tu-password-redis-seguro',
             }
         },
         'select2': {
-            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'BACKEND': 'django_redis.cache.RedisCache',
             'LOCATION': 'redis://127.0.0.1:6379/2',
             'OPTIONS': {
                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-                'PASSWORD': 'tu-password-redis',  # Solo en producción
+                'PASSWORD': 'tu-password-redis-seguro',
             }
         }
     }
-
-SELECT2_CACHE_BACKEND = 'select2'
-
-# Opcional: Tiempo de cache para Select2 (en segundos)
-SELECT2_CACHE_TIMEOUT = 3600  # 1 hora
+    SELECT2_CACHE_BACKEND = 'select2'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

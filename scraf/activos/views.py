@@ -12,15 +12,15 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.generic import CreateView, View, ListView, UpdateView, TemplateView
 
-from activos.forms import R_Activo, R_Activo_responsable, A_Activo
-from activos.models import Activo
+from activos.forms import R_Activo, R_Activo_responsable, A_Activo, ActivoForm
+from activos.models import Activo, AuxiliarContable, Line_Activo
 from designacion.models import Activo_responsable, Line_Activo_Responsable
 from revision.views import get_menu_context
 from users.models import User
 
 
 class ListaActivos(LoginRequiredMixin, ListView):
-    model = Activo_responsable
+    model = Activo
     template_name = "lista/activo.html"
 
     def get_context_data(self, **kwargs):
@@ -44,91 +44,77 @@ class ListaActivos(LoginRequiredMixin, ListView):
 class RegistroActivo(LoginRequiredMixin, CreateView):
     model = Activo
     template_name = "RegistroActualizacion/activo.html"
-    form_class = R_Activo
+    form_class = ActivoForm
     success_url = reverse_lazy("activos:lista_activos")
-
-    # 1. MÉTODO CORREGIDO: get_context_data
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["titulo"] = "REGISTRO DE SOLO INFORMACION ACTIVO"
-        context["subtitulo_1"] = "DATOS DEL ACTIVO"
-        context["accion"] = "GUARDAR"
-        context["accion2"] = "CANCELAR"
-        context["accion2_url"] = reverse_lazy("activos:lista_activos")
-        return context
-
-    # 2. MÉTODO CORREGIDO: form_valid (para crear el registro en Activo_responsable)
-    def form_valid(self, form):
-        activo = form.save()
-
-        try:
-            new_slug = str(uuid.uuid4())
-
-            Activo_responsable.objects.create(
-                activo=activo,
-                slug=new_slug,  # Obligatorio
-                estado="Bueno",  # Obligatorio (asumiendo valor inicial)
-                responsable=None,  # Nulo
-                piso_ubicacion="ALMACENES",
-                oficina_ubicacion="ALMACEN",
-            )
-
-            return HttpResponseRedirect(self.success_url)
-
-        except Exception as e:
-            try:
-                activo.delete()
-            except:
-                pass
-
-            print(f"Error al crear Activo_responsable: {e}")
-            messages.error(
-                self.request,
-                f"Error al registrar activo en almacén. Revise la consola.",
-            )
-
-            return self.form_invalid(form)
-
     def get_context_data(self, **kwargs):
         context = super(RegistroActivo, self).get_context_data(**kwargs)
-        if "form" not in context:
-            context["form"] = self.form_class(self.request.GET)
-        context["titulo"] = "REGISTRO DE SOLO INFORMACION ACTIVO"
-        context["subtitulo_1"] = "DATOS DEL ACTIVO"
-        context["accion"] = "GUARDAR"
-        context["accion2"] = "CANCELAR"
+        slug = self.kwargs.get("slug")
+        if 'form' not in context:
+            context['form'] = self.form_class(self.request.GET)
+        context["titulo"] = "REGISTRO DEL ACTIVO"
+        context["subtitulo_1"] = "REGISTRO DEL ACTIVO"
+        context["accion"] = "REGISTRO"
+        context["accion2"] = "VOLVER"
         context["accion2_url"] = reverse_lazy("activos:lista_activos")
         return context
-
-
-def post(self, request, *args, **kwargs):
-    usuario = self.request.user
-    form = self.form_class(request.POST)
-    if form.is_valid():
-        codigo = form.cleaned_data.get("codigo")
-        if Activo.objects.filter(codigo=codigo).exists():
-            messages.error(request, f'El código "{codigo}" ya está registrado.')
-            return self.render_to_response(self.get_context_data(form=form))
-        form.save()
-        activos = Activo.objects.get(codigo=codigo)
-        Activo_responsable.objects.create(
-            activo=activos,
-            piso_ubicacion="ALMACENES",
-            oficina_ubicacion="ALMACEN",
-        )
-        activos_responsable = Activo_responsable.objects.get(activo=activos)
-        Line_Activo_Responsable.objects.create(
-            slug=activos_responsable.slug,
-            observacion="Se registró solo los datos del activo",
-            creador=usuario,
-        )
+    def post(self, request, *args, **kwargs):
+        usuario = self.request.user
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            codigo = form.cleaned_data.get("codigo")
+            form.save()
+            activo = self.model.objects.get(codigo=codigo)
+            print(activo)
+            Line_Activo.objects.create(
+                activo = activo,
+                creador = usuario,
+                estadoActivo = activo.estadoActivo,
+                estadoDesignacion = activo.estadoDesignacion,
+                mantenimiento = activo.mantenimiento,
+                observacion = "Registro del Activo"
+            )
         return HttpResponseRedirect(reverse("activos:lista_activos"))
-    else:
-        return self.render_to_response(self.get_context_data(form=form))
 
+def get_auxiliares_por_grupo(request):
+    grupo_id = request.GET.get('grupo_id')
+    search_term = request.GET.get('q', '')
+    
+    if not grupo_id:
+        return JsonResponse([], safe=False)
+    
+    try:
+        auxiliares = AuxiliarContable.objects.filter(grupocontable_id=grupo_id)
+        # Aplicar filtro de búsqueda si existe
+        if search_term:
+            auxiliares = auxiliares.filter(nombre__icontains=search_term)
+        # Formatear datos para Select2
+        data = []
+        for auxiliar in auxiliares:
+            data.append({
+                'id': auxiliar.id,
+                'text': auxiliar.nombre
+            })
+        
+        return JsonResponse(data, safe=False)
+        
+    except Exception as e:
+        return JsonResponse([], safe=False)
+
+class LineActivo(LoginRequiredMixin, TemplateView):
+    template_name = "lista/lineActivo.html"
+    def get_context_data(self, **kwargs):
+            context = super().get_context_data(**kwargs)
+            slug = self.kwargs.get("slug")
+            activo_line = Line_Activo_Responsable.objects.filter(slug=slug).order_by("-fecha_registro")
+            activo_responsable_line = Line_Activo_Responsable.objects.filter(slug=slug).order_by("-fecha_registro")
+            context["titulo"] = "INFORMACION DEL ACTIVO"
+            context["activo"] = activo
+            context["line"] = activo_line
+            return context
 
 class VerActivo(LoginRequiredMixin, TemplateView):
     template_name = "Visualizar/activo.html"
+    
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -326,25 +312,8 @@ class ActualizarActivoResponsable(LoginRequiredMixin, UpdateView):
                 self.get_context_data(form=form, form2=form2)
             )
 
-
-# EN activos/views.py - dentro de la función ajax_r_activo
-
-# EN activos/views.py - dentro de la función ajax_r_activo
-
-# EN activos/views.py
-
 from django.utils import timezone
 import uuid
-
-# ... otros imports ...
-
-# EN activos/views.py - dentro de la función ajax_r_activo
-
-from django.utils import timezone
-import uuid
-
-# ... otros imports ...
-
 
 @login_required
 @require_http_methods(["GET", "POST"])

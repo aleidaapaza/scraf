@@ -1,5 +1,7 @@
 from django.urls import path
-from activos.views import ListaActivos, RegistroActivo, RegistroActivoResponsable, VerActivo, ActualizarActivoResponsable,ajax_r_activo, ajax_r_activo_responsable
+from activos.views import (ListaActivos, RegistroActivo, RegistroActivoResponsable, VerActivo, ActualizarActivoResponsable, 
+                                                ajax_r_activo, ajax_r_activo_responsable, get_auxiliares_por_grupo,
+                                                LineActivo)
 from activos.views_b import ListaGruposContables, CargaContableView, ListaAuxiliatesContables, verAuxiliares
 app_name = 'activos'
 
@@ -17,5 +19,6 @@ urlpatterns = [
     path('listaAuxiliaresContable/', ListaAuxiliatesContables.as_view(), name='lista_AuxiliaresContable'),
     path('CargarInf/', CargaContableView.as_view(), name='cargarInformacion'),
     path('verGrupoAux/<int:pk>/', verAuxiliares.as_view(), name='ver_grupoAux'),
-
+    path('get-auxiliares/', get_auxiliares_por_grupo, name='Auxiliares_por_grupo'),
+    path('listaLine/', LineActivo.as_view(), name='lista_lineactivo'),
 ]

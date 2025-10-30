@@ -50,9 +50,8 @@ class Activo(models.Model):
     mantenimiento = models.BooleanField()
 
     def clean(self):
-        # Validar que el auxiliar contable pertenece al grupo contable seleccionado
-        if self.auxiliar_contable and self.grupo_contable:
-            if self.auxiliar_contable.grupo_contable != self.grupo_contable:
+        if self.auxiliar and self.grupoContable:
+            if self.auxiliar.grupocontable != self.grupoContable:
                 raise ValidationError({'auxiliar_contable': 'El auxiliar contable debe pertenecer al grupo contable seleccionado'})
     
     def save(self, *args, **kwargs):
@@ -60,7 +59,7 @@ class Activo(models.Model):
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return f'{self.slug}-{self.nombre}'
+        return f'{self.codigo}-{self.descActivo}'
     
     class Meta:
         verbose_name = ('Activo')
@@ -86,10 +85,9 @@ class MantenimientoActivo(models.Model):
         db_table = 'MantenimientoActivo'
 
 class Line_Activo(models.Model):
-    slug = models.SlugField(null=True, blank=True, unique=False)
+    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, related_name='lineActivo', default="1")
     creador = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha_registro = models.DateTimeField(auto_now_add=True)
-    estado = models.CharField(choices=estados)
     estadoActivo = models.CharField(choices=estados, null=True, blank=True)
     estadoDesignacion = models.BooleanField() #asignado/sindesignar
     mantenimiento = models.BooleanField()

@@ -22,9 +22,15 @@
             <div class="col-md-8 col-sm-12 align-self-center">
                 <div class="card">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="card-title mb-0">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                            <br> {{subtitulo_1}} </br>   
+                       <h5 class="card-title mb-0">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </div>
+                                <div class="col">
+                                    {{ subtitulo_1 }}
+                                </div>
+                            </div>
                         </h5>
                     </div>
                     <div class="card-body">
@@ -40,8 +46,14 @@
                     <div class="card">
                         <div class="card-header bg-primary text-white">
                             <h5 class="card-title mb-0">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                                <br> {{subtitulo_2}} </br>   
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </div>
+                                    <div class="col">
+                                        {{ subtitulo_2 }}
+                                    </div>
+                                </div>
                             </h5>
                         </div>
                         <div class="card-body">
@@ -59,10 +71,8 @@
                 <div class="col">
                     <button class="btn btn-success border-white fw-bold" type="submit">
                     <i class="fa-solid fa-floppy-disk"></i> {{accion}} </button>
-                </div>
-                <div class="col">
-                    <a class="btn btn-success border-white fw-bold" hr="">
-                    <i class="fa-solid fa-floppy-disk"></i> CANCELAR</a>
+                    <a class="btn btn-success border-white fw-bold" href="{{ accion2_url }}">
+                    <i class="fa-solid fa-floppy-disk"></i> {{ accion2 }}</a>
                 </div>
             </div>
     </form>

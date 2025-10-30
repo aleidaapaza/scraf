@@ -25,6 +25,24 @@
   <!-- DataTables CSS (una sola versión) -->
   <link rel="stylesheet" href="https://cdn.datatables.net/2.3.1/css/dataTables.dataTables.css" />
 
+  <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Django-Select2 Media -->
+    {{ form.media.css }}
+  <style>
+        .select2-container {
+            width: 100% !important;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .disabled-select {
+            background-color: #f8f9fa;
+            opacity: 0.6;
+        }
+    </style>
   {% block librerias %}{% endblock %}
 </head>
 <body style="background-color: #6b6b6bff;">
@@ -52,7 +70,11 @@
 
   <!-- DataTables JS (misma versión que el CSS) -->
   <script src="https://cdn.datatables.net/2.3.1/js/dataTables.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/es.js"></script>
+  <!-- Django-Select2 Media JS -->
+  {{ form.media.js }}
+  
   <!-- Comprobación rápida -->
   <script>console.log('Bootstrap cargado?', typeof bootstrap !== 'undefined');</script>
 
@@ -77,40 +99,34 @@
 
   </script>
 <script>
-        // CONTROL DEL MENÚ RESPONSIVE
         const hamburgerBtn = document.getElementById('hamburgerBtn');
         const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
         const staticSidebar = document.getElementById('staticSidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
         const mainContent = document.getElementById('mainContent');
 
-        // Función para abrir el menú en móvil
         function openSidebar() {
             staticSidebar.classList.add('active');
             sidebarOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Previene scroll del body
+            document.body.style.overflow = 'hidden'; 
         }
 
-        // Función para cerrar el menú en móvil
         function closeSidebar() {
             staticSidebar.classList.remove('active');
             sidebarOverlay.classList.remove('active');
-            document.body.style.overflow = ''; // Restaura scroll del body
+            document.body.style.overflow = ''; 
         }
 
-        // Event listeners
         hamburgerBtn.addEventListener('click', openSidebar);
         sidebarCloseBtn.addEventListener('click', closeSidebar);
         sidebarOverlay.addEventListener('click', closeSidebar);
 
-        // Cerrar menú al redimensionar (si se vuelve a escritorio)
         window.addEventListener('resize', function() {
             if (window.innerWidth > 768) {
                 closeSidebar();
             }
         });
 
-        // Cerrar menú al hacer clic en un item (opcional para móvil)
         document.querySelectorAll('.menu-item').forEach(item => {
             item.addEventListener('click', function() {
                 if (window.innerWidth <= 768) {
@@ -119,20 +135,16 @@
             });
         });
 
-        // Cerrar menú con tecla ESC
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape' && window.innerWidth <= 768) {
                 closeSidebar();
             }
         });
     </script>
-  <!-- Bloque para scripts de librerías extras de cada vista -->
   {% block script %}{% endblock %}
 
-  <!-- Bloque para helpers/funciones reutilizables (p.ej. cargarFormularioModal) -->
   {% block funcScript %}{% endblock %}
 
-  <!-- Bloques para lógica de página (event listeners, etc.) -->
   {% block scripfun %}{% endblock %}
   {% block funScript %}{% endblock %}
 </body>

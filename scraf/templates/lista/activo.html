@@ -15,7 +15,7 @@
     {% for activo in object_list %}
         <tr>
             <td>
-                <a href='{% url "activos:lista_lineactivo" %}' type="button"
+                <a href='{% url "activos:lista_lineactivo" activo.codigo %}' type="button"
                    class="btn btn-primary btn-xs">
                    <i class="bi bi-eye"></i>
                 </a>
@@ -23,7 +23,7 @@
             <td> {{ activo.codigo }} </td>
             <td> {{ activo.descActivo }}</td>
             <td>
-                <a href=" " type="button"
+                <a href="{% url 'activos:ver_activo' activo.codigo %}" type="button"
                    class="btn btn-primary btn-xs">
                    <i class="bi bi-eye"></i>
                 </a>

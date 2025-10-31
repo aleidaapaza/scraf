@@ -1,134 +1,125 @@
 {% extends 'base/base.html' %}
 {% load static %}
-{% block librerias %}
-    {% include "include/timeline.html" %}
-{% endblock %}
 {% block contenido %}
     {% if user.is_authenticated %}
-        <div class="container-fluid">
-                <!-- TÍTULO -->
-            <div class="row mt-3">
-                <div class="col-12">
-                    <h3 class="fw-bold text-success">INFORMACION DE ACTIVO</h3>
-                    <hr class="mt-2">
+    <div class="card row mb-5">
+        <div class="card-header bg-success text-white">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-layer-group me-2"></i>
+                ESTADO DEL ACTIVO: {% if activo.estadoDesignacion %} DESIGNADO{% else %} SIN DESIGNAR{% endif %}
+            </h5>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-layer-group me-2"></i>
+                        DATOS DEL ACTIVO
+                    </h5>
                 </div>
-            </div>
-
-            <!-- CODIGO IDENTIFICADOR -->
-            <div class="row py-2" style="background:#006532">
-                <div class="col-6">
-                    <h4 class="text-white m-0">CODIGO IDENTIFICADOR: {{ activo.slug }}</h4>
-                </div>
-                <div class="col-6 text-end">
-                    <h4 class="text-white m-0">CODIGO DEL ACTIVO: {{ activo.activo.codigo }}</h4>
-                </div>
-            </div>
-
-
-            <!-- DATOS DEL ACTIVO -->
-            <div class="row py-2">
-                <div class="col-sm-1"></div>
-                <div class="col-sm-10">
-                    <div class="border border-dark rounded-4 p-3">
-                        <div class=" bg-white text-center">
-                            <h5 class="m-0 fw-bold text-success">DATOS DEL ACTIVO</h5>
-                        </div>
-
-                        <br>
-
-                        <div class="text-center">
-                            <h5><span class="fw-bold text-success">ESTADO:</span> {{activo.estado}}</h5>
-                        </div>
-
-                        <br>
-
-                        <div class="row">
+                <div class="card-body row">
+                    <div class="col-md-6">
+                        <div class="row mb-3">
                             <div class="col-md-6">
-                                <!--CATEGORIA-->
-                                <div class="row">    
-                                    <div class="col-md-4">
-                                        <h6 class="fw-bold text-success">DESCRIPCION DEL ACTIVO:</h6>
-                                    </div>
-                                    <div class="col-md-8">
-                                        <h6>{{activo.activo.descActivo}}</h6>
-                                    </div>
-                                    <!--descripcion-->
-                                    <div class="col-md-4">
-                                        <h6 class="fw-bold text-success">DESCRIPCION:</h6>
-                                    </div>
-                                    <div class="col-md-8">
-                                        <h6>{{activo.activo.descripcion}}</h6>
-                                    </div>
-                                </div>
+                                <label class="form-label fw-bold">Código del Activo</label>
+                                <div class="form-control">{{ activo.codigo }}</div>
                             </div>
-
-
                             <div class="col-md-6">
-
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <h6 class="fw-bold text-success">RESPONSABLE:</h6>
-                                    </div>
-                                    <div class="col-md-8">
-                                        <h6>
-                                            {% if activo.responsable and activo.responsable.persona and activo.responsable.persona.nombre %}
-                                            {{ activo.responsable.persona.nombre }} {{ activo.responsable.persona.apellido }}
-                                            {% else %}
-                                            No tiene responsable
-                                            {% endif %}
-                                        </h6>
-                                    </div>
-
-                                    <div class="col-md-4">
-                                        <h6 class="fw-bold text-success">PISO:</h6>
-                                    </div>
-                                    <div class="col-md-8">
-                                        <h6>{{activo.piso_ubicacion}}</h6>
-                                    </div>
-
-                                    <div class="col-md-4">
-                                        <h6 class="fw-bold text-success">OFICINA:</h6>
-                                    </div>
-                                    <div class="col-md-8">
-                                        <h6>{{activo.oficina_ubicacion}}</h6>
-                                    </div>
-                                </div>
+                                <label class="form-label fw-bold">Estado del Activo</label>
+                                <div class="form-control">{{ activo.estadoActivo }}</div>
                             </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Grupo Contable</label>
+                                <div class="form-control">{{ activo.grupoContable.nombre }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Auxiliar</label>
+                                <div class="form-control">{{ activo.auxiliar.nombre }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                                <label class="form-label fw-bold">Descripcion del Activo</label>
+                                <div class="form-control">{{ activo.descActivo }}</div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-sm-1"></div>
             </div>
-            <div class="row py-2">
-                <div class="col-sm-1"></div>
-                <div class="col-sm-10">
-                    <div class="p-3">
-                        <h4 class="text-center">CAMBIOS REALIZADOS</h4>
-                        <hr>
-                        {% if line %}
-                            <div class="timeline">
-                                {% for evento in line %}
-                                    <div class="event {% cycle 'left' 'right' %}">
-                                        <div class="event-content">
-                                            <p><b>Registrado por:</b> {{ evento.creador }}</p>
-                                            <hr>
-                                            <p><b>Responsable:</b> {{ evento.responsable.persona.nombre }} {{ evento.responsable.persona.apellido }}</p>
-                                            <p><b>Ubicacion:</b> {{ evento.piso_ubicacion }} - {{ evento.oficina_ubicacion }}</p>
-                                            <p><b>Estado:</b> {{ evento.estado }}</p>
-                                            <hr>
-                                            <p>{{ evento.observacion }}</p>
-                                            <time>{{ evento.fecha_registro }}</time>
-                                        </div>
-                                    </div>
-                                {% empty %}
-                                    <p>No hay observaciones disponibles para este activo.</p>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <p>No hay cambios registrados para este activo.</p>
-                        {% endif %}
-                    </div>
+        </div>
+
+        <!-- Carga de Auxiliares Contables -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fa-solid fa-wrench"></i>
+                        DATOS MANTENIMIENTO
+                    </h5>
                 </div>
-                <div class="col-sm-1"></div>
+                <div class="card-body">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="switchCheckCheckedDisabled" 
+                        {% if activo.mantenimiento %}checked{% else %} {% endif %}disabled>
+                        <label class="form-check-label" for="switchCheckCheckedDisabled">{% if activo.mantenimiento %}EN MANTENIMIENTO{% else %}NO SE ENCUENTRA EN MANTENIMIENTO{% endif %}</label>
+                    </div>
+                    {% if mantenimiento %}
+                        <div class="row mb-3">
+                                <label class="form-label fw-bold">Fecha Inicio</label>
+                                <div class="form-control">{{ mantenimiento.fechaInicio }}</div>
+                        </div>                        
+                        <div class="row mb-3">
+                                <label class="form-label fw-bold">Personal a cargo</label>
+                                <div class="form-control">{{ mantenimiento.asignadorInicio }}</div>
+                        </div>
+                        <div class="row mb-3">
+                                <label class="form-label fw-bold">Razon del Mantenimiento</label>
+                                <div class="border border-2">{{ mantenimiento.descActivo }}</div>
+                        </div>
+                    {% else %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fa-solid fa-user"></i><i class="fa-solid fa-location-dot"></i>
+                        DATOS UBICACION Y ASIGNADO
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label fw-bold">Ultimo Codigo de la Asignacion/Devolucion </label>
+                                <div class="form-control">{% if responsable %}{{ responsable.asig_devol.slug }}{% else %}No existe registro{% endif %}</div>
+                            </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label fw-bold">Personal Asignado</label>
+                            <div class="form-control">{% if responsable %}{{ responsable.responsable}}{% else %}No esta asignado{% endif %}</div>                           
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row"> <span class="fw-bold">UBICACION</span>
+                    </div>
+                    <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">PISO</label>
+                                <div class="form-control">{% if responsable %}{{ responsable.piso_ubicacion}}{% else %}En Almacenes{% endif %}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">OFICINA</label>
+                                <div class="form-control">{% if responsable %}{{ responsable.oficina_ubicacion}}{% else %}En Almacenes{% endif %}</div> 
+                            </div>
+                        </div>
+                </div>
             </div>
         </div>
     </div>

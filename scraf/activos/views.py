@@ -5,15 +5,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.generic import CreateView, View, ListView, UpdateView, TemplateView
 
-from activos.forms import R_Activo, R_Activo_responsable, A_Activo, ActivoForm
-from activos.models import Activo, AuxiliarContable, Line_Activo
+from activos.forms import R_Activo, R_Activo_responsable, A_Activo, ActivoForm, A_Activo, A_Mantenimiento_I, A_Mantenimiento_F
+from activos.models import Activo, AuxiliarContable, Line_Activo, MantenimientoActivo
 from designacion.models import Activo_responsable, Line_Activo_Responsable
 from revision.views import get_menu_context
 from users.models import User
@@ -104,28 +104,122 @@ class LineActivo(LoginRequiredMixin, TemplateView):
     template_name = "lista/lineActivo.html"
     def get_context_data(self, **kwargs):
             context = super().get_context_data(**kwargs)
-            slug = self.kwargs.get("slug")
-            activo_line = Line_Activo_Responsable.objects.filter(slug=slug).order_by("-fecha_registro")
-            activo_responsable_line = Line_Activo_Responsable.objects.filter(slug=slug).order_by("-fecha_registro")
+            codigo = self.kwargs.get("codigo")
+            activo = Activo.objects.get(codigo=codigo)
+            print(activo)
+            activo_line = Line_Activo.objects.filter(activo=activo).order_by("-fecha_registro")
+            print(activo_line)
+            activo_responsable_line = Line_Activo_Responsable.objects.filter(slug=activo).order_by("-fecha_registro")
+            print(activo_responsable_line)
+            mantenimiento = MantenimientoActivo.objects.filter(activo = activo)
+            print(mantenimiento)
             context["titulo"] = "INFORMACION DEL ACTIVO"
+            context["subtitulo_1"] = "LINE MODIFICACION DATOS ACTIVOS"
+            context["subtitulo_2"] = "LINE MODIFICACION DESIGNACIONES ACTIVOS"
+            context["subtitulo_3"] = "LINE MANTENIMIENTO ACTIVOS"
             context["activo"] = activo
-            context["line"] = activo_line
+            context["line_actvo"] = activo_line
+            context["activo_responsable_line"] = activo_responsable_line
+            context["mantenimiento"] = mantenimiento
+
             return context
 
 class VerActivo(LoginRequiredMixin, TemplateView):
     template_name = "Visualizar/activo.html"
-    
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        slug = self.kwargs.get("slug")
-        activo = Activo_responsable.objects.get(slug=slug)
-        activo_line = Line_Activo_Responsable.objects.filter(slug=slug).order_by("-fecha_registro")
+        slug = self.kwargs.get("codigo")
+        activo = Activo.objects.get(codigo=slug)
         context["titulo"] = "INFORMACION DEL ACTIVO"
         context["activo"] = activo
-        context["line"] = activo_line
-        return context
+        lugar = Activo_responsable.objects.filter(activo=activo)
+        print('lugar', lugar)
+        if lugar:
+            context["responsable"] = lugar
+        mantenimiento = MantenimientoActivo.objects.filter(activo=activo, estado = True)
+        print('mantenimiento', mantenimiento)
+        if lugar:
+            context["mantenimiento"] = mantenimiento
+        return context    
 
+def actualizarActivo_Ajax(request, activo_codigo=None):
+    activo_ins = None
+    mantenimiento_ins = None
+
+    if activo_ins:
+        activo_ins = get_object_or_404(Activo, codigo=activo_codigo)
+        # Intentar obtener el secundario relacionado con el principal
+        try:
+            mantenimiento_ins = MantenimientoActivo.objects.filter(activo=activo_ins, estado=True)
+        except MantenimientoActivo.DoesNotExist:
+            mantenimiento_ins = None
+    print("se tiene" ,activo_ins)
+    if request.method == 'POST':
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Es una petición AJAX
+            
+            if request.POST.get('form_type') == 'form1':
+                form1 = A_Activo(
+                    request.POST, 
+                    instance=activo_ins
+                )
+                if form1.is_valid():
+                    instancia = form1.save()
+                    return JsonResponse({
+                        'success': True, 
+                        'message': 'Formulario 1 actualizado correctamente',
+                        'codigo': instancia.codigo
+                    })
+                else:
+                    return JsonResponse({
+                        'success': False, 
+                        'errors': form1.errors
+                    })
+            
+            elif request.POST.get('form_type') == 'form2':
+                # Para el formulario 2, siempre usamos la instancia secundaria relacionada
+                if 
+                formulario2 = FormularioSecundario(
+                    request.POST, 
+                    instance=instancia_secundario
+                )
+                if formulario2.is_valid():
+                    instancia = formulario2.save(commit=False)
+                    # Si es nuevo registro, asignar la relación con el principal
+                    if not instancia.pk and instancia_principal:
+                        instancia.principal = instancia_principal
+                    instancia.save()
+                    return JsonResponse({
+                        'success': True, 
+                        'message': 'Formulario 2 actualizado correctamente',
+                        'id': instancia.id
+                    })
+                else:
+                    return JsonResponse({
+                        'success': False, 
+                        'errors': formulario2.errors
+                    })
+
+class ActualizarActivo(LoginRequiredMixin, UpdateView):
+    model = Activo
+    second_model = MantenimientoActivo
+    template_name = "RegistroActualizacion/activo_a.html"
+    form_class = R_Activo_responsable
+    def get_context_data(self, **kwargs):
+        context = super(RegistroActivoResponsable, self).get_context_data(**kwargs)
+        if "form" not in context:
+            context["form"] = self.form_class(self.request.GET)
+        if "form2" not in context:
+            context["form2"] = self.second_form_class(self.request.GET)
+        context["titulo"] = "ACTUALIZACION DE DATOS DEL ACTIVO"
+        context["subtitulo_1"] = "ACTUALIZAR DATOS DEL ACTIVO"
+        context["subtitulo_2"] = "MANTENIMIENTO"
+        context["accion"] = "GUARDAR"
+        context["accion2"] = "CANCELAR"
+        context["accion2_url"] = reverse_lazy("activos:lista_activos")
+        context["activate"] = True
+        return context
 
 class RegistroActivoResponsable(LoginRequiredMixin, CreateView):
     model = Activo_responsable
@@ -208,19 +302,6 @@ class RegistroActivoResponsable(LoginRequiredMixin, CreateView):
             return self.render_to_response(
                 self.get_context_data(form=form, form2=form2)
             )
-
-
-class VerActivo(LoginRequiredMixin, TemplateView):
-    template_name = "Visualizar/activo.html"
-    def get_context_data(self, **kwargs):
-        context = super(VerActivo, self).get_context_data(**kwargs)
-        slug = self.kwargs.get("slug", None)
-        activo = Activo_responsable.objects.get(slug=slug)
-        activo_line = Line_Activo_Responsable.objects.filter(slug=slug).order_by("-fecha_registro")
-        context["titulo"] = "INFORMACION DEL ACTIVO"
-        context["activo"] = activo
-        context["line"] = activo_line
-        return context
 
 
 class ActualizarActivoResponsable(LoginRequiredMixin, UpdateView):

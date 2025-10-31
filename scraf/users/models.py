@@ -120,7 +120,7 @@ class Personal(models.Model):
     user = models.ForeignKey(User, related_name="personal_perfil",on_delete=models.CASCADE)
     
     def __str__(self):
-        return f' {self.slug}-{self.persona.nombre}-{self.persona.apellido}'
+        return f'{self.persona.nombre}_{self.persona.apellido}'
     
     class Meta:
         verbose_name = _('Personal')

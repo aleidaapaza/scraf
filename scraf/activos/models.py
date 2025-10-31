@@ -94,7 +94,7 @@ class Line_Activo(models.Model):
     observacion= models.TextField()
     
     def __str__(self):
-        return f'{self.slug}-{self.estado}'    
+        return f'{self.activo}'    
     class Meta:
         verbose_name = ('Line_Activo')
         verbose_name_plural = ('Line_Activos')

@@ -23,6 +23,7 @@ class Asignacion_Devolucion(models.Model):
     estado = models.BooleanField() #activo_inactivo
     fecha_asignacion = models.DateField(auto_now_add=True)
     carnet = models.IntegerField()
+    cargo = models.CharField(max_length=255, default="c")
     fecha_devolucion = models.DateField()
     # Guardar los IDs/códigos de activos como lista JSON
     codigoActivo = models.JSONField(default=list, blank=True, help_text="Lista de códigos de activos asignados")

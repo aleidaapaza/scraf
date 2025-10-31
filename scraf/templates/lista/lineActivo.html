@@ -1,1 +1,73 @@
 {% extends 'base/baseListasDatos 2Columnas.html' %}
+{% block thead1 %}
+    <tr>
+        <th scope="col">FECHA DEL REGISTRO</th>
+        <th scope="col">MODIFICADOR</th>
+        <th scope="col">ESTADO ACTIVO</th>
+        <th scope="col">ESTADO DESIGNACION</th>
+        <th scope="col">MANTENIMIENTO</th>      
+        <th scope="col">OBSERVACION</th>      
+    </tr>
+{% endblock %}
+{% block tbody1 %}
+    {% for activo in line_actvo %}
+        <tr>
+            <td> {{ activo.fecha_registro }} </td>
+            <td> {{ activo.creador }}</td>
+            <td> {{ activo.estadoActivo }}</td>
+            <td> {{ activo.estadoDesignacion }}</td>
+            <td> {{ activo.mantenimiento }}</td>
+            <td> {{ activo.observacion }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}
+
+{% block thead2 %}
+    <tr>
+        <th scope="col">FECHA DEL REGISTRO</th>
+        <th scope="col">MODIFICADOR</th>
+        <th scope="col">RESPONSABLE</th>
+        <th scope="col">UBICACION PISO</th>
+        <th scope="col">UBICACION OFICINA</th>      
+        <th scope="col">ESTADO</th>      
+        <th scope="col">OBSERVACION</th>      
+    </tr>
+{% endblock %}
+{% block tbody2 %}
+    {% for activo in activo_responsable_line %}
+        <tr>
+            <td> {{ activo.fecha_registro }} </td>
+            <td> {{ activo.creador }}</td>
+            <td> {{ activo.responsable }}</td>
+            <td> {{ activo.piso_ubicacion }}</td>
+            <td> {{ activo.oficina_ubicacion }}</td>
+            <td> {{ activo.estado }}</td>
+            <td> {{ activo.observacion }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}
+
+{% block thead3 %}
+    <tr>
+        <th scope="col">ESTADO</th>
+        <th scope="col">FECHA INICIO</th>
+        <th scope="col">DESCRIPCION INICIO</th>
+        <th scope="col">RESPONSABLE</th>
+        <th scope="col">FECHA FIN</th>      
+        <th scope="col">DESCRIPCION FIN</th>      
+        <th scope="col">RESPONSABLE</th>      
+    </tr>
+{% endblock %}
+{% block tbody3 %}
+    {% for activo in mantenimiento %}
+        <tr>
+            <td> {{ activo.estado }} </td>
+            <td> {{ activo.fechaInicio }}</td>
+            <td> {{ activo.descripcionInicio }}</td>
+            <td> {{ activo.asignadorInicio }}</td>
+            <td> {{ activo.fechaFin }}</td>
+            <td> {{ activo.descripcionFin }}</td>
+            <td> {{ activo.asignadorFin }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

@@ -2,7 +2,7 @@ from django_select2.forms import ModelSelect2Widget
 from django.forms import *
 from django import forms
 
-from activos.models import Activo, GrupoContable, AuxiliarContable
+from activos.models import Activo, GrupoContable, AuxiliarContable, MantenimientoActivo
 from designacion.models import Activo_responsable
 
 class R_Activo(forms.ModelForm):
@@ -42,25 +42,6 @@ class R_Activo_responsable(forms.ModelForm):
             'estado' : 'ESTADO DEL ACTIVO',
         }
         
-class A_Activo(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for form in self.visible_fields():
-            form.field.widget.attrs['class'] = 'form-control form-control-sm font-weight-bold'
-            form.field.widget.attrs['autocomplete'] = 'off'
-        self.fields['codigo'].disabled = True
-        self.fields['descActivo'].disabled = True
-        self.fields['descripcion'].disabled = True
-    
-    class Meta:
-        model = Activo
-        fields = '__all__'
-        labels = {
-            'codigo' : 'CODIGO DEL ACTIVO',
-            'descActivo' : 'DESCRIPCION DEL ACTIVO',
-            'descripcion' : 'DESCRIPCION',
-        }
-
 class A_Activo_responsable(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -209,5 +190,38 @@ class ActivoForm(forms.ModelForm):
                 'class': 'form-control border border-info',
                 'rows': 5,
                 'placeholder': 'Descripción del activo...'
+            }),
+        }
+
+#-----------------------------------------------------------------------------------------------------------------
+# ------------------- ACTUALIZAR ACTIVOS --------------------
+# ----------------------------------------------------------------------------------------------------------------
+
+class A_Activo(forms.ModelForm):
+    class Meta:
+        model = Activo
+        fields = ['estadoActivo', 'mantenimiento']
+        widgets = {
+             'estadoActivo': forms.Select(attrs={
+                'class': 'form-control border border-info',
+            }),
+        }
+
+class A_Mantenimiento_I(forms.ModelForm):
+    class Meta:
+        model = MantenimientoActivo
+        fields = ['descripcionInicio']
+        widgets = {
+             'descripcionInicio': forms.Select(attrs={
+                'class': 'form-control border border-info',
+            }),
+        }
+class A_Mantenimiento_F(forms.ModelForm):
+    class Meta:
+        model = MantenimientoActivo
+        fields = ['asignadorFin']
+        widgets = {
+             'asignadorFin': forms.Select(attrs={
+                'class': 'form-control border border-info',
             }),
         }

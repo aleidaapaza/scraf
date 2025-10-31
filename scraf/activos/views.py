@@ -155,6 +155,7 @@ def actualizarActivo_Ajax(request, activo_codigo=None):
         except MantenimientoActivo.DoesNotExist:
             mantenimiento_ins = None
     print("se tiene" ,activo_ins)
+    print("se tiene" ,mantenimiento_ins)
     if request.method == 'POST':
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             # Es una petición AJAX
@@ -179,27 +180,27 @@ def actualizarActivo_Ajax(request, activo_codigo=None):
             
             elif request.POST.get('form_type') == 'form2':
                 # Para el formulario 2, siempre usamos la instancia secundaria relacionada
-                if 
-                formulario2 = FormularioSecundario(
-                    request.POST, 
-                    instance=instancia_secundario
-                )
-                if formulario2.is_valid():
-                    instancia = formulario2.save(commit=False)
-                    # Si es nuevo registro, asignar la relación con el principal
-                    if not instancia.pk and instancia_principal:
-                        instancia.principal = instancia_principal
-                    instancia.save()
-                    return JsonResponse({
-                        'success': True, 
-                        'message': 'Formulario 2 actualizado correctamente',
-                        'id': instancia.id
-                    })
-                else:
-                    return JsonResponse({
-                        'success': False, 
-                        'errors': formulario2.errors
-                    })
+                if activo_ins.mantenimiento:
+                    formulario2 = A_Mantenimiento_F(
+                        request.POST, 
+                        instance=mantenimiento_ins
+                    )
+                    if formulario2.is_valid():
+                        instancia = formulario2.save(commit=False)
+                        # Si es nuevo registro, asignar la relación con el principal
+                        if not instancia.codigo and activo_ins:
+                            instancia.codigo = instancia_principal
+                        instancia.save()
+                        return JsonResponse({
+                            'success': True, 
+                            'message': 'Formulario 2 actualizado correctamente',
+                            'id': instancia.id
+                        })
+                    else:
+                        return JsonResponse({
+                            'success': False, 
+                            'errors': formulario2.errors
+                        })
 
 class ActualizarActivo(LoginRequiredMixin, UpdateView):
     model = Activo

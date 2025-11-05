@@ -26,6 +26,7 @@ urlpatterns = [
     path('users/',include('users.urls')),
     path('revision/',include('revision.urls')),
     path('activos/',include('activos.urls')),
+    path('asigdev/',include('designacion.urls')),
     path('admin/', admin.site.urls),
 ]
 

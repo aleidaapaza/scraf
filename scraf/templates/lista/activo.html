@@ -30,7 +30,7 @@
             </td>
             {% if user.g_Activos %}
             <td>
-                <a href=" " type="button"
+                <a href="{% url 'activos:gestionar_activo' activo.codigo %} " type="button"
                    class="btn btn-primary btn-xs">
                    <i class="bi bi-brush-fill"></i>
                 </a>

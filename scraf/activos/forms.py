@@ -206,22 +206,45 @@ class A_Activo(forms.ModelForm):
                 'class': 'form-control border border-info',
             }),
         }
+class A_Activo(forms.ModelForm):
+    class Meta:
+        model = Activo
+        fields = ['estadoActivo']
+        widgets = {
+            'estadoActivo': forms.Select(attrs={
+                'class': 'form-control border border-info',
+            }),
+        }
 
-class A_Mantenimiento_I(forms.ModelForm):
+class MantenimientoActivoForm(forms.ModelForm):
     class Meta:
         model = MantenimientoActivo
-        fields = ['descripcionInicio']
+        fields = ['descripcionInicio', 'descripcionFin']
         widgets = {
-             'descripcionInicio': forms.Select(attrs={
-                'class': 'form-control border border-info',
+            'descripcionInicio': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Descripción del problema o motivo del mantenimiento',
+                'id': 'id_descripcion_inicio'
+            }),
+            'descripcionFin': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Descripción de la solución aplicada',
+                'id': 'id_descripcion_fin'
             }),
         }
-class A_Mantenimiento_F(forms.ModelForm):
-    class Meta:
-        model = MantenimientoActivo
-        fields = ['asignadorFin']
-        widgets = {
-             'asignadorFin': forms.Select(attrs={
-                'class': 'form-control border border-info',
-            }),
+        labels = {
+            'descripcionInicio': 'Descripción del mantenimiento',
+            'descripcionFin': 'Descripción de la solución'
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Si es una instancia existente (finalizar mantenimiento), mostrar solo descripcionFin
+        if self.instance and self.instance.pk:
+            self.fields['descripcionInicio'].widget.attrs['readonly'] = True
+            self.fields['descripcionInicio'].required = False
+        else:
+            # Si es nuevo mantenimiento, ocultar descripcionFin
+            self.fields['descripcionFin'].widget = forms.HiddenInput()

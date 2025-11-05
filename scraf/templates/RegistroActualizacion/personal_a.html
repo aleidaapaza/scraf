@@ -1,17 +1,6 @@
 {% extends 'base/base.html' %}
 {% load static %}
 {% block contenido %}
-<!-- En tu base.html o personal_a.html -->
-{% if messages %}
-<div class="container mt-3">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
 <style>
   /* Aislar estilos a esta vista */
   .registro-personal .card { border-radius: 14px; }
@@ -33,7 +22,6 @@
 <div class="container-fluid registro-personal">
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-
     <!-- Título -->
     <div class="row mt-3">
       <div class="col-12">
@@ -117,15 +105,10 @@
                         {% if personal.user.g_mantenimiento %}checked{% endif %}>
                 </div>
               </div>
-              <input type="hidden" name="rol_independientes" id="rol_independientes"
-                    value="{% if personal.user.g_personal %}personal
-                                      {% if personal.user.g_mantenimiento %},mantenimiento{% endif %}
-                                      {% if personal.user.is_active %},Useractivo{% endif %}
-                                  {% elif personal.user.g_mantenimiento %},mantenimiento
-                                      {% if personal.user.g_personal %},personal{% endif %}
-                                      {% if personal.user.is_active %},Useractivo{% endif %}
-                                  {% elif personal.user.is_active%}Useractivo
-                                  {% endif %}"> 
+              <input type="hidden" name="rol_independientes" id="rol_independientes" value="
+{% if personal.user.g_personal %}personal{% endif %}
+{% if personal.user.g_mantenimiento %}{% if personal.user.g_personal %},{% endif %}mantenimiento{% endif %}
+{% if personal.user.is_active %}{% if personal.user.g_personal or personal.user.g_mantenimiento %},{% endif %}Useractivo{% endif %}">
             </div>
 
             <!-- Grupo B (exclusivo): Revisión -->
@@ -249,9 +232,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Grupo B
-    const rolesIndep = rolIndependientesInput.value.split(',').filter(Boolean);
+    const rolesIndep = rolIndependientesInput.value.split(',')
+    .map(valor => valor.trim())
+    .filter(Boolean);
+
     rolesIndep.forEach(valor => {
-        const checkbox = document.querySelector(`.independiente-switch[value="${valor}"]`);
+        const valorLimpio = valor.trim();
+        const checkbox = document.querySelector(`.independiente-switch[value="${valorLimpio}"]`);
         if (checkbox) checkbox.checked = true;
     });
 

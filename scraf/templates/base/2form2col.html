@@ -1,0 +1,45 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block contenido %}
+{% if user.is_authenticated %}
+    <div class="row">
+      <div class="col-md-6 col-sm-12">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">
+              <div class="row align-items-center">
+                <div class="col-auto"><i class="fa-solid fa-pen-to-square"></i></div>
+                <div class="col">{{ subtitulo_1 }}</div>
+              </div>
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              {% block formulario_1 %}                    
+              {% endblock formulario_1 %}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-sm-12">
+       <div class="card">
+          <div class="card-header bg-success text-white">
+            <h5 class="card-title mb-0">
+              <div class="row align-items-center">
+                <div class="col-auto"><i class="fa-solid fa-pen-to-square"></i></div>
+                <div class="col">{{ subtitulo_2 }}</div>
+              </div>
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              {% block formulario_2 %}                    
+              {% endblock formulario_2 %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+{% else %}
+{% endif %}
+{% endblock  %}

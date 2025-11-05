@@ -12,11 +12,11 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.views.generic import CreateView, View, ListView, UpdateView, TemplateView
 
-from activos.forms import R_Activo, R_Activo_responsable, A_Activo, ActivoForm, A_Activo, A_Mantenimiento_I, A_Mantenimiento_F
+from activos.forms import R_Activo, R_Activo_responsable, A_Activo, ActivoForm, A_Activo, MantenimientoActivoForm
 from activos.models import Activo, AuxiliarContable, Line_Activo, MantenimientoActivo
 from designacion.models import Activo_responsable, Line_Activo_Responsable
 from revision.views import get_menu_context
-from users.models import User
+from users.models import User, Personal
 
 
 class ListaActivos(LoginRequiredMixin, ListView):
@@ -31,13 +31,10 @@ class ListaActivos(LoginRequiredMixin, ListView):
         usuario_d = User.objects.get(username=usuario)
         context.update(get_menu_context(self.request))
         if usuario_d.g_Activos:
-            context["entity_registro"] = reverse_lazy("activos:ajax_r_activo")
             context["entity_registro"] = reverse_lazy(
                 "activos:registro_activos", args=[]
             )
             context["entity_registro_nom"] = "REGISTRAR NUEVO ACTIVO"
-            context["entity_registro2"] = reverse_lazy("activos:ajax_r_activo_resp")
-            context["entity_registro_nom2"] = "REGISTRAR NUEVO ACTIVO CON RESPONSABLE"
         return context
 
 
@@ -64,7 +61,7 @@ class RegistroActivo(LoginRequiredMixin, CreateView):
             codigo = form.cleaned_data.get("codigo")
             form.save()
             activo = self.model.objects.get(codigo=codigo)
-            print(activo)
+            print('activo registrado', activo)
             Line_Activo.objects.create(
                 activo = activo,
                 creador = usuario,
@@ -106,7 +103,7 @@ class LineActivo(LoginRequiredMixin, TemplateView):
             context = super().get_context_data(**kwargs)
             codigo = self.kwargs.get("codigo")
             activo = Activo.objects.get(codigo=codigo)
-            print(activo)
+            print('activo', activo)
             activo_line = Line_Activo.objects.filter(activo=activo).order_by("-fecha_registro")
             print(activo_line)
             activo_responsable_line = Line_Activo_Responsable.objects.filter(slug=activo).order_by("-fecha_registro")
@@ -139,68 +136,161 @@ class VerActivo(LoginRequiredMixin, TemplateView):
             context["responsable"] = lugar
         mantenimiento = MantenimientoActivo.objects.filter(activo=activo, estado = True)
         print('mantenimiento', mantenimiento)
-        if lugar:
-            context["mantenimiento"] = mantenimiento
+        if mantenimiento:
+            mantenimientos = mantenimiento.first()
+            context["mantenimientos"] = mantenimientos
         return context    
 
-def actualizarActivo_Ajax(request, activo_codigo=None):
-    activo_ins = None
-    mantenimiento_ins = None
 
-    if activo_ins:
-        activo_ins = get_object_or_404(Activo, codigo=activo_codigo)
-        # Intentar obtener el secundario relacionado con el principal
-        try:
-            mantenimiento_ins = MantenimientoActivo.objects.filter(activo=activo_ins, estado=True)
-        except MantenimientoActivo.DoesNotExist:
-            mantenimiento_ins = None
-    print("se tiene" ,activo_ins)
-    print("se tiene" ,mantenimiento_ins)
+#-----------------------------------------------------------------------------------------------------------------
+# ------------------- actualizar datos activo y habilitar mantenimiento --------------------
+# ----------------------------------------------------------------------------------------------------------------
+
+def gestionar_activo(request, activo_codigo):
+
+    activo = get_object_or_404(Activo, codigo=activo_codigo)
+    try:
+        mantenimiento_activo = MantenimientoActivo.objects.get(
+            activo=activo, 
+            estado=True 
+        )
+    except MantenimientoActivo.DoesNotExist:
+        mantenimiento_activo = None    
     if request.method == 'POST':
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            # Es una petición AJAX
-            
-            if request.POST.get('form_type') == 'form1':
-                form1 = A_Activo(
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':            
+            if request.POST.get('form_type') == 'form_activo':                
+                form_activo = A_Activo(
                     request.POST, 
-                    instance=activo_ins
+                    instance=activo
                 )
-                if form1.is_valid():
-                    instancia = form1.save()
+                if form_activo.is_valid():
+                    instancia = form_activo.save()
+                    activo = Activo.objects.get(codigo=instancia.codigo)
+                    Line_Activo.objects.create(
+                        activo = activo,
+                        creador = request.user,
+                        estadoActivo = activo.estadoActivo,
+                        estadoDesignacion = activo.estadoDesignacion,
+                        mantenimiento = activo.mantenimiento,
+                        observacion = "Cambio de Estado"
+                    )
                     return JsonResponse({
                         'success': True, 
-                        'message': 'Formulario 1 actualizado correctamente',
-                        'codigo': instancia.codigo
+                        'message': 'Estado del activo actualizado correctamente',
+                        'codigo': instancia.codigo,
                     })
                 else:
                     return JsonResponse({
                         'success': False, 
-                        'errors': form1.errors
+                        'errors': form_activo.errors
                     })
             
-            elif request.POST.get('form_type') == 'form2':
-                # Para el formulario 2, siempre usamos la instancia secundaria relacionada
-                if activo_ins.mantenimiento:
-                    formulario2 = A_Mantenimiento_F(
-                        request.POST, 
-                        instance=mantenimiento_ins
-                    )
-                    if formulario2.is_valid():
-                        instancia = formulario2.save(commit=False)
-                        # Si es nuevo registro, asignar la relación con el principal
-                        if not instancia.codigo and activo_ins:
-                            instancia.codigo = instancia_principal
+            elif request.POST.get('form_type') == 'form_mantenimiento':
+                # Procesar formulario de mantenimiento
+                if request.POST.get('accion') == 'iniciar':
+                    # Iniciar nuevo mantenimiento
+                    form_mantenimiento = MantenimientoActivoForm(request.POST)
+                    if form_mantenimiento.is_valid():
+                        instancia = form_mantenimiento.save(commit=False)
+                        instancia.activo = activo
+                        instancia.estado = True  # Activo
+                        instancia.fechaInicio = timezone.now().date()
+                        try:
+                            personal_usuario = Personal.objects.get(user=request.user)
+                            instancia.asignadorInicio = personal_usuario
+                        except Personal.DoesNotExist:
+                            return JsonResponse({
+                                    'success': False, 
+                                    'errors': {'general': 'El usuario no tiene un perfil de Personal asociado'}
+                                })
                         instancia.save()
+                        
+                        # Actualizar estado de mantenimiento del activo a True
+                        activo.mantenimiento = True
+                        activo.save()
+                        print('activo registrado', activo)
+                        Line_Activo.objects.create(
+                            activo = activo,
+                            creador = request.user,
+                            estadoActivo = activo.estadoActivo,
+                            estadoDesignacion = activo.estadoDesignacion,
+                            mantenimiento = activo.mantenimiento,
+                            observacion = "Inicio de Mantenimiento"
+                        )
                         return JsonResponse({
                             'success': True, 
-                            'message': 'Formulario 2 actualizado correctamente',
-                            'id': instancia.id
+                            'message': 'Mantenimiento iniciado correctamente',
+                            'estado': 'activo'
                         })
                     else:
                         return JsonResponse({
                             'success': False, 
-                            'errors': formulario2.errors
+                            'errors': form_mantenimiento.errors
                         })
+                
+                elif request.POST.get('accion') == 'finalizar':
+                    # Finalizar mantenimiento existente
+                    if mantenimiento_activo:
+                        form_mantenimiento = MantenimientoActivoForm(
+                            request.POST, 
+                            instance=mantenimiento_activo
+                        )
+                        if form_mantenimiento.is_valid():
+                            instancia = form_mantenimiento.save(commit=False)
+                            instancia.estado = False  # Inactivo
+                            instancia.fechaFin = timezone.now().date()
+                            try:
+                                personal_usuario = Personal.objects.get(user=request.user)
+                                instancia.asignadorFin = personal_usuario
+                            except Personal.DoesNotExist:
+                                # Manejar el caso donde el usuario no tiene perfil Personal
+                                return JsonResponse({
+                                    'success': False, 
+                                    'errors': {'general': 'El usuario no tiene un perfil de Personal asociado'}
+                                })
+                            instancia.save()                            
+                            # Actualizar estado de mantenimiento del activo a False
+                            activo.mantenimiento = False
+                            activo.save()
+                            print('activo registrado', activo)
+                            Line_Activo.objects.create(
+                                activo = activo,
+                                creador = request.user,
+                                estadoActivo = activo.estadoActivo,
+                                estadoDesignacion = activo.estadoDesignacion,
+                                mantenimiento = activo.mantenimiento,
+                                observacion = "FIN de Mantenimiento"
+                            )
+                            return JsonResponse({
+                                'success': True, 
+                                'message': 'Mantenimiento finalizado correctamente',
+                                'estado': 'inactivo'
+                            })
+                        else:
+                            return JsonResponse({
+                                'success': False, 
+                                'errors': form_mantenimiento.errors
+                            })
+    
+    # GET request - mostrar formularios
+    form_activo = A_Activo(instance=activo)
+    form_mantenimiento = MantenimientoActivoForm(instance=mantenimiento_activo)
+    
+    context = {
+        'form_activo': form_activo,
+        'form_mantenimiento': form_mantenimiento,
+        'activo': activo,
+        'mantenimiento_activo': mantenimiento_activo,
+        'subtitulo_1': 'Estado del Activo',
+        'subtitulo_2': 'Gestión de Mantenimiento',
+    }
+    
+    return render(request, 'RegistroActualizacion/activo_a.html', context)
+
+#-----------------------------------------------------------------------------------------------------------------
+# ------------------- VIEWS ANTIGUROS ACTIVOS --------------------
+# ----------------------------------------------------------------------------------------------------------------
+
 
 class ActualizarActivo(LoginRequiredMixin, UpdateView):
     model = Activo

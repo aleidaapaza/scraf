@@ -15,8 +15,8 @@
             <td> {{ activo.fecha_registro }} </td>
             <td> {{ activo.creador }}</td>
             <td> {{ activo.estadoActivo }}</td>
-            <td> {{ activo.estadoDesignacion }}</td>
-            <td> {{ activo.mantenimiento }}</td>
+            <td> {% if activo.estadoDesignacion %}Designado{% else %}Sin Designar{% endif %}</td>
+            <td> {% if activo.mantenimiento %}En Mantenimiento{% else %}-{% endif %}</td>
             <td> {{ activo.observacion }}</td>
         </tr>
     {% endfor %}
@@ -61,13 +61,13 @@
 {% block tbody3 %}
     {% for activo in mantenimiento %}
         <tr>
-            <td> {{ activo.estado }} </td>
-            <td> {{ activo.fechaInicio }}</td>
-            <td> {{ activo.descripcionInicio }}</td>
-            <td> {{ activo.asignadorInicio }}</td>
-            <td> {{ activo.fechaFin }}</td>
-            <td> {{ activo.descripcionFin }}</td>
-            <td> {{ activo.asignadorFin }}</td>
+             {% if activo.estado %} <td class="table-success">ACTIVO{% else %}<td>FINALIZADO{% endif %}</td>
+            <td class="table-info"> {{ activo.fechaInicio }}</td>
+            <td class="table-info"> {{ activo.descripcionInicio|linebreaks }}</td>
+            <td class="table-info"> {{ activo.asignadorInicio }}</td>
+            <td> {% if  activo.fechaFin %}{{ activo.fechaFin }}{% else %} - {% endif %} </td>
+            <td> {% if  activo.descripcionFin %}{{ activo.descripcionFin }}{% else %} - {% endif %} </td>
+            <td> {% if  activo.asignadorFin %}{{ activo.asignadorFin }}{% else %} - {% endif %} </td>
         </tr>
     {% endfor %}
 {% endblock %}

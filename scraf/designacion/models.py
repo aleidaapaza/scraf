@@ -7,7 +7,7 @@ from datetime import datetime
 from activos.models import Activo
 from users.models import Personal, User
 from activos.choices import estados, oficinas_ubicacion, pisos_ubicacion
-
+from designacion.choices import tipo_devolucion
 # Create your models here.
 def set_slug1(sender, instance, *args, **kwargs):
     año = datetime.now().year
@@ -18,13 +18,12 @@ def set_slug1(sender, instance, *args, **kwargs):
         )
         instance.slug = slug
 
-class Asignacion_Devolucion(models.Model):
+class Asignacion(models.Model):
     slug = models.SlugField(unique=True) 
     estado = models.BooleanField() #activo_inactivo
     fecha_asignacion = models.DateField(auto_now_add=True)
     carnet = models.IntegerField()
     cargo = models.CharField(max_length=255, default="c")
-    fecha_devolucion = models.DateField()
     # Guardar los IDs/códigos de activos como lista JSON
     codigoActivo = models.JSONField(default=list, blank=True, help_text="Lista de códigos de activos asignados")
     
@@ -45,10 +44,43 @@ class Asignacion_Devolucion(models.Model):
         """Obtener cantidad de activos"""
         return len(self.codigoActivo)
     
-pre_save.connect(set_slug1, sender=Asignacion_Devolucion)
+    class Meta:
+        verbose_name = ('Asignacion')
+        verbose_name_plural = ('Asignaciones')
+        db_table = 'Asignacion'
+
+pre_save.connect(set_slug1, sender=Asignacion)
+
+class Devoluciones(models.Model):
+    asignacion = models.ForeignKey(Asignacion, to_field='slug', on_delete=models.CASCADE, related_name='devolucion')
+    fecha_devolucion = models.DateField()
+    tipoDevolucion = models.CharField(tipo_devolucion, max_length=100)
+    codigoActivo = models.JSONField(default=list, blank=True, help_text="Lista de códigos de activos devueltos")
+    def __str__(self):
+        return f'{self.asignacion.slug}-{self.tipoDevolucion}'
     
+    def agregar_activo(self, codigo_activo):
+        """Agregar un código de activo a la lista"""
+        if codigo_activo not in self.codigoActivo:
+            self.codigoActivo.append(codigo_activo)
+            self.save()
+            
+    def tiene_activo(self, codigo_activo):
+        """Verificar si tiene un activo específico"""
+        return codigo_activo in self.codigoActivo
+    
+    def cantidad_activos(self):
+        """Obtener cantidad de activos"""
+        return len(self.codigoActivo)
+    
+    class Meta:
+        verbose_name = ('Devoluciones')
+        verbose_name_plural = ('Devoluciones')
+        db_table = 'Devoluciones'
+
+
 class Activo_responsable(models.Model):
-    asig_devol = models.ForeignKey(Asignacion_Devolucion,  on_delete=models.CASCADE, related_name='asignacionResponsable') #CodigoAsignacion
+    asignacion = models.ForeignKey(Asignacion,  on_delete=models.CASCADE, related_name='asignacionResponsable', null=True, blank=True) #CodigoAsignacion si esta asignado
     activo = models.ForeignKey(Activo, to_field='codigo', on_delete=models.CASCADE, related_name = 'activoResponsable')
     responsable = models.ForeignKey(Personal, to_field='slug', on_delete=models.CASCADE, null=True, blank=True, related_name = 'personaResponsable')
     piso_ubicacion = models.CharField(choices=pisos_ubicacion, null=True, blank=True)
@@ -68,8 +100,8 @@ class Activo_responsable(models.Model):
         verbose_name_plural = ('Activos_responsables')
         db_table = 'Activo_responsable'
 
-class Line_Asignacion_Devolucion(models.Model):
-    slug = models.ForeignKey(Asignacion_Devolucion, on_delete=models.CASCADE)
+class Line_Asignacion(models.Model):
+    slug = models.ForeignKey(Asignacion, on_delete=models.CASCADE)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     estado = models.BooleanField() #activo_inactivo
     observacion = models.TextField()
@@ -84,6 +116,7 @@ class Line_Activo_Responsable(models.Model):
     oficina_ubicacion = models.CharField(choices=oficinas_ubicacion)
     estado = models.CharField(choices=estados)
     observacion= models.TextField()
+
     
     def __str__(self):
         return f'{self.slug}-{self.estado}'    

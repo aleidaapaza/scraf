@@ -85,7 +85,19 @@
                     </li>
                 </ul>
             </div>
+            <div class="menu-section">
+                <div class="menu-title">GESTION DE ASIGNACION/DEVOLUCION ACTIVOS</div>
+                <ul class="menu-items">
+                    <li>
+                        <a class="nav-link px-3" href="{% url 'designacion:lista_asignaciones' %}">
+                            <i class="fas fa-list-alt me-2"></i>Asignaciones/Devoluciones
+                        </a>
+                    </li>
+                </ul>
+            </div>
         {% endif %}
+
+        
         {% if user.is_encargado %}
             <div class="menu-section">
                 <div class="menu-title">GESTION DE REVISION DE ACTIVOS</div>
@@ -112,15 +124,7 @@
                     </li>
                 </ul>
             </div>
-        {% endif %}
-        <div class="menu-section">
-            <div class="menu-title">Group 3</div>
-            <ul class="menu-items">
-                <li><a href="#" class="menu-item">Configuración</a></li>
-                <li><a href="#" class="menu-item">Ayuda</a></li>
-                <li><a href="#" class="menu-item">Acerca de</a></li>
-            </ul>
-        </div>
+        {% endif %}     
 
         <!-- Cerrar sesión -->
         <div class="logout-section">

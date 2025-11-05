@@ -1,211 +1,234 @@
-{% extends 'base/form2col.html' %}
+{% extends 'base/2form2col.html' %}
 {% load static %}
-{% block alert %}
-    {% for field in form %}
-        <div class="row align-items-center  bg-warning text-white">                
-          {% if field.help_text %}<div class="form-text text-warning text-muted small">{{ field.help_text }}</div>{% endif %}
-          {% if field.errors %}<div class="text-danger small mt-1">{% for error in field.errors %}<span>({{ error }})</span>{% endfor %}</div>{% endif %}
-        </div>        
-    {% endfor %}
-  </div>    
-  {% endblock alert %}
-  {% block formulario %}      
-  <div class="row">
-    <div class="col-sm-12 col-md-6">
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <label class="form-label fw-bold">Código del Activo *</label>
-          {{ form.codigo }}
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-bold">Estado del Activo</label>
-          {{ form.estadoActivo }}
-        </div>
+
+{% block formulario_1 %}
+<div class="col-12 mb-4">
+  <div class="card bg-light">
+    <div class="card-body">
+      <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0"><i class="fas fa-eye me-2"></i>DATOS DEL ACTIVO</h5>
       </div>
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <label class="form-label fw-bold">Grupo Contable *</label>
-          {{ form.grupoContable }}
-          <div class="form-text">Seleccione un grupo contable</div>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-bold">Auxiliar Contable *</label>
-          <select name="auxiliar" id="id_auxiliar" class="form-control" disabled>
-            <option value="">Seleccione auxiliar contable...</option>
-          </select>
-          <div class="form-text" id="auxiliarHelp">Se habilitará al seleccionar un grupo</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-sm-12 col-md-6">
-      <div class="mb-3">
-        <label class="form-label  fw-bold">Descripción *</label>
-        {{ form.descActivo }}
-      </div>
+      <div class="card-body row">
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Código del Activo</label>
+                                <div class="form-control">{{ activo.codigo }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Estado del Activo</label>
+                                <div class="form-control">{{ activo.estadoActivo }}</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Grupo Contable</label>
+                                <div class="form-control">{{ activo.grupoContable.nombre }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Auxiliar</label>
+                                <div class="form-control">{{ activo.auxiliar.nombre }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                                <label class="form-label fw-bold">Descripcion del Activo</label>
+                                <div class="form-control">{{ activo.descActivo|linebreaks }}</div>
+                        </div>
+                    </div>
+                </div>
     </div>
   </div>
-{% endblock formulario %}
+</div>
+<!-- Alertas -->
+<div id="alertActivo" class="alert alert-success alert-dismissible fade show d-none" role="alert">
+                    <span id="alertMessageActivo"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+                <!-- Formulario del Estado del Activo -->
+<form id="formActivo" class="col-12">
+                    {% csrf_token %}
+                    <input type="hidden" id="activo_codigo" name="activo_codigo" value="{{ activo.codigo }}">
+                    <div class="mb-3">
+                        {{ form_activo.estadoActivo.label_tag }}
+                        {{ form_activo.estadoActivo }}
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btnActivo">
+                        Actualizar Estado
+                    </button>
+</form>
+{% endblock formulario_1 %}
 
-{% block formulario2 %}
-  {% if form2 %}
-    <h4 class="text-center">{{subtitulo_2}}</h4>
-    <hr>
+{% block formulario_2 %}
+<div id="alertMantenimiento" class="alert alert-success alert-dismissible fade show d-none" role="alert">
+                    <span id="alertMessageMantenimiento"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
 
-    {% for field in form2 %}
-      <div class="mb-3 row">
-        <label class="col-sm-4 col-form-label text-end">{{ field.label_tag }}</label>
-        <div class="col-sm-8">
-          {{ field }}
-          {% if field.help_text %}<div class="form-text text-warning text-muted small">{{ field.help_text }}</div>{% endif %}
-          {% if field.errors %}<div class="text-danger small mt-1">{% for error in field.errors %}<span>({{ error }})</span>{% endfor %}</div>{% endif %}
-        </div>
-      </div>
-    {% endfor %}
+                <!-- Estado del Mantenimiento -->
+                <div class="col-12 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Estado Actual</h6>
+                            {% if activo.mantenimiento %}
+                                <span class="badge bg-warning">En Mantenimiento</span>
+                            {% else %}
+                                <span class="badge bg-success">Sin Mantenimiento</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
 
-    {% if form.estado %}
-      <div class="mb-3 row">
-        <label class="col-sm-4 col-form-label text-end">{{ form.estado.label_tag }}</label>
-        <div class="col-sm-8">
-          {{ form.estado }}
-          {% if form.estado.help_text %}<div class="form-text text-warning text-muted small">{{ form.estado.help_text }}</div>{% endif %}
-          {% if form.estado.errors %}<div class="text-danger small mt-1">{% for error in form.estado.errors %}<span>({{ error }})</span>{% endfor %}</div>{% endif %}
-        </div>
-      </div>
-    {% endif %}
-  {% endif %}
-{% endblock formulario2 %}
+                <!-- Formulario de Mantenimiento -->
+                <form id="formMantenimiento" class="col-12">
+                    {% csrf_token %}
+                    <input type="hidden" id="mantenimiento_id" name="mantenimiento_id" 
+                           value="{{ mantenimiento_activo.id|default:'' }}">
+                    <input type="hidden" id="accion" name="accion" value="">
+                    
+                    <!-- Para nuevo mantenimiento -->
+                    <div id="seccionInicio" class="{% if activo.mantenimiento %}d-none{% endif %}">
+                        <div class="mb-3">
+                            <label for="id_descripcion_inicio" class="form-label">
+                                <strong>Iniciar Mantenimiento</strong>
+                            </label>
+                            {{ form_mantenimiento.descripcionInicio }}
+                            <div class="form-text">
+                                Describa el problema o motivo del mantenimiento.
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-warning w-100" id="btnIniciarMantenimiento">
+                            <i class="fas fa-play-circle me-2"></i>Iniciar Mantenimiento
+                        </button>
+                    </div>
+                    
+                    <!-- Para finalizar mantenimiento -->
+                    <div id="seccionFin" class="{% if not activo.mantenimiento %}d-none{% endif %}">
+                        {% if mantenimiento_activo %}
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <strong>Mantenimiento en curso</strong>
+                            </label>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p class="mb-1"><strong>Iniciado el:</strong> {{ mantenimiento_activo.fechaInicio }}</p>
+                                    <p class="mb-0"><strong>Descripción:</strong> {{ mantenimiento_activo.descripcionInicio|linebreaks }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="id_descripcion_fin" class="form-label">
+                                <strong>Finalizar Mantenimiento</strong>
+                            </label>
+                            {{ form_mantenimiento.descripcionFin }}
+                            <div class="form-text">
+                                Describa la solución aplicada.
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success w-100" id="btnFinalizarMantenimiento">
+                            <i class="fas fa-stop-circle me-2"></i>Finalizar Mantenimiento
+                        </button>
+                    </div>
+                </form>
+{% endblock formulario_2 %}
 
  {% block script %}
 <script>
-    $(document).ready(function() {
-        const grupoSelect = $('#id_grupoContable');
-        const auxiliarSelect = $('#id_auxiliar');
-        const auxiliarHelp = $('#auxiliarHelp');
-        
-        let grupoSeleccionado = null;
-        
-        // URL para obtener auxiliares (la crearemos en views.py)
-        const urlGetAuxiliares = '{% url "activos:Auxiliares_por_grupo" %}';
-        
-        // Inicializar Select2 para auxiliar con AJAX manual
-        function inicializarAuxiliarSelect2() {
-            auxiliarSelect.select2({
-                ajax: {
-                    url: urlGetAuxiliares,
-                    dataType: 'json',
-                    delay: 250,
-                    data: function(params) {
-                        return {
-                            q: params.term, // término de búsqueda
-                            grupo_id: grupoSeleccionado, // grupo seleccionado
-                            page: params.page || 1
-                        };
-                    },
-                    processResults: function(data, params) {
-                        console.log('📦 Datos recibidos:', data);
-                        
-                        // Si data es un array simple
-                        if (Array.isArray(data)) {
-                            return {
-                                results: data.map(item => ({
-                                    id: item.id,
-                                    text: item.nombre || item.text
-                                })),
-                                pagination: {
-                                    more: false
-                                }
-                            };
-                        }
-                        // Si data tiene formato {results: [...]}
-                        else if (data.results) {
-                            return {
-                                results: data.results,
-                                pagination: {
-                                    more: data.more || false
-                                }
-                            };
-                        }
-                        // Formato por defecto para Django-Select2
-                        else {
-                            return {
-                                results: data,
-                                pagination: {
-                                    more: false
-                                }
-                            };
-                        }
-                    },
-                    cache: true
-                },
-                minimumInputLength: 0,
-                placeholder: 'Seleccione auxiliar contable...',
-                allowClear: true,
-                disabled: true,
-                language: 'es'
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnIniciarMantenimiento = document.getElementById('btnIniciarMantenimiento');
+        const btnFinalizarMantenimiento = document.getElementById('btnFinalizarMantenimiento');
+        const seccionInicio = document.getElementById('seccionInicio');
+        const seccionFin = document.getElementById('seccionFin');
+
+        // URL para las peticiones AJAX
+        const urlGestionarActivo = "{% url 'activos:gestionar_activo' activo.codigo %}";
+
+        // Iniciar mantenimiento
+        btnIniciarMantenimiento.addEventListener('click', function() {
+            document.getElementById('accion').value = 'iniciar';
+            enviarFormularioMantenimiento();
+        });
+
+        // Finalizar mantenimiento
+        btnFinalizarMantenimiento.addEventListener('click', function() {
+            document.getElementById('accion').value = 'finalizar';
+            enviarFormularioMantenimiento();
+        });
+
+        // Envío del formulario de activo
+        document.getElementById('formActivo').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            formData.append('form_type', 'form_activo');
+            
+            fetch(urlGestionarActivo, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarAlerta('alertActivo', data.message);
+                } else {
+                    mostrarAlerta('alertActivo', 'Error: ' + JSON.stringify(data.errors), false);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarAlerta('alertActivo', 'Error al actualizar estado', false);
             });
+        });
+
+        // Envío del formulario de mantenimiento
+        function enviarFormularioMantenimiento() {
+            const formData = new FormData(document.getElementById('formMantenimiento'));
+            formData.append('form_type', 'form_mantenimiento');
             
-            console.log('✅ Select2 del auxiliar inicializado con AJAX manual');
+            fetch(urlGestionarActivo, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarAlerta('alertMantenimiento', data.message);
+                    // Recargar la página para actualizar la interfaz
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    mostrarAlerta('alertMantenimiento', 'Error: ' + JSON.stringify(data.errors), false);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarAlerta('alertMantenimiento', 'Error al procesar mantenimiento', false);
+            });
         }
-        
-        // Manejar cambio en grupo contable
-        grupoSelect.on('change', function() {
-            grupoSeleccionado = $(this).val();
-            console.log('🎯 Grupo seleccionado:', grupoSeleccionado);
+
+        // Función para mostrar alertas
+        function mostrarAlerta(alertId, message, isSuccess = true) {
+            const alert = document.getElementById(alertId);
+            const messageSpan = document.getElementById(`alertMessage${alertId.replace('alert', '')}`);
             
-            if (grupoSeleccionado) {
-                // Habilitar auxiliar
-                auxiliarSelect.prop('disabled', false);
-                auxiliarSelect.select2('enable');
-                auxiliarHelp.text('Cargando auxiliares...');
-                
-                // Limpiar selección anterior
-                auxiliarSelect.val(null).trigger('change');
-                
-                // Forzar recarga de auxiliares
-                setTimeout(() => {
-                    // Abrir automáticamente para mostrar resultados
-                    auxiliarSelect.select2('open');
-                    auxiliarHelp.text('Seleccione un auxiliar contable');
-                }, 300);
-                
-            } else {
-                // Deshabilitar auxiliar
-                auxiliarSelect.prop('disabled', true);
-                auxiliarSelect.select2('enable', false);
-                auxiliarSelect.val(null).trigger('change');
-                auxiliarHelp.text('Primero seleccione un grupo contable');
-            }
-        });
-        
-        // Manejar errores en AJAX
-        auxiliarSelect.on('select2:opening', function() {
-            if (!grupoSeleccionado) {
-                console.log('❌ No se puede abrir: no hay grupo seleccionado');
-                setTimeout(() => {
-                    auxiliarSelect.select2('close');
-                    alert('Por favor, seleccione primero un grupo contable.');
-                }, 100);
-            }
-        });
-        
-        // Inicializar cuando la página carga
-        setTimeout(() => {
-            inicializarAuxiliarSelect2();
+            alert.classList.remove('alert-success', 'alert-danger', 'd-none');
+            alert.classList.add(isSuccess ? 'alert-success' : 'alert-danger');
+            messageSpan.textContent = message;
             
-            // Si ya hay un grupo seleccionado (en modo edición)
-            const grupoInicial = grupoSelect.val();
-            if (grupoInicial) {
-                grupoSeleccionado = grupoInicial;
-                auxiliarSelect.prop('disabled', false);
-                auxiliarSelect.select2('enable');
-                console.log('🔄 Grupo inicial detectado:', grupoInicial);
-                
-                // Cargar auxiliares para el grupo inicial
-                setTimeout(() => {
-                    auxiliarSelect.select2('open');
-                }, 500);
-            }
-        }, 500);
+            setTimeout(() => {
+                alert.classList.add('d-none');
+            }, 5000);
+        }
     });
-    </script>
+</script>
  {% endblock %}

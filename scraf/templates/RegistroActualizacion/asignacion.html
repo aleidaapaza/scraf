@@ -1,0 +1,37 @@
+{% extends 'base/2form2col1btn.html' %}
+{% load static %}
+
+{% block PARTE_1 %} 
+  <div class="list-group">
+              {% for personal in personal_list %}
+              <label class="list-group-item">
+                <input class="form-check-input me-2" type="radio" name="personal" value="{{ personal.slug }}" required>
+                <strong>{{ personal.persona.nombrecompleto }}</strong> - 
+                CI: {{ personal.persona.carnet }} - 
+                Cargo: {{ personal.persona.cargo }}
+              </label>
+              {% empty %}
+              <div class="alert alert-warning">No hay personal disponible</div>
+              {% endfor %}
+            </div>
+{% endblock%}
+
+{% block PARTE_2 %} 
+<div class="list-group">
+              {% for activo in activos_list %}
+              <label class="list-group-item">
+                <input class="form-check-input me-2" type="checkbox" name="activos" value="{{ activo.codigo }}">
+                <strong>{{ activo.codigo }}</strong> - 
+                {{ activo.descActivo|truncatewords:10 }}
+                <br>
+                <small class="text-muted">Grupo: {{ activo.grupoContable.nombre }}</small>
+              </label>
+              {% empty %}
+              <div class="alert alert-info">No hay activos disponibles para asignar</div>
+              {% endfor %}
+            </div>
+{% endblock%}
+
+ {% block script %}
+
+ {% endblock %}

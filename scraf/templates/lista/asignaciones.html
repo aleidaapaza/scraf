@@ -1,0 +1,34 @@
+{% extends 'base/baseListasDatos.html' %}
+{% load static %}
+{% block thead %}
+    <tr>
+        <th scope="col">ESTADO</th>
+        <th scope="col">CODIGO ASIGNACION</th>
+        <th scope="col">CARNET DEL RESPONSABLE</th>
+        <th scope="col">CARGO DEL RESPONSABLE</th>
+        <th scope="col">VER ACTIVOS ASIGNADOS</th>
+        <th scope="col">VER DEVOLUCIONES</th>
+    </tr>
+{% endblock %}
+{% block tbody %}
+    {% for activo in object_list %}
+        <tr>
+            <td> {{ activo.estado }} </td>
+            <td> {{ activo.slug }}</td>
+            <td> {{ activo.carnet }}</td>
+            <td> {{ activo.cargo }}</td>
+            <td>
+                <a href="{% url 'activos:ver_activo' activo.codigo %}" type="button"
+                   class="btn btn-primary btn-xs">
+                   <i class="bi bi-eye"></i>
+                </a>
+            </td>
+            <td>
+                <a href="{% url 'activos:ver_activo' activo.codigo %}" type="button"
+                   class="btn btn-primary btn-xs">
+                   <i class="bi bi-eye"></i>
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}

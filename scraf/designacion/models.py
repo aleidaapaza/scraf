@@ -108,13 +108,13 @@ class Line_Asignacion(models.Model):
 
 
 class Line_Activo_Responsable(models.Model):
-    slug = models.ForeignKey(Activo, on_delete=models.CASCADE)
+    slug = models.ForeignKey(Activo, to_field='codigo', on_delete=models.CASCADE)
     creador = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     responsable = models.ForeignKey(Personal, to_field='slug', on_delete=models.PROTECT, null=True, blank=True)
     piso_ubicacion = models.CharField(choices=pisos_ubicacion)
     oficina_ubicacion = models.CharField(choices=oficinas_ubicacion)
-    estado = models.CharField(choices=estados)
+    estado = models.CharField(max_length=255)
     observacion= models.TextField()
 
     

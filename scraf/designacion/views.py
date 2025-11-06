@@ -6,9 +6,9 @@ from django.http import JsonResponse
 from django.contrib import messages
 
 
-from designacion.models import Asignacion, Activo_responsable
+from designacion.models import Asignacion, Activo_responsable, Line_Asignacion, Line_Activo_Responsable
 from users.models import User, Personal
-from activos.models import Activo
+from activos.models import Activo, Line_Activo
 
 # Create your views here.
 class ListaAsignaciones(LoginRequiredMixin, ListView):
@@ -43,7 +43,14 @@ def crear_asignacion(request):
                 carnet=personal.persona.carnet if personal.persona else 0,  # Ajusta según tu modelo Persona
                 cargo=personal.persona.cargo if personal.persona else "Sin cargo",  # Ajusta según tu modelo
                 codigoActivo=activos_seleccionados
-            )            
+            )
+            print('aqui llego')
+            Line_Asignacion.objects.create(
+                slug = asignacion,
+                estado = asignacion.estado,
+                observacion = f"REGISTRO DE ASIGNACION, CARNET:{asignacion.carnet} CARGO:{asignacion.cargo}"
+            )
+            print('aqui llegox2')
             # 2. CREAR/ACTUALIZAR REGISTROS EN ACTIVO_RESPONSABLE
             for codigo_activo in activos_seleccionados:
                 activo = Activo.objects.get(codigo=codigo_activo)
@@ -65,11 +72,28 @@ def crear_asignacion(request):
                     activo_responsable.responsable = personal
                     activo_responsable.save()
                 
+                Line_Activo_Responsable.objects.create(
+                    slug=activo,
+                    creador=request.user,
+                    responsable=personal,
+                    estado="Asignado",
+                    observacion="Se realizo la asignacion con codigo:{}".format(asignacion.slug)
+                )
                 # Actualizar el estado del activo
                 activo.estadoDesignacion = True
                 activo.save()
-            
-            return redirect('nombre_de_tu_vista_exitosa')  # Redirigir a una vista de éxito
+                print(activo)
+                print(activo.estadoDesignacion, "estado designacion")
+                Line_Activo.objects.create(
+                    activo=activo,
+                    creador=request.user,
+                    estadoActivo=activo.estadoActivo,
+                    estadoDesignacion=activo.estadoDesignacion,
+                    mantenimiento=activo.mantenimiento,
+                    observacion="Se realizo la asignacion del activo a un personal"
+                )
+                
+            return redirect('designacion:lista_asignaciones')  # Redirigir a una vista de éxito
             
         except Personal.DoesNotExist:
             return JsonResponse({'error': 'Personal no encontrado'}, status=400)
@@ -77,14 +101,10 @@ def crear_asignacion(request):
             return JsonResponse({'error': 'Uno o más activos no encontrados'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
-    
-    # GET request - mostrar el formulario
     else:
-        # Obtener todos los usuarios/personal disponibles
         personal_list = Personal.objects.select_related('persona', 'user').all()
         
-        # Obtener activos no asignados
-        activos_no_asignados = Activo.objects.filter(estadoDesignacion=False)
+        activos_no_asignados = Activo.objects.filter(estadoDesignacion=False).exclude(mantenimiento=True)
         
         context = {
             'subtitulo_1': 'Seleccionar Personal',
@@ -93,7 +113,7 @@ def crear_asignacion(request):
             'activos_list': activos_no_asignados,
             'accion': 'Guardar Asignación',
             'accion2': 'Cancelar',
-            'accion2_url': 'url_para_cancelar',  # Define tu URL
+            'accion2_url': reverse('designacion:lista_asignaciones'),  # Define tu URL
             'form_action_url': reverse('designacion:registrar_asig')
         }
         

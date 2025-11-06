@@ -26,7 +26,7 @@ class ListaActivos(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["titulo"] = "LISTA DE ACTIVOS EN LA INSTITUCION"
-        context["object_list"] = self.model.objects.all()
+        context["object_list"] = self.model.objects.all().order_by("id")
         usuario = self.request.user
         usuario_d = User.objects.get(username=usuario)
         context.update(get_menu_context(self.request))
@@ -103,13 +103,9 @@ class LineActivo(LoginRequiredMixin, TemplateView):
             context = super().get_context_data(**kwargs)
             codigo = self.kwargs.get("codigo")
             activo = Activo.objects.get(codigo=codigo)
-            print('activo', activo)
-            activo_line = Line_Activo.objects.filter(activo=activo).order_by("-fecha_registro")
-            print(activo_line)
+            activo_line = Line_Activo.objects.filter(activo=activo)
             activo_responsable_line = Line_Activo_Responsable.objects.filter(slug=activo).order_by("-fecha_registro")
-            print(activo_responsable_line)
-            mantenimiento = MantenimientoActivo.objects.filter(activo = activo)
-            print(mantenimiento)
+            mantenimiento = MantenimientoActivo.objects.filter(activo = activo).order_by("-fechaInicio")
             context["titulo"] = "INFORMACION DEL ACTIVO"
             context["subtitulo_1"] = "LINE MODIFICACION DATOS ACTIVOS"
             context["subtitulo_2"] = "LINE MODIFICACION DESIGNACIONES ACTIVOS"

@@ -261,65 +261,109 @@ def confirmar_ubicacion(request, tipo, slug):
     if request.method == 'POST':
         try:
             for activo_resp in activos_responsable:
-                piso_anterior = activo_resp.piso_ubicacion
-                oficina_anterior = activo_resp.oficina_ubicacion
+    piso_anterior = activo_resp.piso_ubicacion
+    oficina_anterior = activo_resp.oficina_ubicacion
 
-                piso_key = f"piso_{activo_resp.activo.codigo}"
-                oficina_key = f"oficina_{activo_resp.activo.codigo}"
-                
-                piso_ubicacion = request.POST.get(piso_key)
-                oficina_ubicacion = request.POST.get(oficina_key)
-                
-                # Actualizar ubicación
-                activo_resp.piso_ubicacion = piso_ubicacion
-                activo_resp.oficina_ubicacion = oficina_ubicacion
-                activo_resp.save()
-                observacions = ' '
-                if piso_anterior == activo_resp.piso_ubicacion:
-                    observacions=f'Se mantiene la ubicacion del piso'
-                else:
-                    observacions=f'Ubicacion cambiada, piso anterior {piso_anterior}'
-                if oficina_anterior == activo_resp.oficina_ubicacion:
-                    observacions = f'{observacions} y de la oficina'
-                else:
-                    observacions = f'{observacions} y oficina anterior {oficina_anterior}'
-                try:
-                    Line_Activo_Responsable.objects.create(
-                    slug = activo_resp,
-                    creador = request.user,
-                    responsable = activo_resp.responsable,
-                    piso_ubicacion = activo_resp.piso_ubicacion,
-                    oficina_ubicacion = activo_resp.oficina_ubicacion,
-                    estado = tipo,
-                    observacion = observacions
-                    )
-                except Exception as e_line:
-                        # Continuar con el siguiente activo en lugar de detenerse
-                        continue   
-             
-            # Para devoluciones, ahora sí poner en blanco asignación y responsable
-            if tipo == 'devolucion':
-                for activo_resp in activos_responsable:
-                    asignacion_anterior = activo_resp.asignacion
-                    responsable_anterior = activo_resp.responsable
-                    activo_resp.asignacion = None
-                    activo_resp.responsable = None
-                    activo_resp.save()
+    piso_key = f"piso_{activo_resp.activo.codigo}"
+    oficina_key = f"oficina_{activo_resp.activo.codigo}"
+    
+    piso_ubicacion = request.POST.get(piso_key)
+    oficina_ubicacion = request.POST.get(oficina_key)
+    
+    print(f"📝 Procesando activo: {activo_resp.activo.codigo}")
+    print(f"📍 Piso anterior: {piso_anterior}, nuevo: {piso_ubicacion}")
+    print(f"🏢 Oficina anterior: {oficina_anterior}, nuevo: {oficina_ubicacion}")
+    
+    # Actualizar ubicación
+    activo_resp.piso_ubicacion = piso_ubicacion
+    activo_resp.oficina_ubicacion = oficina_ubicacion
+    activo_resp.save()
+    
+    # Construir observaciones
+    observacions = ' '
+    if piso_anterior == activo_resp.piso_ubicacion:
+        observacions = f'Se mantiene la ubicacion del piso'
+    else:
+        observacions = f'Ubicacion cambiada, piso anterior {piso_anterior}'
+    
+    if oficina_anterior == activo_resp.oficina_ubicacion:
+        observacions = f'{observacions} y de la oficina'
+    else:
+        observacions = f'{observacions} y oficina anterior {oficina_anterior}'
+    
+    print(f"📋 Observación: {observacions}")
+    
+    # CREAR Line_Activo_Responsable - CON DEBUG
+    try:
+        print("🔄 Intentando crear Line_Activo_Responsable...")
+        
+        # Verificar los datos antes de crear
+        print(f"📊 Datos a guardar:")
+        print(f"   - slug: {activo_resp}")
+        print(f"   - creador: {request.user}")
+        print(f"   - responsable: {activo_resp.responsable}")
+        print(f"   - piso_ubicacion: {activo_resp.piso_ubicacion}")
+        print(f"   - oficina_ubicacion: {activo_resp.oficina_ubicacion}")
+        print(f"   - estado: {tipo}")
+        print(f"   - observacion: {observacions}")
+        
+        line_responsable = Line_Activo_Responsable.objects.create(
+            slug=activo_resp,
+            creador=request.user,
+            responsable=activo_resp.responsable,
+            piso_ubicacion=activo_resp.piso_ubicacion,
+            oficina_ubicacion=activo_resp.oficina_ubicacion,
+            estado=tipo,
+            observacion=observacions
+        )
+        print(f"✅ Line_Activo_Responsable creado exitosamente - ID: {line_responsable.id}")
+        
+    except Exception as e_line:
+        print(f"❌ ERROR creando Line_Activo_Responsable: {str(e_line)}")
+        print(f"🔍 Tipo de error: {type(e_line).__name__}")
+        # Continuar con el siguiente activo en lugar de detenerse
+        continue
 
-                    Line_Activo_Responsable.objects.create(
-                    slug = activo_resp,
-                    creador = request.user,
-                    responsable = activo_resp.responsable,
-                    piso_ubicacion = activo_resp.piso_ubicacion,
-                    oficina_ubicacion = activo_resp.oficina_ubicacion,
-                    estado = tipo,
-                    observacion = f'El responsable anterior:{responsable_anterior} / Asignacion anterior:{asignacion_anterior}'
-                    )            
-            messages.success(request, f'Ubicaciones confirmadas exitosamente')
-            if tipo == 'asignacion':
-                return redirect('designacion:lista_asignaciones')
-            else:
-                return redirect('designacion:lista_asignaciones')                
+print("🎯 Terminó el loop de activos_responsable")
+
+# Para devoluciones, ahora sí poner en blanco asignación y responsable
+if tipo == 'devolucion':
+    print("🔄 Procesando devolución - limpiando responsables...")
+    for activo_resp in activos_responsable:
+        try:
+            asignacion_anterior = activo_resp.asignacion
+            responsable_anterior = activo_resp.responsable
+            
+            print(f"🔄 Limpiando responsable de activo: {activo_resp.activo.codigo}")
+            print(f"   - Asignación anterior: {asignacion_anterior}")
+            print(f"   - Responsable anterior: {responsable_anterior}")
+            
+            activo_resp.asignacion = None
+            activo_resp.responsable = None
+            activo_resp.save()
+            
+            # Crear registro histórico
+            Line_Activo_Responsable.objects.create(
+                slug=activo_resp,
+                creador=request.user,
+                responsable=None,  # Ahora es None
+                piso_ubicacion=activo_resp.piso_ubicacion,
+                oficina_ubicacion=activo_resp.oficina_ubicacion,
+                estado=tipo,
+                observacion=f'El responsable anterior:{responsable_anterior} / Asignacion anterior:{asignacion_anterior}'
+            )
+            print(f"✅ Responsable limpiado y registro histórico creado")
+            
+        except Exception as e:
+            print(f"❌ Error limpiando responsable: {str(e)}")
+            continue
+
+print("🚀 Redirigiendo...")
+messages.success(request, f'Ubicaciones confirmadas exitosamente')
+if tipo == 'asignacion':
+    return redirect('designacion:lista_asignaciones')
+else:
+    return redirect('designacion:lista_asignaciones')    
         except Exception as e:
             messages.error(request, f'Error al guardar ubicaciones: {str(e)}')    
     activos_data = []

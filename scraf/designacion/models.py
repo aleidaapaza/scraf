@@ -53,9 +53,11 @@ pre_save.connect(set_slug1, sender=Asignacion)
 
 class Devoluciones(models.Model):
     asignacion = models.ForeignKey(Asignacion, to_field='slug', on_delete=models.CASCADE, related_name='devolucion')
-    fecha_devolucion = models.DateField()
-    tipoDevolucion = models.CharField(tipo_devolucion, max_length=100)
+    fecha_devolucion = models.DateField(auto_now_add=True)
+    tipoDevolucion = models.CharField(tipo_devolucion, max_length=100) #paricial o total
     codigoActivo = models.JSONField(default=list, blank=True, help_text="Lista de códigos de activos devueltos")
+    observaciones = models.TextField(null=True, blank=True)
+
     def __str__(self):
         return f'{self.asignacion.slug}-{self.tipoDevolucion}'
     
@@ -105,6 +107,7 @@ class Line_Asignacion(models.Model):
     fecha_registro = models.DateTimeField(auto_now_add=True)
     estado = models.BooleanField() #activo_inactivo
     observacion = models.TextField()
+    creador = models.ForeignKey(User, on_delete=models.CASCADE, default='1')
 
 
 class Line_Activo_Responsable(models.Model):

@@ -1,0 +1,150 @@
+{% extends 'base/2form2col1btn.html' %}
+{% load static %}
+
+{% block PARTE_1 %} 
+<label class="form-label fw-bold">Seleccionar Asignación:</label>
+<select class="form-select" id="selectAsignacion" name="asignacion" required>
+<option value="">-- Seleccione una asignación --</option>
+  {% for asignacion in asignaciones_list %}
+        <option value="{{ asignacion.slug }}">
+        {{ asignacion.slug }} - Carnet: {{ asignacion.carnet }} - Cargo: {{ asignacion.cargo }}
+        ({{ asignacion.codigoActivo|length }} activos)
+        </option>
+      {% empty %}
+    <option value="">No hay asignaciones activas</option>
+  {% endfor %}
+</select>
+<div class="mb-3">
+    <label class="form-label fw-bold">Tipo de Devolución:</label>
+    <select class="form-select" id="selectTipoDevolucion" name="tipo_devolucion" required>
+        <option value="parcial">Parcial</option>
+        <option value="total">Total</option>
+    </select>
+</div>
+<div class="mb-3">
+    <label class="form-label fw-bold">Observaciones:</label>
+    <textarea class="form-control" name="observaciones" rows="4" 
+    placeholder="Ingrese observaciones sobre la devolución (opcional)..."></textarea>
+    <div class="form-text">
+        Ej: "Equipos en buen estado", "Falta cable de alimentación", etc.
+    </div>
+</div>
+{% endblock%}
+
+{% block PARTE_2 %} 
+<div id="loadingActivos" class="text-center d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p>Cargando activos...</p>
+                        </div>
+                        
+                        <div id="listaActivos" class="mb-3">
+                            <div class="alert alert-info">
+                                Seleccione una asignación para ver los activos
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <button type="button" id="btnSelectAll" class="btn btn-outline-primary btn-sm">
+                                <i class="fa-solid fa-check-double"></i> Seleccionar Todos
+                            </button>
+                            <button type="button" id="btnDeselectAll" class="btn btn-outline-secondary btn-sm">
+                                <i class="fa-solid fa-times"></i> Deseleccionar Todos
+                            </button>
+                        </div>
+{% endblock%}
+
+ {% block script %}
+<script>
+$(document).ready(function() {
+    // Cuando cambia la selección de asignación
+    $('#selectAsignacion').change(function() {
+        const asignacionSlug = $(this).val();
+        
+        if (!asignacionSlug) {
+            $('#listaActivos').html('<div class="alert alert-info">Seleccione una asignación para ver los activos</div>');
+            return;
+        }        
+        // Mostrar loading
+        $('#loadingActivos').removeClass('d-none');
+        $('#listaActivos').html('');
+        
+        // Hacer petición AJAX para obtener activos
+        $.get('{% url "designacion:devolver_asig_get" %}', { asignacion_slug: asignacionSlug })
+            .done(function(response) {
+                $('#loadingActivos').addClass('d-none');
+                
+                if (response.success) {
+                    if (response.activos.length > 0) {
+                        let html = '';
+                        let disponiblesCount = 0;
+                        
+                        response.activos.forEach(function(activo) {
+                            if (!activo.ya_devuelto) {
+                                disponiblesCount++;
+                                html += `
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input activo-checkbox" type="checkbox" 
+                                           name="activos_devueltos" value="${activo.codigo}" 
+                                           id="activo_${activo.codigo}">
+                                    <label class="form-check-label" for="activo_${activo.codigo}">
+                                        <strong>${activo.codigo}</strong> - ${activo.descripcion}
+                                        <br>
+                                        <small class="text-muted">Grupo: ${activo.grupo_contable}</small>
+                                    </label>
+                                </div>
+                                <hr>
+                                `;
+                            } else {
+                                html += `
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" disabled>
+                                    <label class="form-check-label text-muted">
+                                        <strong>${activo.codigo}</strong> - ${activo.descripcion}
+                                        <br>
+                                        <small class="text-warning"><i class="fa-solid fa-check"></i> Ya devuelto</small>
+                                    </label>
+                                </div>
+                                <hr>
+                                `;
+                            }
+                        });
+                        
+                        $('#listaActivos').html(html);
+                        
+                        // Actualizar contador en el header
+                        $('.card-header .col:last').text('{{ subtitulo_2 }} - ' + disponiblesCount + ' disponibles');
+                        
+                    } else {
+                        $('#listaActivos').html('<div class="alert alert-warning">No hay activos disponibles para devolver</div>');
+                    }
+                } else {
+                    $('#listaActivos').html('<div class="alert alert-danger">Error: ' + response.error + '</div>');
+                }
+            })
+            .fail(function() {
+                $('#loadingActivos').addClass('d-none');
+                $('#listaActivos').html('<div class="alert alert-danger">Error al cargar los activos</div>');
+            });
+    });
+    
+    // Seleccionar todos los activos
+    $('#btnSelectAll').click(function() {
+        $('.activo-checkbox:not(:disabled)').prop('checked', true);
+    });
+    
+    // Deseleccionar todos los activos
+    $('#btnDeselectAll').click(function() {
+        $('.activo-checkbox').prop('checked', false);
+    });
+    
+    // Cuando se selecciona "Total" en tipo de devolución, seleccionar todos automáticamente
+    $('#selectTipoDevolucion').change(function() {
+        if ($(this).val() === 'total') {
+            $('.activo-checkbox:not(:disabled)').prop('checked', true);
+        }
+    });
+});
+</script>
+ {% endblock %}

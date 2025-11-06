@@ -13,7 +13,7 @@
 {% block tbody %}
     {% for activo in object_list %}
         <tr>
-            <td> {{ activo.estado }} </td>
+            {% if activo.estado %}<td class="table-success"> ACTIVO{% else %}<td>FINALIZADO{% endif %}</td>
             <td> {{ activo.slug }}</td>
             <td> {{ activo.carnet }}</td>
             <td> {{ activo.cargo }}</td>

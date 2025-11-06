@@ -1,0 +1,109 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block contenido %}
+<div class="card">
+        <div class="card-header bg-info text-white">
+            <h4 class="card-title mb-0">
+                <i class="fa-solid fa-location-dot"></i> {{ titulo }}
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <i class="fa-solid fa-circle-info"></i>
+                Por favor confirme la ubicación de cada activo {% if tipo == 'asignacion' %}asignado{% else %}devuelto{% endif %}.
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                
+                <!-- Información de la operación -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Información de la {% if tipo == 'asignacion' %}Asignación{% else %}Devolución{% endif %}:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Asignación:</strong> {{ asignacion.slug }}</li>
+                            <li><strong>Carnet:</strong> {{ asignacion.carnet }}</li>
+                            <li><strong>Cargo:</strong> {{ asignacion.cargo }}</li>
+                            <li><strong>Activos:</strong> {{ activos_data|length }}</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Lista de activos para confirmar ubicación -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Código</th>
+                                <th>Descripción</th>
+                                <th>Grupo Contable</th>
+                                <th>Piso</th>
+                                <th>Oficina</th>
+                                {% if tipo == 'asignacion' %}
+                                <th>Responsable</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activo in activos_data %}
+                            <tr>
+                                <td>
+                                    <strong>{{ activo.codigo }}</strong>
+                                </td>
+                                <td>{{ activo.descripcion|truncatewords:8 }}</td>
+                                <td>{{ activo.grupo_contable }}</td>
+                                <td>
+                                    <select class="form-select form-select-sm" name="piso_{{ activo.codigo }}" required>
+                                        <option value="">-- Seleccionar --</option>
+                                        {% for piso_key, piso_value in pisos_ubicacion %}
+                                        <option value="{{ piso_key }}" 
+                                                {% if activo.piso_actual == piso_key %}selected{% endif %}>
+                                            {{ piso_value }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <select class="form-select form-select-sm" name="oficina_{{ activo.codigo }}" required>
+                                        <option value="">-- Seleccionar --</option>
+                                        {% for oficina_key, oficina_value in oficinas_ubicacion %}
+                                        <option value="{{ oficina_key }}" 
+                                                {% if activo.oficina_actual == oficina_key %}selected{% endif %}>
+                                            {{ oficina_value }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                {% if tipo == 'asignacion' %}
+                                <td>
+                                    <small>
+                                        {% if activo.responsable %}
+                                        {{ activo.responsable.persona.nombre_completo }}
+                                        {% else %}
+                                        <span class="text-muted">Por asignar</span>
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Botones -->
+                <div class="row mt-4">
+                    <div class="col text-center">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fa-solid fa-check-circle"></i> Confirmar Todas las Ubicaciones
+                        </button>
+                        <a href="{% url 'designacion:lista_asignaciones' %}" 
+                           class="btn btn-secondary btn-lg">
+                            <i class="fa-solid fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -85,7 +85,7 @@ class MantenimientoActivo(models.Model):
         db_table = 'MantenimientoActivo'
 
 class Line_Activo(models.Model):
-    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, related_name='lineActivo', default="1")
+    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, related_name='lineActivo')
     creador = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     estadoActivo = models.CharField(choices=estados, null=True, blank=True)

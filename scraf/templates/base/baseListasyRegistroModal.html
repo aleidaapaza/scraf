@@ -4,53 +4,43 @@
    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />  
 {% endblock %}
 {% block contenido %}   
-
   <div class="container-fluid mt-4">
-    <!-- 1. Título y línea -->
     <div class="row mb-2">
       <div class="col">
-        <h2 class="text-success fw-bold">Lista de Activos Fijos Designados</h2>
+        <h2 class="text-success fw-bold text-white">{{ titulo }}</h2>
         <hr>
       </div>
     </div>
-
-        <!-- 2. Botones de creacion de revisiones -->
-        {% if not user.is_superuser %}
-        <div class="row">
-            <div class="col-md-12 d-flex justify-content-center">
-                <button id="id_btn1"
-                        type="button"
-                        class="btn btn-success"
-                        data-url="{{ entity_registro }}">
-                {{ entity_registro_nom }}
-                </button>
-            </div>
+    {% if not user.is_superuser %}
+      <div class="row">
+        <div class="col-md-6 d-flex justify-content-center">
+          <button id="id_btn1" type="button" class="btn btn-success border-white" data-url="{{ entity_registro }}">
+            {{ entity_registro_nom }}
+          </button>
         </div>
-        {% endif %}
-
-
-    <!-- 3. Modales -->
+        {% if entity_registro_2 %}
+          <div class="col-md-6 d-flex justify-content-center">
+            <button id="id_btn2" type="button" class="btn btn-success border-white" data-url="{{ entity_registro_2 }}">
+                {{ entity_registro_nom_2 }}
+            </button>
+          </div>
+        {% endif %}            
+      </div>
+    {% endif %}
     <div id="modal1" class="modal fade" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content p-3" id="modalContent1">
-
-            </div>
-        </div>
+      <div class="modal-dialog">
+        <div class="modal-content p-3" id="modalContent1"></div>
+      </div>
     </div>
-<div id="modal2" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-fullscreen">
-            <div class="modal-content p-3" id="modalContent2">
-
-            </div>
-        </div>
+    <div id="modal2" class="modal fade" tabindex="-1">
+      <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content p-3" id="modalContent2"></div>
+      </div>
     </div>
-    {% block modalExtra %}
-    
+    {% block modalExtra %}    
     {% endblock  %}
-
-    <!-- 4. Tabla -->
     <div class="card card-default mt-3 mb-3">
-        <div class="card-body p-0 mt-3" style="overflow-x: auto;">
+        <div class="card-body p-0 mt-3 p-3" style="overflow-x: auto;">
             <table class="table table-striped table-bordered table-hover text-center text-wrap mb-0" id="myTable" style="min-width: 900px;">
                 <thead class="bg-info">
                 {% block thead %}
@@ -63,14 +53,13 @@
             </table>
         </div>
     </div>
-
-    <hr>
-</div>
+  </div>
 {% endblock %}
 
 {% block script %}
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
 {% endblock %}
+
 {% block funcScript %}
 <script>
   function getCookie(name) {
@@ -163,6 +152,3 @@
   }
 </script>
 {% endblock %}
-
-{% block scripfun %}{% endblock %}
-{% block funScript %}{% endblock %}

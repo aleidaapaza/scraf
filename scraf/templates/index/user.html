@@ -15,9 +15,8 @@
       <thead class="bg-white">
               <tr>
                 <th>CODIGO</th>
-                <th>NOMBRE</th>
+                <th>DESCRIPCION ACTIVO</th>
                 <th>ENCARGADO</th>
-                <th>FECHA REGISTRO</th>
                 <th>ESTADO</th>
                 <th>VER</th>  
                 </tr>
@@ -28,9 +27,8 @@
                   <td>{{ rev.activo.codigo }}</td>
                   <td>{{ rev.activo.descActivo }}</td>
                   <td>{{ rev.responsable.persona.nombrecompleto}}</td>
-                  <td>{{ rev.ultima_fecha_registro }}</td>
-                  <td>{{ rev.estado }}</td>
-                  <td><a href="{% url 'activos:ver_activo' rev.slug %}" class="btn btn-info">Ver</a></td>
+                  <td>{{ rev.activo.estadoActivo}}</td>
+                  <td><a href="{% url 'activos:ver_activo' rev.activo.codigo %}" class="btn btn-info">Ver</a></td>
           </tr>
             {% endfor %}
       </tbody>

@@ -1,3 +1,4 @@
 motivos= [
-    ("Revision Semestral", "Revision Semestral"),
+    ("Revision General", "Revision General"),
+    ("Revision Personal", "Revision Personal"),
 ]

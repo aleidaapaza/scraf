@@ -101,25 +101,15 @@ class ListaRevisiones(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
-
-        if (
-            user.is_superuser or user.is_encargado
-        ):  # Asumiendo que is_encargado está en el objeto User
-            # Si no tienes is_encargado en el modelo User, usa:
-            # try: return self.model.objects.all() if Personal.objects.get(user=user).is_encargado else self._filter_revisores(user)
+        if (user.is_superuser or user.is_encargado):
             return self.model.objects.all()
-
-        # 2. Lógica para Personal/Revisores (solo ve asignadas)
         else:
-            return self._filter_revisores(user)  # Llama a la lógica de filtrado
+            return self._filter_revisores(user)
 
-    # ⚠️ FUNCIÓN AUXILIAR PARA CLARIDAD Y REUSO
     def _filter_revisores(self, user):
         try:
-            # Obtener la instancia del Personal asociada al usuario logueado
             personal_instance = Personal.objects.get(user=user)
         except ObjectDoesNotExist:
-            # Si no tiene perfil Personal, no debe ver nada
             return self.model.objects.none()
 
         queryset = self.model.objects.filter(
@@ -130,25 +120,18 @@ class ListaRevisiones(LoginRequiredMixin, ListView):
 
         return queryset
 
-    # 2. Mantenemos el get_context_data original
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         context["titulo"] = "LISTA DE REVISIONES DE ACTIVOS"
-
         usuario = self.request.user
         usuario_d = User.objects.get(username=usuario)
-        context["entity_registro_nom"] = "REGISTRAR NUEVA REVISION"
+        context["entity_registro_nom"] = "REGISTRAR NUEVA REVISION TOTAL"
         context["entity_registro"] = reverse_lazy("revision:ajax_r_Revision", args=[])
-
-        # ⚠️ IMPORTANTE: Aquí se consulta una variable de CONTEXTO, no la lista principal.
-        # Si 'revision' fuera la lista principal, anularía el filtro de get_queryset.
         revision = Revision.objects.filter(estado=True)
         if revision:
             revision_datos = revision.first()
             context["revisionr"] = revision
             context["revision_datos"] = revision_datos
-
         return context
 
 

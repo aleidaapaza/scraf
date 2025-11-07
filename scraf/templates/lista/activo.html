@@ -3,7 +3,7 @@
 {% block thead %}
     <tr>
         <th scope="col">LINE</th>
-        <th scope="col">CODIGO</th>
+        <th scope="col">CODIGO </br><small><i class="fa-solid fa-stop text-warning"></i> En Mantenimiento</br> <i class="fa-solid fa-stop text-success"></i> Asignado</br><i class="fa-solid fa-stop text-secondary"></i> Sin Asignar</small></th>
         <th scope="col">DESCRIPCION</th>
         <th scope="col">VER</th>
         {% if user.g_Activos %}
@@ -20,7 +20,7 @@
                    <i class="bi bi-eye"></i>
                 </a>
             </td>
-            <td> {{ activo.codigo }} </td>
+            <td class="{% if activo.mantenimiento %} table-warning {% elif activo.estadoDesignacion %} table-success {% endif %}"> {{ activo.codigo }} </td>
             <td> {{ activo.descActivo }}</td>
             <td>
                 <a href="{% url 'activos:ver_activo' activo.codigo %}" type="button"

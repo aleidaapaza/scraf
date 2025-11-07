@@ -127,8 +127,8 @@ class VerActivo(LoginRequiredMixin, TemplateView):
         context["titulo"] = "INFORMACION DEL ACTIVO"
         context["activo"] = activo
         lugar = Activo_responsable.objects.filter(activo=activo)
-        print('lugar', lugar)
         if lugar:
+            lugar = lugar.first()
             context["responsable"] = lugar
         mantenimiento = MantenimientoActivo.objects.filter(activo=activo, estado = True)
         print('mantenimiento', mantenimiento)

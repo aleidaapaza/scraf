@@ -101,8 +101,7 @@ def crear_asignacion(request):
             'accion2': 'Cancelar',
             'accion2_url': reverse('designacion:lista_asignaciones'), 
             'form_action_url': reverse('designacion:registrar_asig')
-        }
-        
+        }        
         return render(request, 'RegistroActualizacion/asignacion.html', context)
     
 def crear_devolucion(request):
@@ -114,9 +113,7 @@ def crear_devolucion(request):
             observaciones = request.POST.get('observaciones', '')
             if not asignacion_slug or not activos_devueltos:
                 messages.error(request, 'Debe seleccionar una asignación y al menos un activo')
-                print("ingresoalerror")
-                return redirect('designacion:devolver_asig')
-            
+                return redirect('designacion:devolver_asig')            
             asignacion = Asignacion.objects.get(slug=asignacion_slug)            
             devolucion = Devoluciones.objects.create(
                 asignacion=asignacion,
@@ -124,13 +121,12 @@ def crear_devolucion(request):
                 codigoActivo=activos_devueltos,
                 observaciones=observaciones 
             )
-            print("creo la devolucion")
             for codigo_activo in activos_devueltos:
-                print("ingreso aqui con", codigo_activo)
                 try:
                     activo = Activo.objects.get(codigo=codigo_activo)
                     activo.estadoDesignacion = False
-                    activo.save()            
+                    activo.save()
+                    print('PARA EL LINE DE ACTIVP DE DEVOLUCION')
                     try:
                         Line_Activo.objects.create(
                             activo=activo,
@@ -138,15 +134,16 @@ def crear_devolucion(request):
                             estadoActivo=activo.estadoActivo,
                             estadoDesignacion=activo.estadoDesignacion,
                             mantenimiento=activo.mantenimiento,
-                            observaciones=f"Se realizó la devolución de este activo de la asignación {asignacion.slug}"
+                            observaciones=f"Se realizó la DEVOLUCION de este activo de la asignación {asignacion.slug}"
                         )
+                        print()
                     except Exception as e_line:
                         # Continuar con el siguiente activo en lugar de detenerse
                         continue                        
                 except Activo.DoesNotExist:
                     continue
                 except Exception as e_activo:
-                    continue     
+                    continue
             activos_asignados_originalmente = asignacion.codigoActivo
             activos_devueltos_total = []            
             devoluciones_asignacion = Devoluciones.objects.filter(asignacion=asignacion)
@@ -155,6 +152,14 @@ def crear_devolucion(request):
             if set(activos_asignados_originalmente) == set(activos_devueltos_total):
                 asignacion.estado = False
                 asignacion.save()
+                Line_Activo.objects.create(
+                    activo=activo,
+                    creador=request.user,
+                    estadoActivo=activo.estadoActivo,
+                    estadoDesignacion=activo.estadoDesignacion,
+                    mantenimiento=activo.mantenimiento,
+                    observacion="Se realizo la DEVOLUCION del activo al Personal con carnet:{}".format(asignacion.carnet)
+                )
                 messages.success(request, 'Devolución completada - TODOS los activos devueltos - Asignación cerrada')                
                 Line_Asignacion.objects.create(
                     slug = asignacion,
@@ -168,8 +173,7 @@ def crear_devolucion(request):
                     estado = asignacion.estado,
                     observacion = f"REGISTRO DE DEVOLUCION {devolucion.tipoDevolucion}, CODIGOS DE ACTIVOS:{activos_devueltos}"
                 )
-            return redirect('designacion:confirmacionUbicacion', tipo='devolucion', slug=devolucion.id)
-            
+            return redirect('designacion:confirmacionUbicacion', tipo='devolucion', slug=devolucion.id)            
         except Asignacion.DoesNotExist:
             messages.error(request, 'Asignación no encontrada')
             return redirect('designacion:devolver_asig')
@@ -179,12 +183,8 @@ def crear_devolucion(request):
         except Exception as e:
             messages.error(request, f'Error: {str(e)}')
             return redirect('designacion:devolver_asig')
-    
-    # GET request - mostrar el formulario
     else:
-        # Obtener asignaciones activas
-        asignaciones_activas = Asignacion.objects.filter(estado=True)
-        
+        asignaciones_activas = Asignacion.objects.filter(estado=True)        
         context = {
             'subtitulo_1': 'Seleccionar Asignación',
             'subtitulo_2': 'Activos a Devolver',
@@ -193,8 +193,7 @@ def crear_devolucion(request):
             'accion2': 'Cancelar',
             'accion2_url': reverse('designacion:lista_asignaciones'),
             'form_action_url': reverse('designacion:devolver_asig')
-        }
-        
+        }        
         return render(request, 'RegistroActualizacion/devolucion.html', context)
 
 def get_activos_asignacion(request):
@@ -203,8 +202,7 @@ def get_activos_asignacion(request):
         asignacion_slug = request.GET.get('asignacion_slug')        
         try:
             asignacion = Asignacion.objects.get(slug=asignacion_slug, estado=True)
-            activos_codigos = asignacion.codigoActivo            
-            # Obtener información detallada de los activos
+            activos_codigos = asignacion.codigoActivo
             activos_detalle = []
             for codigo in activos_codigos:
                 try:
@@ -222,28 +220,23 @@ def get_activos_asignacion(request):
                         'estado_designacion': activo.estadoDesignacion
                     })
                 except Activo.DoesNotExist:
-                    continue
-            
+                    continue            
             return JsonResponse({
                 'success': True,
                 'activos': activos_detalle,
                 'total_activos': len(activos_codigos)
-            })
-            
+            })            
         except Asignacion.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Asignación no encontrada'})
-    
+            return JsonResponse({'success': False, 'error': 'Asignación no encontrada'})    
     return JsonResponse({'success': False, 'error': 'Solicitud inválida'})
 
 def confirmar_ubicacion(request, tipo, slug):    
     if tipo == 'asignacion':
-        # Para asignaciones
         asignacion = get_object_or_404(Asignacion, slug=slug)
         activos_codigos = asignacion.codigoActivo
         titulo = f"Confirmar Ubicación - Asignación: {asignacion.slug}"
         
     elif tipo == 'devolucion':
-        # Para devoluciones
         devolucion = get_object_or_404(Devoluciones, id=slug)
         asignacion = devolucion.asignacion
         activos_codigos = devolucion.codigoActivo
@@ -251,119 +244,87 @@ def confirmar_ubicacion(request, tipo, slug):
     else:
         messages.error(request, 'Tipo de operación no válido')
         return redirect('designacion:lista_asignaciones')
-    
-    # Obtener los registros de Activo_responsable
     activos_responsable = Activo_responsable.objects.filter(
         activo__codigo__in=activos_codigos,
         asignacion=asignacion
-    ).select_related('activo')
-    
+    ).select_related('activo')    
     if request.method == 'POST':
         try:
             for activo_resp in activos_responsable:
-    piso_anterior = activo_resp.piso_ubicacion
-    oficina_anterior = activo_resp.oficina_ubicacion
+                id_activo = activo_resp.pk
 
-    piso_key = f"piso_{activo_resp.activo.codigo}"
-    oficina_key = f"oficina_{activo_resp.activo.codigo}"
-    
-    piso_ubicacion = request.POST.get(piso_key)
-    oficina_ubicacion = request.POST.get(oficina_key)
-    
-    print(f"📝 Procesando activo: {activo_resp.activo.codigo}")
-    print(f"📍 Piso anterior: {piso_anterior}, nuevo: {piso_ubicacion}")
-    print(f"🏢 Oficina anterior: {oficina_anterior}, nuevo: {oficina_ubicacion}")
-    
-    # Actualizar ubicación
-    activo_resp.piso_ubicacion = piso_ubicacion
-    activo_resp.oficina_ubicacion = oficina_ubicacion
-    activo_resp.save()
-    
-    # Construir observaciones
-    observacions = ' '
-    if piso_anterior == activo_resp.piso_ubicacion:
-        observacions = f'Se mantiene la ubicacion del piso'
-    else:
-        observacions = f'Ubicacion cambiada, piso anterior {piso_anterior}'
-    
-    if oficina_anterior == activo_resp.oficina_ubicacion:
-        observacions = f'{observacions} y de la oficina'
-    else:
-        observacions = f'{observacions} y oficina anterior {oficina_anterior}'
-    
-    print(f"📋 Observación: {observacions}")
-    
-    # CREAR Line_Activo_Responsable - CON DEBUG
-    try:
-        print("🔄 Intentando crear Line_Activo_Responsable...")
-        
-        # Verificar los datos antes de crear
-        print(f"📊 Datos a guardar:")
-        print(f"   - slug: {activo_resp}")
-        print(f"   - creador: {request.user}")
-        print(f"   - responsable: {activo_resp.responsable}")
-        print(f"   - piso_ubicacion: {activo_resp.piso_ubicacion}")
-        print(f"   - oficina_ubicacion: {activo_resp.oficina_ubicacion}")
-        print(f"   - estado: {tipo}")
-        print(f"   - observacion: {observacions}")
-        
-        line_responsable = Line_Activo_Responsable.objects.create(
-            slug=activo_resp,
-            creador=request.user,
-            responsable=activo_resp.responsable,
-            piso_ubicacion=activo_resp.piso_ubicacion,
-            oficina_ubicacion=activo_resp.oficina_ubicacion,
-            estado=tipo,
-            observacion=observacions
-        )
-        print(f"✅ Line_Activo_Responsable creado exitosamente - ID: {line_responsable.id}")
-        
-    except Exception as e_line:
-        print(f"❌ ERROR creando Line_Activo_Responsable: {str(e_line)}")
-        print(f"🔍 Tipo de error: {type(e_line).__name__}")
-        # Continuar con el siguiente activo en lugar de detenerse
-        continue
+                piso_anterior = activo_resp.piso_ubicacion
+                oficina_anterior = activo_resp.oficina_ubicacion
 
-print("🎯 Terminó el loop de activos_responsable")
+                piso_key = f"piso_{activo_resp.activo.codigo}"
+                oficina_key = f"oficina_{activo_resp.activo.codigo}"
+                
+                piso_ubicacion = request.POST.get(piso_key)
+                oficina_ubicacion = request.POST.get(oficina_key)
 
-# Para devoluciones, ahora sí poner en blanco asignación y responsable
-if tipo == 'devolucion':
-    print("🔄 Procesando devolución - limpiando responsables...")
-    for activo_resp in activos_responsable:
-        try:
-            asignacion_anterior = activo_resp.asignacion
-            responsable_anterior = activo_resp.responsable
-            
-            print(f"🔄 Limpiando responsable de activo: {activo_resp.activo.codigo}")
-            print(f"   - Asignación anterior: {asignacion_anterior}")
-            print(f"   - Responsable anterior: {responsable_anterior}")
-            
-            activo_resp.asignacion = None
-            activo_resp.responsable = None
-            activo_resp.save()
-            
-            # Crear registro histórico
-            Line_Activo_Responsable.objects.create(
-                slug=activo_resp,
-                creador=request.user,
-                responsable=None,  # Ahora es None
-                piso_ubicacion=activo_resp.piso_ubicacion,
-                oficina_ubicacion=activo_resp.oficina_ubicacion,
-                estado=tipo,
-                observacion=f'El responsable anterior:{responsable_anterior} / Asignacion anterior:{asignacion_anterior}'
-            )
-            print(f"✅ Responsable limpiado y registro histórico creado")
-            
-        except Exception as e:
-            print(f"❌ Error limpiando responsable: {str(e)}")
-            continue
+                activo_resp.piso_ubicacion = piso_ubicacion
+                activo_resp.oficina_ubicacion = oficina_ubicacion
+                activo_resp.save()
+                activo_act = Activo_responsable.objects.get(id=id_activo)
 
-print("🚀 Redirigiendo...")
-messages.success(request, f'Ubicaciones confirmadas exitosamente')
-if tipo == 'asignacion':
-    return redirect('designacion:lista_asignaciones')
-else:
-    return redirect('designacion:lista_asignaciones')    
+                observacions = ' '
+                if piso_anterior == activo_act.piso_ubicacion:
+                    observacions = f'Se mantiene la ubicacion del piso'
+                else:
+                    observacions = f'Ubicacion cambiada, piso anterior {piso_anterior}'
+                if oficina_anterior == activo_act.oficina_ubicacion:
+                    observacions = f'{observacions} y de la oficina'
+                else:
+                    observacions = f'{observacions} y oficina anterior {oficina_anterior}'
+                
+                try:
+                    line_responsable = Line_Activo_Responsable.objects.create(
+                        slug=activo_act.activo,
+                        creador=request.user,
+                        responsable=activo_act.responsable,
+                        piso_ubicacion=activo_act.piso_ubicacion,
+                        oficina_ubicacion=activo_act.oficina_ubicacion,
+                        estado=tipo,
+                        observacion=observacions
+                    )
+                   
+                except Exception as e_line:
+                    print(f"❌ ERROR creando Line_Activo_Responsable: {str(e_line)}")
+                    print(f"🔍 Tipo de error: {type(e_line).__name__}")
+                    # Continuar con el siguiente activo en lugar de detenerse
+                    continue
+            if tipo == 'devolucion':
+                for activo_resp in activos_responsable:
+                    id_activo = activo_resp.pk                    
+                    try:
+                        asignacion_anterior = activo_resp.asignacion
+                        responsable_anterior = activo_resp.responsable
+
+                        activo_resp.asignacion = None
+                        activo_resp.responsable = None
+                        activo_resp.save()
+
+                        activo_act = Activo_responsable.objects.get(id=id_activo)
+                        
+                        Line_Activo_Responsable.objects.create(
+                            slug=activo_act.activo,
+                            creador=request.user,
+                            responsable=None,  # Ahora es None
+                            piso_ubicacion=activo_act.piso_ubicacion,
+                            oficina_ubicacion=activo_act.oficina_ubicacion,
+                            estado=tipo,
+                            observacion=f'El responsable anterior:{responsable_anterior} / Asignacion anterior:{asignacion_anterior}'
+                        )
+
+                    except Exception as e:
+                        print(f" Error limpiando responsable: {str(e)}")
+                        continue
+
+            messages.success(request, f'Ubicaciones confirmadas exitosamente')
+            if tipo == 'asignacion':
+                return redirect('designacion:lista_asignaciones')
+            else:
+                return redirect('designacion:lista_asignaciones')    
         except Exception as e:
             messages.error(request, f'Error al guardar ubicaciones: {str(e)}')    
     activos_data = []

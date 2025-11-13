@@ -3,21 +3,28 @@
 {% load widget_tweaks %}
 {% block contenido %}
   <div class="container-fluid">
-    <div class="row vh-100">
+    <div class="row vh-100">      
       <!-- Left Image -->
       <div class="col-md-7 p-0 d-none d-md-block">
         <img src="{% static 'img/bosque.webp' %}" class="img-fluid w-100 h-100 object-fit-cover">
       </div>
         <!-- Right Form -->
-      <div class="col-md-5 d-flex align-items-center justify-content-center">
+      <div class="col-md-5 d-flex align-items-center justify-content-center">      
         <div class="card shadow-sm p-4" style="border-radius:.75rem; max-width:400px; width:100%;">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="row">
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              </div>        
+            {% endfor %}
+          {% endif %}
           <div class="text-center mb-4">
             <img src="{% static 'img/fonabosqueLogoTrasnparente.webp' %}" alt="Logo" style="max-height:80px;">
-          </div>    
+          </div> 
           <h4 class="text-center mb-4">Inicio de Sesión</h4>
-          {% if message %}
-            <div class="alert alert-danger">{{ message }}</div>
-          {% endif %}
           <form method="post">
             {% csrf_token %}
             <div class="mb-3">

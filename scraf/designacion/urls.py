@@ -1,10 +1,11 @@
 from django.urls import path
 
-from designacion.views import ListaAsignaciones, crear_asignacion, crear_devolucion, get_activos_asignacion,confirmar_ubicacion, verAsignaciones, verDevolucion
+from designacion.views import ListaAsignaciones, crear_asignacion, crear_devolucion, get_activos_asignacion,confirmar_ubicacion, verAsignaciones, verDevolucion, ListaAsignacionesPersona
 
 app_name = 'designacion'
 urlpatterns = [
     path('listaActivos/', ListaAsignaciones.as_view(), name='lista_asignaciones'),
+    path('listaActivosPersona/', ListaAsignacionesPersona.as_view(), name='lista_asignaciones_persona'),
     path('RegistroAsign/', crear_asignacion, name='registrar_asig'),
     path('DevolverAsign/', crear_devolucion, name='devolver_asig'),
     path('DevolverAsign/get-activos/', get_activos_asignacion, name='devolver_asig_get'),

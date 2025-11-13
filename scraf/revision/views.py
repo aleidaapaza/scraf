@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import ObjectDoesNotExist, Q
 from django.http import (
@@ -19,13 +17,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.dateformat import format as dj_format
-from django.views.generic import (
-    CreateView,
-    View,
-    ListView,
-    UpdateView,
-    TemplateView,
-)
+from django.views.generic import ListView,TemplateView
 
 from activos.forms import A_Activo_responsable
 from activos.models import Activo
@@ -111,20 +103,16 @@ class ListaRevisiones(LoginRequiredMixin, ListView):
             personal_instance = Personal.objects.get(user=user)
         except ObjectDoesNotExist:
             return self.model.objects.none()
-
         queryset = self.model.objects.filter(
-            # Usa Q() para combinar OR: Revisor O Encargado de la revisión
             Q(revisores=personal_instance)
             | Q(encargado=personal_instance)
         ).distinct()
-
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["titulo"] = "LISTA DE REVISIONES DE ACTIVOS"
         usuario = self.request.user
-        usuario_d = User.objects.get(username=usuario)
         context["entity_registro_nom"] = "REGISTRAR NUEVA REVISION TOTAL"
         context["entity_registro"] = reverse_lazy("revision:ajax_r_Revision", args=[])
         revision = Revision.objects.filter(estado=True)
@@ -372,7 +360,7 @@ def buscar_activo(request, slug):
             print(activo_resp)
             try:
                 revision_activo = Revision_Activo.objects.get(
-                    revision=revision
+                    revision=revision, activo=activo
                 )
                 context = {
                     "activo": activo,

@@ -1,14 +1,12 @@
 {% load static %}
 <header class="main-header text-white w-100">
         <div class="container-fluid d-flex align-items-center justify-content-between py-3 px-3">
-            <!-- IZQUIERDA: botón hamburguesa (solo móvil) + "Bienvenido" -->
             <div class="d-flex align-items-center">
                 <button class="hamburger-btn" id="hamburgerBtn">
                     <i class="fas fa-bars"></i>
                 </button>
                 <span class="ms-2">Bienvenido {{ request.user.username }}</span>
             </div>
-
             <!-- CENTRO: logo -->
             <a href="{% url 'inicio:Index' %}" class="d-flex align-items-center justify-content-center" style="flex:1;">
                 <img
@@ -17,7 +15,6 @@
                     height="40"
                 >
             </a>
-
             <!-- DERECHA: cerrar sesión con separador -->
             <a
                 href="{% url 'inicio:Logout' %}"
@@ -27,26 +24,31 @@
             </a>
         </div>
     </header>
-
-    <!-- Overlay para móvil (solo se muestra en móvil) -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <!-- Menú lateral ESTÁTICO -->
     <nav class="static-sidebar" id="staticSidebar">
-        <!-- Encabezado con botón de cerrar -->
         <div class="navbar-header">
             <h1>MENU</h1>
             <button class="sidebar-close-btn" id="sidebarCloseBtn" title="Cerrar menú">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-
-        <!-- Grupos de opciones -->
         <div class="menu-section">
-            <div class="menu-items">
-                <a class="nav-link px-3" href="{% url 'inicio:Index' %}"><i class="fas fa-home me-2"></i>Inicio</a>
-            </div>
+            <ul class="menu-items">
+                <li>
+                        <a class="nav-link px-3" href="{% url 'inicio:Index' %}">
+                        <i class="fas fa-home me-2"></i>Inicio
+                        </a>
+                </li>
+                {% if not user.is_revisor and not user.is_superuser and not user.is_encargado %}                
+                <li>
+                        <a class="nav-link px-3" href="{% url 'designacion:lista_asignaciones_persona' %}">
+                        <i class="fa-solid fa-left-right me-2"></i> Asignaciones/Devoluciones
+                        </a>
+                </li>
+                {% endif %}
+            </ul>
         </div>
+
         {% if user.g_personal %}
             <div class="menu-section">
                 <div class="menu-title">GESTION DEL PERSONAL</div>
@@ -95,30 +97,27 @@
                     </li>
                 </ul>
             </div>
-        {% endif %}
-
-        
+        {% endif %}        
         {% if user.is_encargado %}
             <div class="menu-section">
-                <div class="menu-title">GESTION DE REVISION DE ACTIVOS</div>
+                <div class="menu-title">GESTION DE TOMA DE INVENTARIO</div>
                 <ul class="menu-items">
                     <li>
                         <a class="nav-link px-3" href="{% url 'revision:lista_revisiones' %}">
-                            <i class="fas fa-list-alt me-2"></i>Revisiones de Activo
+                            <i class="fas fa-list-alt me-2"></i>Revisiones
                         </a>
                     </li>
                 </ul>
             </div>
         {% elif user.is_revisor %}
             <div class="menu-section">
-                <div class="menu-title">GESTION DE REVISION DE ACTIVOS</div>
+                <div class="menu-title">GESTION DE TOMA DE INVENTARIO</div>
                 <ul class="menu-items">                
                     <li>
                         {% if mostrar_menu_registro_encargado %}
                             <a class="nav-link px-3" href="{% url 'revision:registro_revision_activo' %}">
-                            <i class="fas fa-clipboard-list me-2"></i>REGISTRO DE REVISIÓN DE ACTIVO
-                            </a>
-                        
+                            <i class="fas fa-clipboard-list me-2"></i>Revision Activa
+                            </a>                        
                         {% endif %}
                         <i class="fas fa-list-alt me-2"></i>No existe revision activa
                     </li>

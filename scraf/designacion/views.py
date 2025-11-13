@@ -12,6 +12,28 @@ from users.models import User, Personal, Persona
 from activos.models import Activo, Line_Activo
 from activos.choices import pisos_ubicacion,  oficinas_ubicacion
 # Create your views here.
+
+class ListaAsignacionesPersona(LoginRequiredMixin, ListView):
+    model = Asignacion
+    template_name = "lista/asignaciones.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        users = User.objects.get(username=user)
+        persona = Personal.objects.get(user=users)
+        context["titulo"] = "LISTA DE ACTIVOS EN LA INSTITUCION"
+
+        context["object_list"] = self.model.objects.filter(carnet=persona.persona.carnet)
+        usuario = self.request.user
+        usuario_d = User.objects.get(username=usuario)
+        if usuario_d.g_Activos:           
+            context["entity_registro"] = reverse_lazy("designacion:registrar_asig", args=[])
+            context["entity_registro_nom"] = "REGISTRAR NUEVA ASIGNACION"
+            context["entity_registro2"] = reverse_lazy("designacion:devolver_asig")
+            context["entity_registro_nom2"] = "REGISTRAR NUEVA DEVOLUCION"
+        return context
+    
 class ListaAsignaciones(LoginRequiredMixin, ListView):
     model = Asignacion
     template_name = "lista/asignaciones.html"
@@ -111,38 +133,56 @@ def crear_devolucion(request):
             activos_devueltos = request.POST.getlist('activos_devueltos')
             tipo_devolucion = request.POST.get('tipo_devolucion')
             observaciones = request.POST.get('observaciones', '')
+            print('tipo_de_devolucion', tipo_devolucion)
+            print('activos_devueltos', activos_devueltos)
+            print(len(activos_devueltos))
+
             if not asignacion_slug or not activos_devueltos:
                 messages.error(request, 'Debe seleccionar una asignación y al menos un activo')
-                return redirect('designacion:devolver_asig')            
-            asignacion = Asignacion.objects.get(slug=asignacion_slug)            
+                return redirect('designacion:devolver_asig')      
+                  
+            asignacion = Asignacion.objects.get(slug=asignacion_slug)
+
+            if len(activos_devueltos) == len(asignacion.codigoActivo):
+                tipo_devolucion = "Total"
+            else:
+                tipo_devolucion = "Parcial"
+
             devolucion = Devoluciones.objects.create(
                 asignacion=asignacion,
                 tipoDevolucion=tipo_devolucion,
                 codigoActivo=activos_devueltos,
                 observaciones=observaciones 
             )
+
             for codigo_activo in activos_devueltos:
                 try:
                     activo = Activo.objects.get(codigo=codigo_activo)
+                    print('✅ Activo encontrado:', activo.codigo)
+                    
                     activo.estadoDesignacion = False
                     activo.save()
-                    print('PARA EL LINE DE ACTIVP DE DEVOLUCION')
-                    try:
-                        Line_Activo.objects.create(
-                            activo=activo,
-                            creador=request.user,
-                            estadoActivo=activo.estadoActivo,
-                            estadoDesignacion=activo.estadoDesignacion,
-                            mantenimiento=activo.mantenimiento,
-                            observaciones=f"Se realizó la DEVOLUCION de este activo de la asignación {asignacion.slug}"
-                        )
-                        print()
-                    except Exception as e_line:
-                        # Continuar con el siguiente activo en lugar de detenerse
-                        continue                        
+                    print('✅ Estado actualizado a False')
+                    
+                    print('✅ Creando Line_Activo...')
+                    crear_linea = Line_Activo.objects.create(
+                        activo=activo,
+                        creador=request.user,
+                        estadoActivo=activo.estadoActivo,
+                        estadoDesignacion=activo.estadoDesignacion,
+                        mantenimiento=activo.mantenimiento,
+                        observacion=f"Se realizó la DEVOLUCION de este activo de la asignación {asignacion.slug}"
+                    )
+                    print("✅ Line_Activo creado:", crear_linea.id)
+                    
                 except Activo.DoesNotExist:
+                    print(f'❌ Activo con código {codigo_activo} no existe')
                     continue
                 except Exception as e_activo:
+                    print(f'❌ Error creando Line_Activo para {codigo_activo}: {str(e_activo)}')
+                    # Imprimir el traceback completo
+                    import traceback
+                    print(f'❌ Traceback: {traceback.format_exc()}')
                     continue
             activos_asignados_originalmente = asignacion.codigoActivo
             activos_devueltos_total = []            

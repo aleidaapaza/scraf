@@ -23,12 +23,12 @@ class Revision(models.Model):
     nombre = models.CharField(max_length=255, null=False, blank=False)
     descripcion = models.TextField(blank=False, null=False)
     encargado = models.ForeignKey(Personal, to_field='slug', null=False, blank=False, on_delete=models.CASCADE)
-    revisores = models.ManyToManyField(Personal, to_field='slug', related_name='revisiones_apoyadas', blank=True)
+    revisores = models.ManyToManyField(Personal, related_name='revisiones_apoyadas', blank=True)
     fechaHora_inicio = models.DateTimeField(blank=True, null=True)
     fechaHora_finalizacion = models.DateTimeField(blank=True, null=True)
     
     def __str__(self):
-        return f'{self.slug}-{self.nombre}'    
+        return f'{self.slug}-{self.nombre}'
     class Meta:
         verbose_name = ('Revision')
         verbose_name_plural = ('Revision')
@@ -64,3 +64,4 @@ class Revision_Activo(models.Model):
         verbose_name = ('Revision_Activo')
         verbose_name_plural = ('Revision_Activo')
         db_table = 'Revision_Activo'
+

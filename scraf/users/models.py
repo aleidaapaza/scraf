@@ -151,7 +151,7 @@ class SuperUser(models.Model):
 pre_save.connect(set_slug, sender=SuperUser)
  
 class LinePersona(models.Model):
-    persona = models.ForeignKey(Personal, Personal, to_field='slug', on_delete=models.CASCADE, related_name='LinePersona')
+    persona = models.ForeignKey(Personal, to_field='slug', on_delete=models.CASCADE, related_name='LinePersona')
     fechaRegistro = models.DateTimeField(auto_now_add=True)
     encargado = models.ForeignKey(User, on_delete=models.CASCADE, related_name='LinePersonaResponsable')
     observacion= models.TextField()

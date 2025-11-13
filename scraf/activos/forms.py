@@ -48,18 +48,16 @@ class A_Activo_responsable(forms.ModelForm):
         for form in self.visible_fields():
             form.field.widget.attrs['class'] = 'form-select font-weight-bold'
             form.field.widget.attrs['autocomplete'] = 'off'
-        self.fields['estado'].widget.attrs['disabled'] = True
         self.fields['responsable'].widget.attrs['disabled'] = True
     
     class Meta:
         model = Activo_responsable
         fields = '__all__'
-        exclude = ['slug', 'activo']
+        exclude = ['slug', 'activo', 'asignacion']
         labels = {
             'responsable' : 'RESPONSABLE ACTUAL DEL ACTIVO',
             'piso_ubicacion' : 'PISO DONDE SE ENCUENTRA UBICADO EL ACTIVO',
             'oficina_ubicacion' : 'OFICINA DONDE SE ENCUENTRA UBICADO EL ACTIVO',
-            'estado' : 'ESTADO ACTUAL DEL ACTIVO',
         }
 class R_GrupoContable(forms.ModelForm):
     def __init__(self, *args, **kwargs):

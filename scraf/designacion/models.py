@@ -74,7 +74,7 @@ class Devoluciones(models.Model):
     def cantidad_activos(self):
         """Obtener cantidad de activos"""
         return len(self.codigoActivo)
-    
+        
     class Meta:
         verbose_name = ('Devoluciones')
         verbose_name_plural = ('Devoluciones')

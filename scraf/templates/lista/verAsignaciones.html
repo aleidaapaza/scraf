@@ -1,0 +1,63 @@
+{% extends 'base/base2card.html' %}
+{% load static %}
+{% block card1 %}
+<div class="row">
+    <div class="col-6">
+        <label class="fw-bold">Nombre Completo</label>
+        <input class="form-control" type="text" value="{{ persona.nombrecompleto }}" disabled readonly>
+    </div>
+    <div class="col-6">
+        <label class="fw-bold">Cargo</label>
+        <input class="form-control" type="text" value="{{ asignacion.cargo }}" disabled readonly>
+    </div>
+    <div class="col-4">
+        <label class="fw-bold">Carnet</label>
+        <input class="form-control" type="text" value="{{ persona.carnet }}" disabled readonly>
+    </div>
+    <div class="col-4">
+        <label class="fw-bold">Contacto</label>
+        <input class="form-control" type="text" value="{{ persona.contacto }}" disabled readonly>
+    </div>
+    <div class="col-4">
+        <label class="fw-bold">Mosca</label>
+        <input class="form-control" type="text" value="{{ persona.rubrica }}" disabled readonly>
+    </div>
+</div>
+{% endblock  %}
+
+{% block card2 %}
+<div class="row mb-3">
+    <div class="col-6">
+        <label class="fw-bold">Fecha de Asignacion:</label>
+        <input class="form-control" type="text" value="{{ asignacion.fecha_asignacion }}" disabled readonly>
+    </div>
+    <div class="col-6">
+        <label class="fw-bold">Estado</label>
+        {% if asignacion.estado %}
+         <input class="form-control bg-success text-white" type="text" value="Asignado" disabled readonly>
+        {% else %}
+         <input class="form-control bg-primary" type="text" value="Devuelto" disabled readonly>
+        {% endif %}       
+    </div>
+</div>
+<div class="row">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <div class="row align-items-center">
+                <div class="col-auto"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="col">Cantidad de Activos Asignados: {{cantidad}}</div>
+            </div>
+        </h5>
+    </div>
+    <div class="row mt-3">
+    {% for activo in activos  %}
+    <a href="{% url 'activos:ver_activo' activo.codigo %}" type="button">
+        <div class="border border-3 rounded mt-2">
+            <b>{{ activo.codigo }}</b>  {{ activo.descActivo }}            
+        </div>
+    </a>
+    {% endfor %}
+    </div>
+    
+</div>
+{% endblock  %}

@@ -177,7 +177,7 @@ def ajax_r_Revision(request):
             else:
                 data["form_is_valid"] = False
         else:
-            form = R_Revision()
+            form = R_Revision(user=request.user)
 
         context = {"form": form, "titulo": "Registrar Revisión"}
         data["html_form"] = render_to_string(
@@ -269,7 +269,7 @@ def ajax_editar_revision(request, slug):
             if usuario.is_superuser:
                 form = R_Revision(instance=revision)
             elif usuario.is_encargado:
-                form = A_Revision_P(instance=revision)
+                form = A_Revision_P(instance=revision, user=request.user)
         context = {"form": form, "titulo": "Editar Revisión"}
         data["html_form"] = render_to_string(
             "RegistroActualizacion/model_revision.html", context, request=request
@@ -352,11 +352,10 @@ class Revision_RActivos(LoginRequiredMixin, TemplateView):
         slug = self.kwargs.get("slug", None)
         revision = get_object_or_404(Revision, slug=slug)
         revisonActivo = Revision_Activo.objects.filter(revision__slug=revision.slug)
-        context["titulo"] = "REGISTRO DE REVISION DE ACTIVO"
+        context["titulo"] = f'REVISION DE ACTIVO {slug}'
         context["object_list"] = revisonActivo
         context["slug"] = slug
-        return context
-
+        return context  
 
 def buscar_activo(request, slug):
     if request.method == "POST":
@@ -370,9 +369,10 @@ def buscar_activo(request, slug):
             activo = get_object_or_404(Activo, codigo=codigo)
             revision = get_object_or_404(Revision, slug=slug, estado=True)
             activo_resp = get_object_or_404(Activo_responsable, activo=activo)
+            print(activo_resp)
             try:
                 revision_activo = Revision_Activo.objects.get(
-                    revision=revision, activo_res=activo_resp
+                    revision=revision
                 )
                 context = {
                     "activo": activo,
@@ -387,16 +387,17 @@ def buscar_activo(request, slug):
 
             except Revision_Activo.DoesNotExist:
                 form = R_Revision_ACtivo()
+                form2 = A_Activo_responsable(instance=activo_resp)
                 context = {
                     "activo": activo,
                     "slug": slug,
                     "form": form,
+                    "form2": form2,
                     "titulo": "OBSERVACIÓN DE LA REVISIÓN",
                 }
                 html = render_to_string(
                     TEMPLATE_BASE_PATH + "modal_form.html", context, request=request
                 )
-
             return HttpResponse(html)
           
         except ObjectDoesNotExist:
@@ -421,7 +422,6 @@ def actualizar_activo(request, slug, codigo):
         old_piso = activo_resp.piso_ubicacion
         old_oficina = activo_resp.oficina_ubicacion
         revision = Revision.objects.get(slug=slug)
-
         form = R_Revision_ACtivo(request.POST)
         form2 = A_Activo_responsable(request.POST, instance=activo_resp)
 
@@ -439,20 +439,20 @@ def actualizar_activo(request, slug, codigo):
                 cambios.append(
                     f"Piso cambiado: antes era '{old_piso or ''}', ahora es '{new_piso or ''}'"
                 )
-
+            print("CAMBIOS", cambios)
             if cambios:
                 Line_Activo_Responsable.objects.create(
-                    slug=activo_resp.slug,
+                    slug=activo,
+                    creador=request.user,
                     responsable=activo_resp.responsable,
-                    piso_ubicacion=activo_resp.piso_ubicacion,
-                    oficina_ubicacion=activo_resp.oficina_ubicacion,
-                    observacion=cambios,
-                    creador=user,
+                    piso_ubicacion=new_piso,
+                    oficina_ubicacion=new_oficina,
+                    estado = activo.estadoActivo,
+                    observacion=cambios
                 )
-
             revision_activo = form.save(commit=False)
             revision_activo.revision = revision
-            revision_activo.activo_res = activo_resp
+            revision_activo.activo = activo
             revision_activo.estado = True
             revision_activo.encargado = personal_user
             revision_activo.save()

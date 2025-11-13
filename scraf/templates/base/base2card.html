@@ -1,0 +1,67 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block contenido %}
+<div class="row mb-2">
+    <div class="col">
+        <h2 class="text-white fw-bold">{{ titulo }}</h2>
+        <hr>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <div class="row align-items-center">
+                <div class="col-auto"><i class="{{ icono_1 }}"></i></div>
+                <div class="col">{{ subtitulo_1 }}</div>
+            </div>
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            {% block card1 %}
+              
+            {% endblock  %}
+        </div>
+    </div>
+</div>
+{% if subtitulo_2 %}
+<hr>
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h5 class="card-title mb-0">
+            <div class="row align-items-center">
+                <div class="col-auto"><i class="{{ icono_2 }}"></i></div>
+                <div class="col">{{ subtitulo_2 }}</div>
+            </div>
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+                {% block card2 %}
+              
+                {% endblock %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% if subtitulo_3 %}
+<hr>
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <div class="row align-items-center">
+                <div class="col-auto"><i class="{{ icono_3 }}"></i></div>
+                <div class="col">{{ subtitulo_3 }}</div>
+            </div>
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+                {% block card3 %}
+              
+                {% endblock %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock contenido %}

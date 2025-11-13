@@ -12,6 +12,12 @@ a {
     color: inherit; /* Hereda el color del texto */
     text-decoration: none; /* Elimina el subrayado */
 }
+
+a:link, a:visited, a:hover, a:active {
+    color: inherit !important;
+    text-decoration: none !important;
+}
+
 h2 {
     color: rgb(255, 255, 255);
     text-shadow: 

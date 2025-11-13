@@ -1,0 +1,80 @@
+{% extends 'base/base2card.html' %}
+{% load static %}
+{% block card1 %}
+<div class="row">
+    <div class="col-6">
+        <label class="fw-bold">Nombre Completo</label>
+        <input class="form-control" type="text" value="{{ persona.nombrecompleto }}" disabled readonly>
+    </div>
+    <div class="col-6">
+        <label class="fw-bold">Cargo</label>
+        <input class="form-control" type="text" value="{{ asignacion.cargo }}" disabled readonly>
+    </div>
+    <div class="col-4">
+        <label class="fw-bold">Carnet</label>
+        <input class="form-control" type="text" value="{{ persona.carnet }}" disabled readonly>
+    </div>
+    <div class="col-4">
+        <label class="fw-bold">Contacto</label>
+        <input class="form-control" type="text" value="{{ persona.contacto }}" disabled readonly>
+    </div>
+    <div class="col-4">
+        <label class="fw-bold">Mosca</label>
+        <input class="form-control" type="text" value="{{ persona.rubrica }}" disabled readonly>
+    </div>
+</div>
+{% endblock  %}
+
+{% block card2 %}
+ <div class="card bg-primary p-3">
+    <label class="fw-bold">Estado:</label>
+    {% if asignacion.estado %}
+    <input class="form-control" type="text" value="Con Activos por Devolver" disabled readonly>
+    {% else %}
+    <input class="form-control" type="text" value="Se Devolvio Todos los Activos" disabled readonly>
+    {% endif %}
+</div>
+<hr>
+{% if devoluciones %}
+    {% for devolucion in devoluciones %}
+       <div class="card-header bg-primary text-white ">
+            <h5 class="card-title mb-0">
+                <div class="row align-items-center">
+                    <div class="col-auto"><i class="fa-solid fa-layer-group"></i></div>
+                    <div class="col">Cantidad de Activos Devueltos: {{devolucion.codigoActivo|length}}</div>
+                </div>
+            </h5>
+        </div>
+        <div class="row mb-3 mt-3">
+            <div class="col-6">
+                <label class="fw-bold">Fecha de Devolucion:</label>
+                <input class="form-control" type="text" value="{{ devolucion.fecha_devolucion }}" disabled readonly>
+            </div>
+            <div class="col-6">
+                <label class="fw-bold">Tipo de Devolucion</label>
+                <input class="form-control bg-success text-white" type="text" value="{{ devolucion.tipoDevolucion }}" disabled readonly>
+            </div>            
+            <div class="col-12">
+                <label class="fw-bold">Notas/Observaciones</label>
+                <div class="form-control bg-secondary-subtle">{{ devolucion.observaciones|linebreaksbr }}</div>
+            </div>
+        </div>            
+        <div class="row  mt-3">
+            <span class="fw-bold"> ACTIVOS </span>
+            {% for activo in devolucion.codigoActivo  %}
+            <a href="{% url 'activos:ver_activo' activo %}" type="button">
+                <div class="border border-3 rounded mt-2">
+                    <b>{{ activo }}</b> 
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <hr>
+    {% endfor %}
+{% else %}
+No se realizo ninguna Devolucion
+{% endif %}
+
+
+
+{% endblock  %}

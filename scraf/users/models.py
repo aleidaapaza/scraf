@@ -14,6 +14,11 @@ def set_slug(sender, instance, *args, **kwargs):
         )
         instance.slug = slug
 
+def set_slugCN(sender, instance, *args, **kwargs):
+    if not instance.slug:
+        slug = instance.persona.carnet
+        instance.slug = slug
+
 class Persona(models.Model):
     nombre = models.CharField(max_length=100, null=False, blank=False)
     apellido = models.CharField(max_length=100, null=False, blank=False)
@@ -121,14 +126,14 @@ class Personal(models.Model):
     user = models.ForeignKey(User, related_name="personal_perfil",on_delete=models.CASCADE)
     
     def __str__(self):
-        return f'{self.persona.nombre}_{self.persona.apellido}'
+        return f'{self.persona.nombre} {self.persona.apellido}'
     
     class Meta:
         verbose_name = _('Personal')
         verbose_name_plural = _('Personal')
         db_table = 'Personal'
 
-pre_save.connect(set_slug, sender=Personal)
+pre_save.connect(set_slugCN, sender=Personal)
 
 class SuperUser(models.Model):
     slug = models.SlugField(null=False, blank=False, unique=True)
@@ -146,10 +151,10 @@ class SuperUser(models.Model):
 pre_save.connect(set_slug, sender=SuperUser)
  
 class LinePersona(models.Model):
-    persona = models.ForeignKey(Personal, on_delete=models.CASCADE, related_name='LinePersona')
-    fechaRegistro = models.DateField(auto_now_add=True)
+    persona = models.ForeignKey(Personal, Personal, to_field='slug', on_delete=models.CASCADE, related_name='LinePersona')
+    fechaRegistro = models.DateTimeField(auto_now_add=True)
     encargado = models.ForeignKey(User, on_delete=models.CASCADE, related_name='LinePersonaResponsable')
-    observacion= models.TextField(default="df")
+    observacion= models.TextField()
 
     def __str__(self):
         return f'Línea de {self.persona} - {self.fechaRegistro}'

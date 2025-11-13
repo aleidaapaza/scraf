@@ -22,8 +22,8 @@ class Revision(models.Model):
     estado = models.BooleanField(null=True)
     nombre = models.CharField(max_length=255, null=False, blank=False)
     descripcion = models.TextField(blank=False, null=False)
-    encargado = models.ForeignKey(Personal, null=False, blank=False, on_delete=models.CASCADE)
-    revisores = models.ManyToManyField(Personal, related_name='revisiones_apoyadas', blank=True)
+    encargado = models.ForeignKey(Personal, to_field='slug', null=False, blank=False, on_delete=models.CASCADE)
+    revisores = models.ManyToManyField(Personal, to_field='slug', related_name='revisiones_apoyadas', blank=True)
     fechaHora_inicio = models.DateTimeField(blank=True, null=True)
     fechaHora_finalizacion = models.DateTimeField(blank=True, null=True)
     
@@ -52,10 +52,10 @@ class Revision_line(models.Model):
 
 class Revision_Activo(models.Model):
     revision = models.ForeignKey(Revision, on_delete=models.CASCADE, related_name='revision_activos')
-    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, related_name='ActivoRevision')
+    activo = models.ForeignKey(Activo, to_field='codigo', on_delete=models.CASCADE, related_name='ActivoRevision', )
     estado = models.BooleanField(default=False)
     fecha_registro = models.DateTimeField(auto_now_add=True)
-    encargado = models.ForeignKey(User, on_delete=models.CASCADE, related_name='encargadoRevision', blank=True)
+    encargado = models.ForeignKey(User, on_delete=models.CASCADE, related_name='encargadoRevision')
     observacion = models.TextField()
 
     def __str__(self):

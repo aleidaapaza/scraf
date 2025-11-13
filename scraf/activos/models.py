@@ -59,7 +59,7 @@ class Activo(models.Model):
         super().save(*args, **kwargs)
     
     def __str__(self):
-        return f'{self.codigo}-{self.descActivo}'
+        return f'{self.codigo} {self.descActivo}'
     
     class Meta:
         verbose_name = ('Activo')
@@ -67,7 +67,7 @@ class Activo(models.Model):
         db_table = 'Activo'
 
 class MantenimientoActivo(models.Model):
-    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, related_name='mantenimientosactivos')
+    activo = models.ForeignKey(Activo, to_field='codigo', on_delete=models.CASCADE, related_name='mantenimientosactivos')
     estado = models.BooleanField() #Activo/Inactivo
     fechaInicio = models.DateField()
     fechaFin=models.DateField(null=True, blank=True)
@@ -85,7 +85,7 @@ class MantenimientoActivo(models.Model):
         db_table = 'MantenimientoActivo'
 
 class Line_Activo(models.Model):
-    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, related_name='lineActivo')
+    activo = models.ForeignKey(Activo, to_field='codigo', on_delete=models.CASCADE, related_name='lineActivo')
     creador = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     estadoActivo = models.CharField(choices=estados, null=True, blank=True)

@@ -8,7 +8,7 @@ from datetime import date
 
 
 from designacion.models import Asignacion, Activo_responsable, Line_Asignacion, Line_Activo_Responsable, Devoluciones
-from users.models import User, Personal
+from users.models import User, Personal, Persona
 from activos.models import Activo, Line_Activo
 from activos.choices import pisos_ubicacion,  oficinas_ubicacion
 # Create your views here.
@@ -347,3 +347,48 @@ def confirmar_ubicacion(request, tipo, slug):
     }
     
     return render(request, 'RegistroActualizacion/ubicacion_confirmar.html', context)
+
+class verAsignaciones(LoginRequiredMixin,TemplateView):
+    template_name="lista/verAsignaciones.html"
+    model = Asignacion
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        slug = self.kwargs.get("slug")
+        asignacion = self.model.objects.get(slug=slug)
+        persona = Persona.objects.get(carnet=asignacion.carnet)
+        activos = []
+        for activosSelect in asignacion.codigoActivo:
+            activoSeleccionado = Activo.objects.get(codigo=activosSelect)
+            activos.append(activoSeleccionado)
+        cantidad = len(activos)
+        context["titulo"] = f'DATOS DE LA ASIGNACION {asignacion.slug}'
+        context["icono_1"] = "fa-solid fa-user"
+        context["subtitulo_1"] = "Datos del Personal"
+        context["icono_2"] = "fa-solid fa-plus"
+        context["subtitulo_2"] = "Datos de la Asignacion"
+        context["asignacion"] = asignacion
+        context["persona"] = persona
+        context["activos"]=activos
+        context["cantidad"]=cantidad
+        return context
+
+class verDevolucion(LoginRequiredMixin,TemplateView):
+    template_name="lista/verDevolucion.html"
+    model = Devoluciones
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        slug = self.kwargs.get("slug")
+        asignacion = Asignacion.objects.get(slug=slug)
+        devolucion = self.model.objects.filter(asignacion=slug)
+        persona = Persona.objects.get(carnet=asignacion.carnet)
+        activos = []
+        context["titulo"] = f'DATOS DE LA DEVOLUCION {asignacion.slug}'
+        context["icono_1"] = "fa-solid fa-user"
+        context["subtitulo_1"] = "Datos del Personal"
+        context["icono_2"] = "fa-solid fa-minus"
+        context["subtitulo_2"] = "Datos de la Devolucion"
+        context["persona"] = persona
+        context["asignacion"] = asignacion
+        context["devoluciones"] = devolucion
+
+        return context

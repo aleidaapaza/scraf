@@ -1,0 +1,23 @@
+{% extends 'base/baseListasDatos.html' %}
+{% load static %}
+{% block thead %}
+    <tr>
+        <th scope="col">CODIGO</th>
+        <th scope="col">DESCRIPCION</th>
+        <th scope="col">ESTADO</th>
+        <th scope="col">FECHA DE REVISION</th>
+        <th scope="col">RESPONSABLE DE LA REVISION</th>
+    </tr>
+
+{% endblock %}
+{% block tbody %}
+    {% for comparacion in comparaciones %}
+        <tr>
+            <td> {{ comparacion.0 }}</td>
+            <td> {{ comparacion.1 }} </td>
+            <td> {{ comparacion.2 }} </td>
+            <td> {{ comparacion.3 }} </td>
+            <td> {{ comparacion.4 }} </td>
+        </tr>
+    {% endfor %}
+{% endblock %}

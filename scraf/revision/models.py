@@ -44,7 +44,7 @@ class Revision_line(models.Model):
     observacion = models.TextField()
     
     def __str__(self):
-        return f'{self.slug}-{self.estado}'    
+        return f'{self.revision.slug}-{self.estado}'    
     class Meta:
         verbose_name = ('Revision_line')
         verbose_name_plural = ('Revision_line')
@@ -59,7 +59,7 @@ class Revision_Activo(models.Model):
     observacion = models.TextField()
 
     def __str__(self):
-        return f'{self.slug}-{self.revision.nombre}-{self.activo_res.activo.codigo}'    
+        return f'{self.revision.slug} {self.activo.codigo}'    
     class Meta:
         verbose_name = ('Revision_Activo')
         verbose_name_plural = ('Revision_Activo')

@@ -11,6 +11,8 @@ from designacion.models import Asignacion, Activo_responsable, Line_Asignacion, 
 from users.models import User, Personal, Persona
 from activos.models import Activo, Line_Activo
 from activos.choices import pisos_ubicacion,  oficinas_ubicacion
+
+from revision.views import get_menu_context
 # Create your views here.
 
 class ListaAsignacionesPersona(LoginRequiredMixin, ListView):
@@ -19,6 +21,7 @@ class ListaAsignacionesPersona(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         user = self.request.user
         users = User.objects.get(username=user)
         persona = Personal.objects.get(user=users)
@@ -40,6 +43,7 @@ class ListaAsignaciones(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         context["titulo"] = "LISTA DE ACTIVOS EN LA INSTITUCION"
         context["object_list"] = self.model.objects.all()
         usuario = self.request.user
@@ -123,7 +127,9 @@ def crear_asignacion(request):
             'accion2': 'Cancelar',
             'accion2_url': reverse('designacion:lista_asignaciones'), 
             'form_action_url': reverse('designacion:registrar_asig')
-        }        
+        }
+        context.update(get_menu_context(request))
+
         return render(request, 'RegistroActualizacion/asignacion.html', context)
     
 def crear_devolucion(request):
@@ -133,14 +139,9 @@ def crear_devolucion(request):
             activos_devueltos = request.POST.getlist('activos_devueltos')
             tipo_devolucion = request.POST.get('tipo_devolucion')
             observaciones = request.POST.get('observaciones', '')
-            print('tipo_de_devolucion', tipo_devolucion)
-            print('activos_devueltos', activos_devueltos)
-            print(len(activos_devueltos))
-
             if not asignacion_slug or not activos_devueltos:
                 messages.error(request, 'Debe seleccionar una asignación y al menos un activo')
-                return redirect('designacion:devolver_asig')      
-                  
+                return redirect('designacion:devolver_asig')                        
             asignacion = Asignacion.objects.get(slug=asignacion_slug)
 
             if len(activos_devueltos) == len(asignacion.codigoActivo):
@@ -157,14 +158,9 @@ def crear_devolucion(request):
 
             for codigo_activo in activos_devueltos:
                 try:
-                    activo = Activo.objects.get(codigo=codigo_activo)
-                    print('✅ Activo encontrado:', activo.codigo)
-                    
+                    activo = Activo.objects.get(codigo=codigo_activo)                    
                     activo.estadoDesignacion = False
                     activo.save()
-                    print('✅ Estado actualizado a False')
-                    
-                    print('✅ Creando Line_Activo...')
                     crear_linea = Line_Activo.objects.create(
                         activo=activo,
                         creador=request.user,
@@ -172,17 +168,14 @@ def crear_devolucion(request):
                         estadoDesignacion=activo.estadoDesignacion,
                         mantenimiento=activo.mantenimiento,
                         observacion=f"Se realizó la DEVOLUCION de este activo de la asignación {asignacion.slug}"
-                    )
-                    print("✅ Line_Activo creado:", crear_linea.id)
-                    
+                    )                    
                 except Activo.DoesNotExist:
-                    print(f'❌ Activo con código {codigo_activo} no existe')
+                    messages.error(request, f'Activo con código {codigo_activo} no existe')
                     continue
                 except Exception as e_activo:
-                    print(f'❌ Error creando Line_Activo para {codigo_activo}: {str(e_activo)}')
-                    # Imprimir el traceback completo
+                    messages.error(request, f'Error creando Line_Activo para {codigo_activo}: {str(e_activo)}')
                     import traceback
-                    print(f'❌ Traceback: {traceback.format_exc()}')
+                    messages.error(request, f'Traceback: {traceback.format_exc()}')
                     continue
             activos_asignados_originalmente = asignacion.codigoActivo
             activos_devueltos_total = []            
@@ -234,10 +227,10 @@ def crear_devolucion(request):
             'accion2_url': reverse('designacion:lista_asignaciones'),
             'form_action_url': reverse('designacion:devolver_asig')
         }        
+        context.update(get_menu_context(request))
         return render(request, 'RegistroActualizacion/devolucion.html', context)
 
 def get_activos_asignacion(request):
-    #Vista auxiliar para obtener activos de una asignación (AJAX)
     if request.method == 'GET' and request.GET.get('asignacion_slug'):
         asignacion_slug = request.GET.get('asignacion_slug')        
         try:
@@ -247,7 +240,6 @@ def get_activos_asignacion(request):
             for codigo in activos_codigos:
                 try:
                     activo = Activo.objects.get(codigo=codigo)
-                    # Verificar si ya fue devuelto en devoluciones anteriores
                     devuelto = Devoluciones.objects.filter(
                         asignacion=asignacion, 
                         codigoActivo__contains=[codigo]
@@ -326,12 +318,10 @@ def confirmar_ubicacion(request, tipo, slug):
                         oficina_ubicacion=activo_act.oficina_ubicacion,
                         estado=tipo,
                         observacion=observacions
-                    )
-                   
+                    )                   
                 except Exception as e_line:
-                    print(f"❌ ERROR creando Line_Activo_Responsable: {str(e_line)}")
-                    print(f"🔍 Tipo de error: {type(e_line).__name__}")
-                    # Continuar con el siguiente activo en lugar de detenerse
+                    messages.error(request, f'ERROR creando Line_Activo_Responsable: {str(e_line)}')
+                    messages.error(request, f'Tipo de error: {type(e_line).__name__}')
                     continue
             if tipo == 'devolucion':
                 for activo_resp in activos_responsable:
@@ -355,11 +345,9 @@ def confirmar_ubicacion(request, tipo, slug):
                             estado=tipo,
                             observacion=f'El responsable anterior:{responsable_anterior} / Asignacion anterior:{asignacion_anterior}'
                         )
-
                     except Exception as e:
-                        print(f" Error limpiando responsable: {str(e)}")
+                        messages.error(request, f'Error limpiando responsable: {str(e)}')
                         continue
-
             messages.success(request, f'Ubicaciones confirmadas exitosamente')
             if tipo == 'asignacion':
                 return redirect('designacion:lista_asignaciones')
@@ -385,6 +373,7 @@ def confirmar_ubicacion(request, tipo, slug):
         'pisos_ubicacion': pisos_ubicacion,
         'oficinas_ubicacion': oficinas_ubicacion,
     }
+    context.update(get_menu_context(request))
     
     return render(request, 'RegistroActualizacion/ubicacion_confirmar.html', context)
 
@@ -393,6 +382,7 @@ class verAsignaciones(LoginRequiredMixin,TemplateView):
     model = Asignacion
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         slug = self.kwargs.get("slug")
         asignacion = self.model.objects.get(slug=slug)
         persona = Persona.objects.get(carnet=asignacion.carnet)
@@ -417,6 +407,7 @@ class verDevolucion(LoginRequiredMixin,TemplateView):
     model = Devoluciones
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         slug = self.kwargs.get("slug")
         asignacion = Asignacion.objects.get(slug=slug)
         devolucion = self.model.objects.filter(asignacion=slug)

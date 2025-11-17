@@ -13,7 +13,7 @@
         <tr>
             <td> {{ object.fechaRegistro }} </td>
             <td> {{ object.encargado }}</td>
-            <td> {{ object.observacion }}</td>
+            <td class="text-start"> {{ object.observacion|linebreaks }}</td>
         </tr>
     {% endfor %}
 {% endblock %}

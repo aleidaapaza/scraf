@@ -115,16 +115,16 @@
                 <ul class="menu-items">                
                     <li>
                         {% if mostrar_menu_registro_encargado %}
-                            <a class="nav-link px-3" href="{% url 'revision:registro_revision_activo' %}">
-                            <i class="fas fa-clipboard-list me-2"></i>Revision Activa
-                            </a>                        
+                            <a class="nav-link px-3" href="{% url 'revision:revision_activo' revision_activa.slug %}">
+                                <i class="fas fa-clipboard-list me-2"></i>Revision Activa
+                            </a>
+                        {% else %}
+                            <i class="fas fa-list-alt me-2"></i>No existe revision activa
                         {% endif %}
-                        <i class="fas fa-list-alt me-2"></i>No existe revision activa
                     </li>
                 </ul>
             </div>
-        {% endif %}     
-
+        {% endif %}
         <!-- Cerrar sesión -->
         <div class="logout-section">
             <a href="{% url 'inicio:Logout' %}" class="logout-btn">

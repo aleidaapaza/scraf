@@ -18,25 +18,22 @@ from designacion.models import Activo_responsable, Line_Activo_Responsable
 from revision.views import get_menu_context
 from users.models import User, Personal
 
-
 class ListaActivos(LoginRequiredMixin, ListView):
     model = Activo
     template_name = "lista/activo.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         context["titulo"] = "LISTA DE ACTIVOS EN LA INSTITUCION"
         context["object_list"] = self.model.objects.all().order_by("id")
         usuario = self.request.user
         usuario_d = User.objects.get(username=usuario)
         context.update(get_menu_context(self.request))
         if usuario_d.g_Activos:
-            context["entity_registro"] = reverse_lazy(
-                "activos:registro_activos", args=[]
-            )
+            context["entity_registro"] = reverse_lazy("activos:registro_activos", args=[])
             context["entity_registro_nom"] = "REGISTRAR NUEVO ACTIVO"
         return context
-
 
 class RegistroActivo(LoginRequiredMixin, CreateView):
     model = Activo
@@ -45,6 +42,7 @@ class RegistroActivo(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("activos:lista_activos")
     def get_context_data(self, **kwargs):
         context = super(RegistroActivo, self).get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         slug = self.kwargs.get("slug")
         if 'form' not in context:
             context['form'] = self.form_class(self.request.GET)
@@ -75,16 +73,12 @@ class RegistroActivo(LoginRequiredMixin, CreateView):
 def get_auxiliares_por_grupo(request):
     grupo_id = request.GET.get('grupo_id')
     search_term = request.GET.get('q', '')
-    
     if not grupo_id:
         return JsonResponse([], safe=False)
-    
     try:
         auxiliares = AuxiliarContable.objects.filter(grupocontable_id=grupo_id)
-        # Aplicar filtro de búsqueda si existe
         if search_term:
             auxiliares = auxiliares.filter(nombre__icontains=search_term)
-        # Formatear datos para Select2
         data = []
         for auxiliar in auxiliares:
             data.append({
@@ -101,6 +95,7 @@ class LineActivo(LoginRequiredMixin, TemplateView):
     template_name = "lista/lineActivo.html"
     def get_context_data(self, **kwargs):
             context = super().get_context_data(**kwargs)
+            context.update(get_menu_context(self.request))
             codigo = self.kwargs.get("codigo")
             activo = Activo.objects.get(codigo=codigo)
             activo_line = Line_Activo.objects.filter(activo=activo)
@@ -122,6 +117,7 @@ class VerActivo(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         slug = self.kwargs.get("codigo")
         activo = Activo.objects.get(codigo=slug)
         context["titulo"] = "INFORMACION DEL ACTIVO"
@@ -137,13 +133,11 @@ class VerActivo(LoginRequiredMixin, TemplateView):
             context["mantenimientos"] = mantenimientos
         return context    
 
-
 #-----------------------------------------------------------------------------------------------------------------
 # ------------------- actualizar datos activo y habilitar mantenimiento --------------------
 # ----------------------------------------------------------------------------------------------------------------
 
 def gestionar_activo(request, activo_codigo):
-
     activo = get_object_or_404(Activo, codigo=activo_codigo)
     try:
         mantenimiento_activo = MantenimientoActivo.objects.get(
@@ -182,9 +176,7 @@ def gestionar_activo(request, activo_codigo):
                     })
             
             elif request.POST.get('form_type') == 'form_mantenimiento':
-                # Procesar formulario de mantenimiento
                 if request.POST.get('accion') == 'iniciar':
-                    # Iniciar nuevo mantenimiento
                     form_mantenimiento = MantenimientoActivoForm(request.POST)
                     if form_mantenimiento.is_valid():
                         instancia = form_mantenimiento.save(commit=False)
@@ -201,10 +193,8 @@ def gestionar_activo(request, activo_codigo):
                                 })
                         instancia.save()
                         
-                        # Actualizar estado de mantenimiento del activo a True
                         activo.mantenimiento = True
                         activo.save()
-                        print('activo registrado', activo)
                         Line_Activo.objects.create(
                             activo = activo,
                             creador = request.user,
@@ -244,11 +234,9 @@ def gestionar_activo(request, activo_codigo):
                                     'success': False, 
                                     'errors': {'general': 'El usuario no tiene un perfil de Personal asociado'}
                                 })
-                            instancia.save()                            
-                            # Actualizar estado de mantenimiento del activo a False
+                            instancia.save()
                             activo.mantenimiento = False
                             activo.save()
-                            print('activo registrado', activo)
                             Line_Activo.objects.create(
                                 activo = activo,
                                 creador = request.user,
@@ -268,7 +256,6 @@ def gestionar_activo(request, activo_codigo):
                                 'errors': form_mantenimiento.errors
                             })
     
-    # GET request - mostrar formularios
     form_activo = A_Activo(instance=activo)
     form_mantenimiento = MantenimientoActivoForm(instance=mantenimiento_activo)
     
@@ -280,13 +267,12 @@ def gestionar_activo(request, activo_codigo):
         'subtitulo_1': 'Estado del Activo',
         'subtitulo_2': 'Gestión de Mantenimiento',
     }
-    
+    context.update(get_menu_context(request))
     return render(request, 'RegistroActualizacion/activo_a.html', context)
 
 #-----------------------------------------------------------------------------------------------------------------
 # ------------------- VIEWS ANTIGUROS ACTIVOS --------------------
 # ----------------------------------------------------------------------------------------------------------------
-
 
 class ActualizarActivo(LoginRequiredMixin, UpdateView):
     model = Activo
@@ -295,6 +281,7 @@ class ActualizarActivo(LoginRequiredMixin, UpdateView):
     form_class = R_Activo_responsable
     def get_context_data(self, **kwargs):
         context = super(RegistroActivoResponsable, self).get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         if "form" not in context:
             context["form"] = self.form_class(self.request.GET)
         if "form2" not in context:
@@ -318,6 +305,7 @@ class RegistroActivoResponsable(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super(RegistroActivoResponsable, self).get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         if "form" not in context:
             context["form"] = self.form_class(self.request.GET)
         if "form2" not in context:
@@ -340,14 +328,9 @@ class RegistroActivoResponsable(LoginRequiredMixin, CreateView):
         if form.is_valid() and form2.is_valid():
             codigo = form2.cleaned_data.get("codigo")
 
-            # ✅ Verificamos si ya existe un activo con ese código
             if Activo.objects.filter(codigo=codigo).exists():
-                messages.error(
-                    request, "⚠️ El código ya existe, por favor ingrese otro código."
-                )
-                return self.render_to_response(
-                    self.get_context_data(form=form, form2=form2)
-                )
+                messages.error(request, "El código ya existe, por favor ingrese otro código.")
+                return self.render_to_response(self.get_context_data(form=form, form2=form2))
 
             try:
                 responsable = form.cleaned_data.get("responsable")
@@ -367,28 +350,16 @@ class RegistroActivoResponsable(LoginRequiredMixin, CreateView):
                     observacion="Se registró los datos del activo y del responsable",
                     creador=usuario,
                 )
-                messages.success(
-                    request,
-                    "✅ El activo con responsable fue registrado correctamente.",
-                )
+                messages.success(request, "El activo con responsable fue registrado correctamente.")
                 return HttpResponseRedirect(reverse("activos:lista_activos"))
 
             except IntegrityError:
-                messages.error(
-                    request,
-                    "⚠️ Ocurrió un error al registrar el activo. Verifique los datos e intente nuevamente.",
-                )
-                return self.render_to_response(
-                    self.get_context_data(form=form, form2=form2)
-                )
+                messages.error(request,"Ocurrió un error al registrar el activo. Verifique los datos e intente nuevamente.",)
+                return self.render_to_response(self.get_context_data(form=form, form2=form2))
 
         else:
-            messages.error(
-                request, "⚠️ Por favor complete todos los campos correctamente."
-            )
-            return self.render_to_response(
-                self.get_context_data(form=form, form2=form2)
-            )
+            messages.error(request, " Por favor complete todos los campos correctamente." )
+            return self.render_to_response(self.get_context_data(form=form, form2=form2))
 
 
 class ActualizarActivoResponsable(LoginRequiredMixin, UpdateView):
@@ -404,6 +375,7 @@ class ActualizarActivoResponsable(LoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         activo_responsable = self.get_object()
         activo = activo_responsable.activo
 
@@ -480,9 +452,6 @@ class ActualizarActivoResponsable(LoginRequiredMixin, UpdateView):
                 self.get_context_data(form=form, form2=form2)
             )
 
-from django.utils import timezone
-import uuid
-
 @login_required
 @require_http_methods(["GET", "POST"])
 def ajax_r_activo(request):
@@ -490,31 +459,21 @@ def ajax_r_activo(request):
     if request.method == "POST":
         form = R_Activo(request.POST)
         if form.is_valid():
-
             try:
-                # 1. Guardar el Activo
                 activo = form.save()
-
-                # 2. Generar campos obligatorios
                 new_slug = str(uuid.uuid4())
                 current_datetime = timezone.now()
-
-                # 3. ⚠️ CREAR ACTIVO_RESPONSABLE MÍNIMO (Almacén)
                 Activo_responsable.objects.create(
                     activo=activo,
-                    slug=new_slug,  # <-- Obligatorio
-                    fecha_registro=current_datetime,  # <-- Obligatorio
-                    # ⚠️ CAMBIO CRÍTICO: INCLUIR ESTADO
-                    estado="Bueno",  # <-- Asumiendo que es el valor inicial ("Bueno")
-                    responsable=None,  # <-- Nulo, ya que no tiene responsable
+                    slug=new_slug,
+                    fecha_registro=current_datetime,
+                    estado="Bueno",
+                    responsable=None, 
                     piso_ubicacion="ALMACENES",
                     oficina_ubicacion="ALMACEN",
                 )
-
                 data["form_is_valid"] = True
-
-            except Exception as e:
-                # Si falla, devolvemos el error y eliminamos el Activo huérfano.
+            except Exception as e:               
                 try:
                     activo.delete()
                 except:
@@ -527,8 +486,6 @@ def ajax_r_activo(request):
 
         else:
             data["form_is_valid"] = False
-
-    # ... (el resto del código de la función) ...
     return JsonResponse(data)
 
 

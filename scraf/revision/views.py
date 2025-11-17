@@ -47,7 +47,6 @@ def get_menu_context(request):
         pass
     except ObjectDoesNotExist:
         pass
-
     return data
 
 
@@ -63,6 +62,7 @@ class RegistroRevisionActivoView(LoginRequiredMixin, MenuContextMixin, TemplateV
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))         
         try:
             revision_activa = Revision.objects.get(estado=True)
             context["slug"] = revision_activa.slug
@@ -79,6 +79,7 @@ class ListaCambiosRevision(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(ListaCambiosRevision, self).get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         slug = self.kwargs.get("slug", None)
         context["titulo"] = "LISTA DE CAMBIOS DE ACTIVOS"
         context["object_list"] = self.model.objects.filter(
@@ -111,6 +112,7 @@ class ListaRevisiones(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         context["titulo"] = "LISTA DE REVISIONES DE ACTIVOS"
         usuario = self.request.user
         context["entity_registro_nom"] = "REGISTRAR NUEVA REVISION TOTAL"
@@ -337,6 +339,7 @@ class Revision_RActivos(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(Revision_RActivos, self).get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         slug = self.kwargs.get("slug", None)
         revision = get_object_or_404(Revision, slug=slug)
         revisonActivo = Revision_Activo.objects.filter(revision__slug=revision.slug)
@@ -456,6 +459,7 @@ class ListaCompletaRevision_Activo(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(ListaCompletaRevision_Activo, self).get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         slug = self.kwargs.get("slug", None)
         context["titulo"] = "LISTA DE REVISION DE ACTIVOS"
         context["object_list"] = self.model.objects.filter(slug=slug)
@@ -468,4 +472,41 @@ class ListaCompletaRevision_Activo(LoginRequiredMixin, ListView):
             revision_datos = revision.first()
             context["revision"] = revision
             context["revision_datos"] = revision_datos
+        return context
+
+class Comparacion(LoginRequiredMixin,TemplateView):
+    model = Revision
+    template_name = "lista/comparacionRevision.html"
+    def get_context_data(self, **kwargs):
+        context = super(Comparacion, self).get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
+        slug = self.kwargs.get("slug", None)
+        comparacion =[]
+        activos = Activo.objects.all()
+        revision = Revision.objects.get(slug=slug)
+        revision_activo = Revision_Activo.objects.filter(revision=revision)
+        for activo in activos:
+            print(activo.codigo)
+            existe = revision_activo.filter(activo=activo.codigo)
+            existe_codigo = existe.first()
+            print('EXISTE',existe)
+            if existe:
+                estado = "Revisado"
+                fecha_revisado =existe_codigo.fecha_registro
+                persona = Personal.objects.get(user__username=existe_codigo.encargado)
+                if persona:
+                    responsable_revision =persona.persona.nombrecompleto
+                else:
+                    responsable_revision = f'-'
+            else:
+                estado = "Sin Revisar"
+                responsable_revision = f'-'
+                fecha_revisado = f'-'
+
+            tupla = (activo.codigo, activo.descActivo, estado, fecha_revisado, responsable_revision)
+            print("tupla",tupla)
+            comparacion.append(tupla)
+            print("comparacion", comparacion)
+        print("todo de la comparacion", comparacion)
+        context['comparaciones'] =comparacion
         return context

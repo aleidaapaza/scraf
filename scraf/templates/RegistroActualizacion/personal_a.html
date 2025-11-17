@@ -22,7 +22,6 @@
 <div class="container-fluid registro-personal">
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <!-- Título -->
     <div class="row mt-3">
       <div class="col-12">
         <h2 class="fw-bold text-white">{{ entity|default:"ACTUALIZAR PERSONAL" }}</h2>
@@ -30,10 +29,15 @@
       </div>
     </div>
     <div class="row justify-content-center">
-      <div class="col-12 col-lg-10">
+      <div class="col-md-6 col-sm-12">
         <div class="card shadow-sm">
-          <div class="card-header bg-white text-center">
-            <h5 class="m-0 fw-bold title-green">DATOS PERSONALES</h5>
+          <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">
+              <div class="row align-items-center">
+                <div class="col-auto"><i class="fa-solid fa-pen-to-square"></i></div>
+                <div class="col">DATOS PERSONALES</div>
+              </div>
+            </h5>
           </div>
           {% for field in form3 %}
             {% if field.help_text %}
@@ -67,18 +71,20 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="row justify-content-center mt-4">
-      <div class="col-12 col-lg-10">
-        <div class="card shadow-sm bg-green-soft border-0">
-          <div class="card-header bg-transparent text-center">
-            <h5 class="m-0 fw-bold title-green">Tipo de Usuario y Responsabilidades</h5>
+      <div class="col-md-6 col-sm-12">
+        <div class="card shadow-sm">
+          <div class="card-header bg-success text-white">
+            <h5 class="card-title mb-0">
+              <div class="row align-items-center">
+                <div class="col-auto"><i class="fa-solid fa-pen-to-square"></i></div>
+                <div class="col">DATOS USUARIO Y PERMISOS</div>
+              </div>
+            </h5>
           </div>
-          <div class="card-body">
-            <!-- Usuario -->
+           <div class="card-body">
             <div class="mb-3 row">
-              <label class="col-sm-4 col-form-label fw-semibold text-sm-end">Nombre de usuario</label>
-              <div class="col-sm-2">
+              <label class="col-sm-3 col-form-label fw-semibold text-sm-end">Nombre de usuario</label>
+              <div class="col-sm-3">
                 {{ form2.username }}
               </div>
               <label class="col-sm-4 col-form-label fw-semibold text-sm-end">Usuario Activo</label>
@@ -89,7 +95,8 @@
                 </div>
               </div>
             </div>
-            <!-- Grupo A (Independientes): Personal y Mantenimiento -->            
+           </div>
+          <!-- Grupo A (Independientes): Personal y Mantenimiento -->            
             <div class="row align-items-center gy-3">
               <label class="col-sm-6 col-lg-4 col-form-label fw-semibold text-sm-end">Gestión de Personal:</label>
               <div class="col-sm-6 col-lg-2">
@@ -106,11 +113,10 @@
                 </div>
               </div>
               <input type="hidden" name="rol_independientes" id="rol_independientes" value="
-{% if personal.user.g_personal %}personal{% endif %}
-{% if personal.user.g_mantenimiento %}{% if personal.user.g_personal %},{% endif %}mantenimiento{% endif %}
-{% if personal.user.is_active %}{% if personal.user.g_personal or personal.user.g_mantenimiento %},{% endif %}Useractivo{% endif %}">
+                {% if personal.user.g_personal %}personal{% endif %}
+                {% if personal.user.g_mantenimiento %}{% if personal.user.g_personal %},{% endif %}mantenimiento{% endif %}
+                {% if personal.user.is_active %}{% if personal.user.g_personal or personal.user.g_mantenimiento %},{% endif %}Useractivo{% endif %}">
             </div>
-
             <!-- Grupo B (exclusivo): Revisión -->
             <div class="row align-items-center gy-2 mt-2">
               <label class="col-sm-4 col-form-label fw-semibold text-sm-end">Encargado de revisión</label>
@@ -148,14 +154,11 @@
                 </div>
               </div>
               <input type="hidden" name="rol_activos_exclusivo" id="rol_activos_exclusivo"
-                    value="{% if personal.user.g_Activos %}gestion_activos{% elif personal.user.v_Activos %}solo_visualiza{% endif %}">  <!-- ✅ CAMBIADO -->
-            </div>         
-          </div>
+                    value="{% if personal.user.g_Activos %}gestion_activos{% elif personal.user.v_Activos %}solo_visualiza{% endif %}">
         </div>
       </div>
     </div>
-
-    <!-- BOTÓN CENTRADO -->
+    
     <div class="row mt-4">
       <div class="col-12 d-flex justify-content-center">
         <button type="submit" class="btn btn-success px-4 py-2">

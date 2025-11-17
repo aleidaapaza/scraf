@@ -71,7 +71,7 @@ class A_User(forms.ModelForm):
             form.field.widget.attrs['class'] = 'form-check font-weight-bold border border-info'
             form.field.widget.attrs['autocomplete'] = 'off'
         self.fields['username'].widget.attrs['class'] = 'form-control form-control-sm font-weight-bold border border-info'
-        self.fields['username'].disabled = True
+        self.fields['username'].widget.attrs['readonly'] = True
     
     class Meta:
         model = User
@@ -93,4 +93,27 @@ class A_User(forms.ModelForm):
             'g_mantenimiento' : 'Puede poner activos en mantenimiento',  # ✅ AGREGADO
             'g_Activos' : 'Registra, modifica y Visualiza los datos de los activos fijos',
             'v_Activos' : 'Solo Visualiza los datos de los activos fijos'
+        }
+
+class A_Persona(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.visible_fields():
+            form.field.widget.attrs['class'] = 'form-control form-control-sm font-weight-bold border border-info'
+            form.field.widget.attrs['autocomplete'] = 'off'
+        self.fields['nombre'].widget.attrs['readonly'] = True
+        self.fields['apellido'].widget.attrs['readonly'] = True
+        self.fields['carnet'].widget.attrs['readonly'] = True
+        self.fields['rubrica'].widget.attrs['readonly'] = True
+    
+    class Meta:
+        model = Persona
+        fields = '__all__'
+        labels = {
+            'nombre' : 'NOMBRE(S)',
+            'apellido' : 'APELLIDO(S)',
+            'cargo' : 'CARGO',
+            'contacto' : 'CONTACTO',
+            'carnet' : 'CARNET DE IDENTIDAD',
+            'rubrica' : 'MOSCA',
         }

@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 
 from users.models import Personal, Persona, User, LinePersona
-from users.forms import R_User, R_Persona, A_User, A_Personal
+from users.forms import R_User, R_Persona, A_User, A_Personal, A_Persona
 
 from revision.views import get_menu_context
 
@@ -112,6 +112,7 @@ def registrar_line_Persona(datos_antiguos_user, datos_antiguos_persona, slug, us
 
             text = f"""
             Se actualizó el usuario: {personal.user.username}
+            
             CAMBIOS REALIZADOS:
             {chr(10).join(f'- {cambio}' for cambio in cambios) if cambios else 'Sin cambios detectados'}
             
@@ -145,6 +146,7 @@ class ListaPersonal(LoginRequiredMixin, ListView):
     template_name = 'lista/personal.html'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         context['superuser']=True
         context['titulo'] = 'LISTA DE PERSONAL'
         context['object_list'] = self.model.objects.all()
@@ -162,6 +164,7 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super(RegistroPersonal, self).get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         if 'form' not in context:
             context['form'] = self.form_class(self.request.GET)
         if 'form2' not in context:
@@ -223,7 +226,6 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
                     personal.slug, 
                     request.user  # El usuario que está haciendo la modificación
                 )
-            print(line)
             return HttpResponseRedirect(reverse('users:lista_personal', args=[]))
         else:
             self.object = None
@@ -237,10 +239,11 @@ class ActualizacionPersonal(LoginRequiredMixin, UpdateView):
    template_name = 'RegistroActualizacion/personal_a.html'
    form_class = A_Personal
    second_form_class = A_User
-   third_form_class = R_Persona
+   third_form_class = A_Persona
 
    def get_context_data(self, **kwargs):
         context = super(ActualizacionPersonal, self).get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         slug = self.kwargs.get('slug', None)        
         personal_p = self.model.objects.get(slug=slug)
         user_p = self.second_model.objects.get(id=personal_p.user.pk)
@@ -306,8 +309,7 @@ class ActualizacionPersonal(LoginRequiredMixin, UpdateView):
                     datos_antiguos_persona, 
                     slug, 
                     request.user  # El usuario que está haciendo la modificación
-                )
-                print(line)          
+                )  
                 return HttpResponseRedirect(reverse('users:lista_personal', args=[]))
             else:
                 return self.render_to_response(self.get_context_data(form=form, form2=form2, form3=form3))
@@ -318,6 +320,7 @@ class ListaCambiosPersonal(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super(ListaCambiosPersonal, self).get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         slug = self.kwargs.get("slug", None)
         context["titulo"] = "LISTA DE CAMBIOS DE DATOS DEL PERSONAL"
         context["object_list"] = self.model.objects.filter(

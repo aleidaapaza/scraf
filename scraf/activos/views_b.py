@@ -10,6 +10,7 @@ from django.shortcuts import render
 from activos.models import GrupoContable, AuxiliarContable
 from users.models import User
 from activos.forms import CargaCSVForm
+from revision.views import get_menu_context
 
 class ListaGruposContables(LoginRequiredMixin, ListView):
     model = GrupoContable
@@ -17,6 +18,7 @@ class ListaGruposContables(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         context["titulo"] = "LISTA DE GRUPO CONTABLES"
         context["object_list"] = self.model.objects.all()
         usuario = self.request.user
@@ -28,6 +30,7 @@ class ListaAuxiliatesContables(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         context["titulo"] = "LISTA DE AUXILIARES CONTABLES"
         context["object_list"] = self.model.objects.all()
         usuario = self.request.user
@@ -39,6 +42,7 @@ class verAuxiliares(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         id = self.kwargs.get("pk", None)
         context["titulo"] = "GRUPO Y SUS AUXILIARES CONTABLES"
         context["object_list"] = self.model.objects.filter(grupocontable__id = id)
@@ -51,6 +55,7 @@ class CargaContableView(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
         context['form_grupo'] = CargaCSVForm()
         context['form_auxiliar'] = CargaCSVForm()
         return context

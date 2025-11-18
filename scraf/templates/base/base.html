@@ -1,7 +1,7 @@
 {% extends 'base/librerias.html' %}
 {% load static %}
 {% block cuerpo %}
-{% if messages %}
+  {% if messages %}
     {% for message in messages %}
     <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
       {{ message }}
@@ -9,11 +9,10 @@
     </div>
     {% endfor %}
   {% endif %}
-    <div>
-            {% block contenido %}
-            
-            {% endblock contenido %}
-    </div>
+  <div>
+    {% block contenido %}            
+    {% endblock contenido %}
+  </div>
 {% endblock %}
 
 {% block footer %}

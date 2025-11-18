@@ -1,40 +1,6 @@
 {% load static %}
-
-{% block contenido %}
-  <div class="container-fluid mt-4">
-    <!-- 1. Título y línea -->
-    <div class="row mb-2">
-      <div class="col">
-        <h2 class="text-white fw-bold">Lista de Activos Fijos Designados</h2>
-        <hr>
-      </div>
-  </div>
-        <!-- 2. Tabla -->
-  <div class="table-responsive bg-white p-4 rounded-md">
-    <table id="myTable" class="table table-bordered text-center align-middle mb-0 table-striped-custom">
-      <thead class="bg-white">
-              <tr>
-                <th>CODIGO</th>
-                <th>DESCRIPCION ACTIVO</th>
-                <th>ENCARGADO</th>
-                <th>ESTADO</th>
-                <th>VER</th>  
-                </tr>
-      </thead>
-      <tbody>
-        {% for rev in object_list %}
-          <tr>
-                  <td>{{ rev.activo.codigo }}</td>
-                  <td>{{ rev.activo.descActivo }}</td>
-                  <td>{{ rev.responsable.persona.nombrecompleto}}</td>
-                  <td>{{ rev.activo.estadoActivo}}</td>
-                  <td><a href="{% url 'activos:ver_activo' rev.activo.codigo %}" class="btn btn-info">Ver</a></td>
-          </tr>
-            {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  <style>
+{% block librerias %}
+ <style>
     .table-striped-custom tbody tr:nth-of-type(odd) {
         background-color: rgba(19, 158, 89, 0.671);
     }
@@ -42,5 +8,64 @@
         background-color: #fff;
     }
   </style>
-
 {% endblock %}
+{% block cuerpo %}
+  <div class="row gap-1 justify-content-between">
+    <div class="col-md-2 col-sm-5 card py-3">
+      <div class="card-body d-flex flex-column justify-content-center">
+        <h5><i class="fa-solid fa-book text-xl"></i> TOTAL ACTIVOS : {{ activos_total }}</h5>
+      </div>    
+    </div>
+    <div class="col-md-2 col-sm-5 card bg-success py-3">
+      <div class="card-body d-flex flex-column justify-content-center">
+        <h5><i class="fa-solid fa-check-double"></i> ACTIVOS ASIGNADOS : {{ activos_asignados }}</h5>
+      </div>    
+    </div>
+    <div class="col-md-2 col-sm-5 card py-3">
+      <div class="card-body d-flex flex-column justify-content-center">
+        <h5><i class="fa-solid fa-question"></i> ACTIVOS SIN ASIGNAR : {{ activos_sin_asignar }}</h5>
+      </div>    
+    </div>
+    <div class="col-md-2 col-sm-5 card bg-warning py-3">
+      <div class="card-body d-flex flex-column justify-content-center">
+        <h5><i class="fa-solid fa-screwdriver-wrench"></i> ACTIVOS EN MANTENIMIENTO: {{ activos_mantenimiento }}</h5>
+      </div>    
+    </div>
+  </div>
+
+  <div class="container-fluid mt-4">
+    <!-- 1. Título y línea -->
+    <div class="row mb-2">
+      <div class="col">
+        <h2 class="text-white fw-bold">Lista de Activos Fijos Designados</h2>
+        <hr>
+      </div>
+    </div>
+        <!-- 2. Tabla -->
+    <div class="table-responsive bg-white p-4 rounded-md">
+      <table id="myTable" class="table table-bordered text-center align-middle mb-0 table-striped-custom">
+        <thead class="bg-white">
+                <tr>
+                  <th>CODIGO</th>
+                  <th>DESCRIPCION ACTIVO</th>
+                  <th>ENCARGADO</th>
+                  <th>ESTADO</th>
+                  <th>VER</th>  
+                  </tr>
+        </thead>
+        <tbody>
+          {% for rev in object_list %}
+            <tr>
+                    <td>{{ rev.activo.codigo }}</td>
+                    <td>{{ rev.activo.descActivo }}</td>
+                    <td>{{ rev.responsable.persona.nombrecompleto}}</td>
+                    <td>{{ rev.activo.estadoActivo}}</td>
+                    <td><a href="{% url 'activos:ver_activo' rev.activo.codigo %}" class="btn btn-info">Ver</a></td>
+            </tr>
+              {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
+

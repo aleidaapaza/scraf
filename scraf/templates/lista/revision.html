@@ -19,14 +19,16 @@
   </div>
 </div>
 <!-- Modal de resultado Inicio/Fin -->
-<div class="modal fade" id="modalStatusRevision" tabindex="-1" aria-labelledby="modalStatusLabel" aria-hidden="true">
+<div class="modal fade" id="modalStatusRevision" tabindex="-1" aria-labelledby="modalStatusLabel" aria-hidden="true" data-bs-backdrop="static">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div id="statusHeader" class="modal-header bg-primary text-white">
         <h5 class="modal-title" id="modalStatusLabel">Estado de la revisión</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
-      <div class="modal-body" id="statusBody"></div>
+      <div class="modal-body" id="statusBody">
+        <!-- Contenido dinámico aquí -->
+      </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
       </div>
@@ -40,7 +42,7 @@
         <th scope="col">LINE</th>
         {% endif %}
         <th scope="col" class="bg-success-subtle">CODIGO</th>
-        <th scope="col" class="bg-success-subtle">DESCRIPCION DE LA REVISION</th>
+        <th scope="col" class="bg-success-subtle">MOTIVO</th>
         <th scope="col" class="bg-success-subtle">ENCARGADO</th>
         <th scope="col" class="bg-success-subtle">VER/EDITAR</th>
         <th scope="col">FECHA DE INICIO</th>
@@ -63,7 +65,7 @@
             <td><a href="{% url 'revision:lista_revisiones_line' revision.slug %}"><i class="fas fa-eye"></i></a></td>
             {% endif %}
             <td class="bg-success-subtle"> {{ revision.slug }}</td>
-            <td class="bg-success-subtle"> {{ revision.nombre }} </td>
+            <td class="bg-success-subtle"> {{ revision.motivo }} </td>
             <td class="bg-success-subtle"> {{ revision.encargado.persona.nombrecompleto }}</td>
             <td class="bg-success-subtle">
                 {% if revision.estado == None %}
@@ -161,7 +163,7 @@ function abrirModal() {
             // Carga el HTML en el modal anidado '#modalActivo'
             $('#modalContent').html(data); 
             $('#modalActivo').modal('show');
-            $('#campo').val(''); // Limpia el campo
+            $('#campo').val('');
         },
         error: function(xhr, status, error) {
             if (xhr.status === 404) {
@@ -228,7 +230,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (typeof actualizarFormularioModal === 'function') {
             actualizarFormularioModal(url);
         } else {
-            // Fallback (restaurado)
             fetch(url)
                 .then(r => r.json())
                 .then(data => {
@@ -372,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 // Recarga la página después de iniciar/finalizar una revisión para que los iconos de
                 // 'VER/EDITAR' se actualicen correctamente
-                location.reload(); 
+                //location.reload(); 
             })
             .catch(err => {
                 const header = document.getElementById('statusHeader');

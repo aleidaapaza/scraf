@@ -9,14 +9,13 @@ from django.shortcuts import redirect
 
 from users.models import Personal, Persona, User, LinePersona
 from users.forms import R_User, R_Persona, A_User, A_Personal, A_Persona
+from designacion.models import Activo_responsable
 
 from revision.views import get_menu_context
 
 def registrar_line_Persona(datos_antiguos_user, datos_antiguos_persona, slug, usuario):
     try:
         personal = Personal.objects.get(slug=slug)
-        
-        # Construir texto de permisos ANTIGUOS
         permisos_antiguos = []
         if datos_antiguos_user.get('is_encargado'):
             permisos_antiguos.append("Encargado")
@@ -39,7 +38,6 @@ def registrar_line_Persona(datos_antiguos_user, datos_antiguos_persona, slug, us
         else:
             permisos_antiguos.append("Usuario inactivo")
 
-        # Construir texto de permisos NUEVOS (actuales)
         permisos_nuevos = []
         if personal.user.is_encargado: 
             permisos_nuevos.append("Encargado")
@@ -61,8 +59,6 @@ def registrar_line_Persona(datos_antiguos_user, datos_antiguos_persona, slug, us
             permisos_nuevos.append("Usuario activo")
         else:
             permisos_nuevos.append("Usuario inactivo")
-
-        # Datos de persona
         cargo_antiguo = datos_antiguos_persona.get('cargo', 'No especificado')
         contacto_antiguo = datos_antiguos_persona.get('contacto', 'No especificado')
         
@@ -181,8 +177,7 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
-        form2 = self.second_form_class(request.POST)
-
+        form2 = self.second_form_class(request.POST)        
         if form.is_valid() and form2.is_valid():
             datos_antiguos_user = {
                     'is_encargado': "",
@@ -224,7 +219,7 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
                     datos_antiguos_user, 
                     datos_antiguos_persona, 
                     personal.slug, 
-                    request.user  # El usuario que está haciendo la modificación
+                    request.user 
                 )
             return HttpResponseRedirect(reverse('users:lista_personal', args=[]))
         else:
@@ -267,6 +262,9 @@ class ActualizacionPersonal(LoginRequiredMixin, UpdateView):
             revisor_p = self.model.objects.get(slug=slug)
             user_p = self.second_model.objects.get(id=revisor_p.user.pk)
             persona_p = self.third_model.objects.get(id=revisor_p.persona.pk)
+            cargo_anterior = persona_p.cargo
+            contacto_anterior = persona_p.contacto
+            print("cargo anterior",cargo_anterior)
             form = self.form_class(request.POST)
             form2 = self.second_form_class(request.POST, request.FILES, instance=user_p)
             form3 = self.third_form_class(request.POST, instance=persona_p)
@@ -281,35 +279,47 @@ class ActualizacionPersonal(LoginRequiredMixin, UpdateView):
                     'is_active': user_p.is_active
                 }
                 datos_antiguos_persona ={
-                    'cargo':persona_p.cargo,
-                    'contacto':persona_p.contacto
-                }
+                    'cargo':cargo_anterior,
+                    'contacto':contacto_anterior
+                }               
+                cargo_nuevo = form3.cleaned_data.get('cargo')
+                print(cargo_nuevo)
+                if cargo_nuevo != cargo_anterior:
+                    persona = Personal.objects.get(slug=persona_p.carnet)
+                    print(persona)
+                    activoResponsable = Activo_responsable.objects.filter(responsable=persona)
+                    print(activoResponsable)
+                    if activoResponsable:
+                        messages.error(request,"No se puede actualizar el Cargo, existen activos aun Asignados a esta Persona con ese cargo",)
+                        return self.render_to_response(self.get_context_data(form=form, form2=form2, form3=form3, ))
+                    else:
+                        messages.success(request,"No existen activos Asignados a esta Persona con ese cargo, se realiza la actualizacion del cargo",)
+                form3.save()
+
                 usuario = form2.save(commit=False)
-                rol_rev = request.POST.get('rol_revision', '')
-                usuario.is_encargado = (rol_rev == 'encargado')
-                usuario.is_revisor = (rol_rev == 'apoyo')
 
-                # Grupo B: Independientes (múltiples valores)
                 rol_independientes = request.POST.get('rol_independientes', '')
-                #print(rol_independientes)
                 roles_independientes = rol_independientes.split(',') if rol_independientes else []
-
                 usuario.g_personal = 'personal' in roles_independientes
                 usuario.g_mantenimiento = 'mantenimiento' in roles_independientes
                 usuario.is_active = 'Useractivo' in roles_independientes
 
-                # Grupo C: Activos (exclusivo - solo uno)
+                rol_rev = request.POST.get('rol_revision', '')
+                usuario.is_encargado = (rol_rev == 'encargado')
+                usuario.is_revisor = (rol_rev == 'apoyo')
+
                 rol_activos_exclusivo = request.POST.get('rol_activos_exclusivo', '')
                 usuario.g_Activos = (rol_activos_exclusivo == 'gestion_activos')
                 usuario.v_Activos = (rol_activos_exclusivo == 'solo_visualiza')        
                 usuario.save()
-                form3.save()
+
                 line = registrar_line_Persona(
                     datos_antiguos_user, 
                     datos_antiguos_persona, 
                     slug, 
-                    request.user  # El usuario que está haciendo la modificación
-                )  
+                    request.user
+                )
+                
                 return HttpResponseRedirect(reverse('users:lista_personal', args=[]))
             else:
                 return self.render_to_response(self.get_context_data(form=form, form2=form2, form3=form3))

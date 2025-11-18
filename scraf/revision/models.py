@@ -56,7 +56,7 @@ class Revision_Activo(models.Model):
     estado = models.BooleanField(default=False)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     encargado = models.ForeignKey(User, on_delete=models.CASCADE, related_name='encargadoRevision')
-    observacion = models.TextField()
+    observacion = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.revision.slug} {self.activo.codigo}'    

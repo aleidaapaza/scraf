@@ -8,6 +8,7 @@ from activos.models import Activo
 from users.models import Personal, User
 from activos.choices import estados, oficinas_ubicacion, pisos_ubicacion
 from designacion.choices import tipo_devolucion
+
 # Create your models here.
 def set_slug1(sender, instance, *args, **kwargs):
     año = datetime.now().year

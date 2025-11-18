@@ -2,14 +2,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import ObjectDoesNotExist, Q
 from django.http import (
     HttpResponse,
-    HttpResponseRedirect,
     JsonResponse,
     HttpResponseNotAllowed,
     HttpResponseNotFound,
     HttpResponseServerError,
 )
 from django.shortcuts import (
-    render,
     redirect,
     get_object_or_404,
 )
@@ -18,6 +16,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.dateformat import format as dj_format
 from django.views.generic import ListView,TemplateView
+from django.contrib import messages
 
 from activos.forms import A_Activo_responsable
 from activos.models import Activo
@@ -216,7 +215,7 @@ def ajax_editar_revision(request, slug):
                         )
                     if (old_nombre or "") != (new_nombre or ""):
                         cambios.append(
-                            f"Nombre cambiado: antes era '{old_nombre or ''}', ahora es '{new_nombre or ''}'"
+                            f"Nombre cambiado: antes estaba con '{old_nombre or ''}', ahora esta con '{new_nombre or ''}'"
                         )
                     if (old_descripcion or "") != (new_descripcion or ""):
                         cambios.append(
@@ -289,23 +288,31 @@ def inicio_fin_Revision(request, slug):
             data3["fechaHora_inicio"] = revision.fechaHora_inicio.strftime(
                 "%Y-%m-%d %H:%M:%S"
             )
-        elif (
-            revision.fechaHora_finalizacion is None
-            and revision.fechaHora_inicio is not None
-        ):
-            revision.fechaHora_finalizacion = timezone.now()
-            revision.estado = False
-            revision.save()
-            Revision_line.objects.create(
+        elif (revision.fechaHora_finalizacion is None and revision.fechaHora_inicio is not None):
+            lista_revision = Revision_Activo.objects.filter(revision=revision)
+            print("lista",lista_revision)
+            contar = Activo.objects.all().count()
+            print("activo",contar)
+            contar_lista = lista_revision.count()
+            print("contar",contar_lista)
+            if contar == contar_lista:            
+                revision.fechaHora_finalizacion = timezone.now()
+                revision.estado = False
+                revision.save()
+                Revision_line.objects.create(
                 revision=revision,
                 estado="Finalizada",
                 creador=usuario,
                 observacion="Se Finaliza el proceso de revision",
-            )
-            data3["status"] = "finalizada"
-            data3["fechaHora_finalizacion"] = revision.fechaHora_finalizacion.strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
+                )
+                data3["status"] = "finalizada"
+                data3["fechaHora_finalizacion"] = revision.fechaHora_finalizacion.strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+            else:
+                data3["status"] = "Existe Activos sin revisar,"
+                messages.error(request, "Existe Activos sin revisar")
+
         else:
             data3["status"] = "ya_finalizada"
         return JsonResponse(data3)
@@ -354,6 +361,7 @@ def buscar_activo(request, slug):
 
         if not codigo:
             return HttpResponse("Código no proporcionado", status=400)
+        
         TEMPLATE_BASE_PATH = "RegistroActualizacion/Revision_Activo/"
 
         try:
@@ -421,16 +429,14 @@ def actualizar_activo(request, slug, codigo):
             new_piso = activo_resp.piso_ubicacion
             new_oficina = activo_resp.oficina_ubicacion
             cambios = []
-
             if old_oficina != new_oficina:
                 cambios.append(
-                    f"Oficina cambiada: antes era '{old_oficina or ''}', ahora es '{new_oficina or ''}'"
+                    f"Oficina cambiada: antes se encontraba en '{old_oficina or ''}', ahora esta en '{new_oficina or ''}'"
                 )
             if old_piso != new_piso:
                 cambios.append(
-                    f"Piso cambiado: antes era '{old_piso or ''}', ahora es '{new_piso or ''}'"
+                    f"Piso cambiado: antes se encontraba en '{old_piso or ''}', ahora esta enc '{new_piso or ''}'"
                 )
-            print("CAMBIOS", cambios)
             if cambios:
                 Line_Activo_Responsable.objects.create(
                     slug=activo,
@@ -444,7 +450,6 @@ def actualizar_activo(request, slug, codigo):
             revision_activo = form.save(commit=False)
             revision_activo.revision = revision
             revision_activo.activo = activo
-            revision_activo.estado = True
             revision_activo.encargado = personal_user
             revision_activo.save()
 
@@ -485,11 +490,10 @@ class Comparacion(LoginRequiredMixin,TemplateView):
         activos = Activo.objects.all()
         revision = Revision.objects.get(slug=slug)
         revision_activo = Revision_Activo.objects.filter(revision=revision)
+        
         for activo in activos:
-            print(activo.codigo)
             existe = revision_activo.filter(activo=activo.codigo)
             existe_codigo = existe.first()
-            print('EXISTE',existe)
             if existe:
                 estado = "Revisado"
                 fecha_revisado =existe_codigo.fecha_registro
@@ -498,15 +502,23 @@ class Comparacion(LoginRequiredMixin,TemplateView):
                     responsable_revision =persona.persona.nombrecompleto
                 else:
                     responsable_revision = f'-'
+
+                if existe_codigo.estado:
+                    segundo = f'requiere segunda revision'
+                    b_segundo = True
+                else:
+                    segundo = f'-'
+                    b_segundo = False
             else:
                 estado = "Sin Revisar"
                 responsable_revision = f'-'
                 fecha_revisado = f'-'
+                segundo = f'-'
+                b_segundo = False
 
-            tupla = (activo.codigo, activo.descActivo, estado, fecha_revisado, responsable_revision)
-            print("tupla",tupla)
+            tupla = (activo.codigo, activo.descActivo, estado, fecha_revisado, responsable_revision, segundo, b_segundo)
             comparacion.append(tupla)
-            print("comparacion", comparacion)
-        print("todo de la comparacion", comparacion)
         context['comparaciones'] =comparacion
+        context['slug'] = slug
+        context['b_segundo'] = b_segundo
         return context

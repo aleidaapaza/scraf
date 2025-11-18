@@ -9,7 +9,7 @@ from inicio.form import LoginForm
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from revision.views import get_menu_context
-
+from activos.models import Activo
 from django.contrib import messages
 
 class Index(TemplateView): 
@@ -17,13 +17,19 @@ class Index(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)        
-        context.update(get_menu_context(self.request))         
+        context.update(get_menu_context(self.request))
         if self.request.user.is_authenticated:
+            context['activos_total'] = Activo.objects.all().count()
+            context['activos_asignados'] = Activo.objects.filter(estadoDesignacion=True).count()
+            context['activos_sin_asignar'] = Activo.objects.filter(estadoDesignacion=False).count()
+            context['activos_mantenimiento'] = Activo.objects.filter(mantenimiento=True).count()
+
             context['object_list'] = Activo_responsable.objects.filter(responsable__user=self.request.user)
         return context
     
     def get(self, request):
         if request.user.is_authenticated:
+
             return render(request, 'index.html', self.get_context_data())
         else:
             form = LoginForm()

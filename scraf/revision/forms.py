@@ -86,9 +86,18 @@ class R_Revision_ACtivo(forms.ModelForm):
         for form in self.visible_fields():
             form.field.widget.attrs['class'] = 'form-control form-control-sm font-weight-bold border border-info'
             form.field.widget.attrs['autocomplete'] = 'off'
+        
+        # Configurar específicamente el campo estado como switch
+        self.fields['estado'].widget.attrs['class'] = 'form-check-input'
+        self.fields['estado'].widget.attrs['role'] = 'switch'
+        
     class Meta:
         model = Revision_Activo
-        fields = ['observacion']
-        labels ={
-            'observacion' : 'OBSERVACION DE LA REVISION'
+        fields = ['estado','observacion']
+        labels = {
+            'estado': '¿Requiere una segunda revisión?',
+            'observacion': 'OBSERVACIÓN DE LA REVISIÓN'
+        }
+        widgets = {
+            'estado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

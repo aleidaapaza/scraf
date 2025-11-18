@@ -112,11 +112,8 @@
                         {% if personal.user.g_mantenimiento %}checked{% endif %}>
                 </div>
               </div>
-              <input type="hidden" name="rol_independientes" id="rol_independientes" value="
-                {% if personal.user.g_personal %}personal{% endif %}
-                {% if personal.user.g_mantenimiento %}{% if personal.user.g_personal %},{% endif %}mantenimiento{% endif %}
-                {% if personal.user.is_active %}{% if personal.user.g_personal or personal.user.g_mantenimiento %},{% endif %}Useractivo{% endif %}">
-            </div>
+              <input type="hidden" name="rol_independientes" id="rol_independientes" value="{% if personal.user.g_personal %}personal{% endif %}{% if personal.user.g_mantenimiento %}{% if personal.user.g_personal %},{% endif %}mantenimiento{% endif %}{% if personal.user.is_active %}{% if personal.user.g_personal or personal.user.g_mantenimiento %},{% endif %}Useractivo{% endif %}">
+
             <!-- Grupo B (exclusivo): Revisión -->
             <div class="row align-items-center gy-2 mt-2">
               <label class="col-sm-4 col-form-label fw-semibold text-sm-end">Encargado de revisión</label>

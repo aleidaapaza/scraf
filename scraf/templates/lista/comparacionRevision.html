@@ -7,6 +7,7 @@
         <th scope="col">ESTADO</th>
         <th scope="col">FECHA DE REVISION</th>
         <th scope="col">RESPONSABLE DE LA REVISION</th>
+        <th scope="col">OBSERVACION</th>
     </tr>
 
 {% endblock %}
@@ -18,6 +19,12 @@
             <td> {{ comparacion.2 }} </td>
             <td> {{ comparacion.3 }} </td>
             <td> {{ comparacion.4 }} </td>
+            <td> {{ comparacion.5 }} 
+                {% if comparacion.6 %}
+                <a href="{% url 'revision:revision_activo' slug %}"> <i class="fa-solid fa-pen"></i> <span>IR</span></a> 
+                {% else %}
+                {% endif %}
+            </td>
         </tr>
     {% endfor %}
 {% endblock %}

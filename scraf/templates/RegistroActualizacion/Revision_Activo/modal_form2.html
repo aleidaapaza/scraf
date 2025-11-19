@@ -1,0 +1,32 @@
+<div class="modal-header bg-primary text-white">
+  <h5 class="modal-title">{{ titulo }}</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+  <form method="post" action="{% url 'revision:vactualizar_activo_observado' slug=slug codigo=activo.codigo %}">
+    {% csrf_token %}
+    {% for field in form2 %}
+      <div class="mb-3">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <div class="text-danger small mt-1">{% for e in field.errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <hr>
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <div class="text-danger small mt-1">{% for e in field.errors %}{{ e }}{% endfor %}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <div class="text-end">
+      <button type="submit" class="btn btn-success">Guardar</button>
+    </div>
+  </form>
+</div>

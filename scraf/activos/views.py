@@ -59,7 +59,6 @@ class RegistroActivo(LoginRequiredMixin, CreateView):
             codigo = form.cleaned_data.get("codigo")
             form.save()
             activo = self.model.objects.get(codigo=codigo)
-            print('activo registrado', activo)
             Line_Activo.objects.create(
                 activo = activo,
                 creador = usuario,

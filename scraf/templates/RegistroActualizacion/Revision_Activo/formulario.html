@@ -37,12 +37,45 @@
 
     <!-- Sección derecha: tabla -->
     <div class="col-md-9">
+      <div class="row gap-1 justify-content-between">
+      {% if not observado %}
+      <div class="col-5">
+          <div class="card shadow-sm mb-3" >
+            <div class="card-header bg-success text-white mb-2">
+              <a href="{% url 'revision:revision_activo_observado' slug %}"> 
+                <div class="p-4 text-white">
+                  <i class="fa-solid fa-pen"></i> <span>ACTIVOS OBSERVADOS : {{observado_cant}}</span>
+                </div>
+              </a> 
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+        
+        <div class="col-5">
+          <div class="card shadow-sm mb-3" >
+            <div class="card-header bg-success text-white mb-2">
+              <a href="{% url 'revision:comparacion_revision_activo' slug %}"> 
+                <div class="p-4 text-white">
+                  <i class="fa-solid fa-pen"></i> <span>LISTA COMPLETA</span>
+                </div>
+              </a> 
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>      
       <div class="card shadow-sm">
          <div class="card-header bg-success text-white mb-2">
           <h5 class="card-title mb-0">
                 <div class="row align-items-center">
                     <div class="col-auto"><i class="fa-solid fa-circle-check"></i></div>
-                    <div class="col">Activos ya Revisados</div>
+                      {% if observado %}                      
+                        <div class="col">Activos Observados. CANTIDAD: {{ observado_cant }} </div>
+                      {% else %}
+                        <div class="col">Activos ya Revisados. CANTIDAD: {{ revisados_cant }} </div>
+                      {% endif %}
                 </div>
           </h5>
         </div>
@@ -56,6 +89,9 @@
                   <th>Usuario Encargado</th>
                   <th>Fecha / Hora</th>
                   <th>Observaciones</th>
+                  {% if observado %}
+                  <th>Estado</th>
+                  {% endif %}
                 </tr>
               </thead>
               <tbody class="fw-semibold">
@@ -65,8 +101,15 @@
                   <td>{{ activo.activo.descActivo }}</td>
                   <td>{{ activo.encargado }}</td>
                   <td>{{ activo.fecha_registro }}</td>
-                  <td>{{ activo.observacion }}</td>
-                </tr>
+                  <td class="text-start">{{ activo.observacion|linebreaksbr }}</td>
+                  {% if observado %}
+                    {% if activo.estado %}
+                      <td>Observado</td>
+                    {% else %}
+                    <td>Sin Observacion</td>
+                    {% endif %}
+                  {% endif %}
+                  </tr>
                 {% endfor %}
               </tbody>
             </table>
@@ -98,6 +141,8 @@ function abrirModal() {
     const codigo = $('#campo').val();
     const slug = $('#revision-slug-data').val();
     const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+    const observado = {{ observado|yesno:"true,false" }};
+    console.log("OBSERVADO:", observado);
 
     if (!codigo) {
         alert('Por favor, ingresa el código del activo.');
@@ -110,7 +155,14 @@ function abrirModal() {
         return;
     }
 
-    const url = `/revision/buscar_activo/${slug}/`;
+    let url;
+    if (observado) {
+      url = `/revision/buscar_activo_observado/${slug}/`;
+    } else {
+      url = `/revision/buscar_activo/${slug}/`;
+    }
+
+    console.log("URL generada:", url);
 
     $.ajax({
         url: url,

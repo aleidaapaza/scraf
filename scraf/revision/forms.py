@@ -101,3 +101,17 @@ class R_Revision_ACtivo(forms.ModelForm):
         widgets = {
             'estado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+class R_Revision_activo_observado(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.visible_fields():
+            form.field.widget.attrs['class'] = 'form-control form-control-sm font-weight-bold border border-info'
+            form.field.widget.attrs['autocomplete'] = 'off'
+                
+    class Meta:
+        model = Revision_Activo
+        fields = ['observacion']
+        labels = {
+            'observacion': 'OBSERVACIÓN DE LA REVISIÓN'
+        }

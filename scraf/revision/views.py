@@ -350,9 +350,13 @@ class Revision_RActivos(LoginRequiredMixin, TemplateView):
         slug = self.kwargs.get("slug", None)
         revision = get_object_or_404(Revision, slug=slug)
         revisonActivo = Revision_Activo.objects.filter(revision__slug=revision.slug)
+        revisonActivoObs = Revision_Activo.objects.filter(revision__slug=revision.slug, estado=True)
         context["titulo"] = f'REVISION DE ACTIVO {slug}'
         context["object_list"] = revisonActivo
         context["slug"] = slug
+        context["observado_cant"] = revisonActivoObs.count()
+        context["revisados_cant"] = revisonActivo.count()
+
         return context  
 
 def buscar_activo(request, slug):

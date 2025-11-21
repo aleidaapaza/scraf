@@ -24,18 +24,16 @@
       </div>
       <div class="row mb-3">
         <div class="col-md-6">
-          <label class="form-label fw-bold">Grupo Contable *</label>
-          {{ form.grupoContable }}
-          <div class="form-text">Seleccione un grupo contable</div>
+            <label class="form-label fw-bold">Grupo Contable *</label>
+            {{ form.grupoContable }}
+            <div class="form-text">Seleccione un grupo contable</div>
         </div>
         <div class="col-md-6">
-          <label class="form-label fw-bold">Auxiliar Contable *</label>
-          <select name="auxiliar" id="id_auxiliar" class="form-control" disabled>
-            <option value="">Seleccione auxiliar contable...</option>
-          </select>
-          <div class="form-text" id="auxiliarHelp">Se habilitará al seleccionar un grupo</div>
+            <label class="form-label fw-bold">Auxiliar Contable *</label>
+            {{ form.auxiliar }}  <!-- CAMBIAR ESTO -->
+            <div class="form-text" id="auxiliarHelp">Se habilitará al seleccionar un grupo</div>
         </div>
-      </div>
+    </div>
     </div>
     <div class="col-sm-12 col-md-6">
       <div class="mb-3">
@@ -76,136 +74,91 @@
 {% endblock formulario2 %}
 
  {% block script %}
+
 <script>
-    $(document).ready(function() {
-        const grupoSelect = $('#id_grupoContable');
-        const auxiliarSelect = $('#id_auxiliar');
-        const auxiliarHelp = $('#auxiliarHelp');
-        
-        let grupoSeleccionado = null;
-        
-        // URL para obtener auxiliares (la crearemos en views.py)
-        const urlGetAuxiliares = '{% url "activos:Auxiliares_por_grupo" %}';
-        
-        // Inicializar Select2 para auxiliar con AJAX manual
-        function inicializarAuxiliarSelect2() {
-            auxiliarSelect.select2({
-                ajax: {
-                    url: urlGetAuxiliares,
-                    dataType: 'json',
-                    delay: 250,
-                    data: function(params) {
-                        return {
-                            q: params.term, // término de búsqueda
-                            grupo_id: grupoSeleccionado, // grupo seleccionado
-                            page: params.page || 1
-                        };
-                    },
-                    processResults: function(data, params) {
-                        console.log('📦 Datos recibidos:', data);
-                        
-                        // Si data es un array simple
-                        if (Array.isArray(data)) {
-                            return {
-                                results: data.map(item => ({
-                                    id: item.id,
-                                    text: item.nombre || item.text
-                                })),
-                                pagination: {
-                                    more: false
-                                }
-                            };
-                        }
-                        // Si data tiene formato {results: [...]}
-                        else if (data.results) {
-                            return {
-                                results: data.results,
-                                pagination: {
-                                    more: data.more || false
-                                }
-                            };
-                        }
-                        // Formato por defecto para Django-Select2
-                        else {
-                            return {
-                                results: data,
-                                pagination: {
-                                    more: false
-                                }
-                            };
-                        }
-                    },
-                    cache: true
+$(document).ready(function() {
+    const grupoSelect = $('#id_grupoContable');
+    const auxiliarSelect = $('#id_auxiliar');
+    const auxiliarHelp = $('#auxiliarHelp');
+    
+    let grupoSeleccionado = null;
+    
+    const urlGetAuxiliares = '{% url "activos:Auxiliares_por_grupo" %}';
+    
+    function inicializarGrupoSelect2() {
+        grupoSelect.select2({
+            placeholder: 'Seleccione grupo contable...',
+            allowClear: true,
+            language: 'es'
+        });
+    }
+    
+    function inicializarAuxiliarSelect2() {
+        auxiliarSelect.select2({
+            ajax: {
+                url: urlGetAuxiliares,
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        q: params.term,
+                        grupo_id: grupoSeleccionado,
+                        page: params.page || 1
+                    };
                 },
-                minimumInputLength: 0,
-                placeholder: 'Seleccione auxiliar contable...',
-                allowClear: true,
-                disabled: true,
-                language: 'es'
-            });
-            
-            console.log('✅ Select2 del auxiliar inicializado con AJAX manual');
-        }
-        
-        // Manejar cambio en grupo contable
+                processResults: function(data, params) {
+                    console.log('📦 Datos recibidos para auxiliar:', data);
+                    return {
+                        results: data,
+                        pagination: { more: false }
+                    };
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error en AJAX:', error);
+                    return { results: [] };
+                }
+            },
+            minimumInputLength: 0,
+            placeholder: 'Seleccione auxiliar contable...',
+            allowClear: true,
+            disabled: true,
+            language: 'es'
+        });
+    }
+    
+    function manejarCambioGrupo() {
         grupoSelect.on('change', function() {
             grupoSeleccionado = $(this).val();
-            console.log('🎯 Grupo seleccionado:', grupoSeleccionado);
+            //console.log(' Grupo seleccionado:', grupoSeleccionado);
             
             if (grupoSeleccionado) {
-                // Habilitar auxiliar
                 auxiliarSelect.prop('disabled', false);
+                auxiliarSelect.val(null).trigger('change');
                 auxiliarSelect.select2('enable');
-                auxiliarHelp.text('Cargando auxiliares...');
-                
-                // Limpiar selección anterior
-                auxiliarSelect.val(null).trigger('change');
-                
-                // Forzar recarga de auxiliares
-                setTimeout(() => {
-                    // Abrir automáticamente para mostrar resultados
-                    auxiliarSelect.select2('open');
-                    auxiliarHelp.text('Seleccione un auxiliar contable');
-                }, 300);
-                
+                auxiliarHelp.text('Seleccione un auxiliar contable');
             } else {
-                // Deshabilitar auxiliar
                 auxiliarSelect.prop('disabled', true);
-                auxiliarSelect.select2('enable', false);
                 auxiliarSelect.val(null).trigger('change');
+                auxiliarSelect.select2('enable', false);
                 auxiliarHelp.text('Primero seleccione un grupo contable');
             }
         });
+    }
+    
+    function inicializarSelect2() {
+        inicializarGrupoSelect2();
+        inicializarAuxiliarSelect2();
+        manejarCambioGrupo();
         
-        // Manejar errores en AJAX
-        auxiliarSelect.on('select2:opening', function() {
-            if (!grupoSeleccionado) {
-                console.log('❌ No se puede abrir: no hay grupo seleccionado');
-                setTimeout(() => {
-                    auxiliarSelect.select2('close');
-                    alert('Por favor, seleccione primero un grupo contable.');
-                }, 100);
-            }
-        });
-        
-        // Inicializar cuando la página carga
-        setTimeout(() => {
-            inicializarAuxiliarSelect2();
-            
-            // Si ya hay un grupo seleccionado (en modo edición)
-            const grupoInicial = grupoSelect.val();
-            if (grupoInicial) {
-                grupoSeleccionado = grupoInicial;
-                auxiliarSelect.prop('disabled', false);
-                auxiliarSelect.select2('enable');
-                console.log('🔄 Grupo inicial detectado:', grupoInicial);
-                
-                // Cargar auxiliares para el grupo inicial
-                setTimeout(() => {
-                    auxiliarSelect.select2('open');
-                }, 500);
-            }
-        }, 500);
-    });
-    </script>
+        const grupoInicial = grupoSelect.val();
+        if (grupoInicial) {
+            grupoSeleccionado = grupoInicial;
+            auxiliarSelect.prop('disabled', false);
+            auxiliarSelect.select2('enable');
+        }
+    }
+    
+    inicializarSelect2();
+});
+</script>
  {% endblock %}

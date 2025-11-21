@@ -61,78 +61,70 @@
 {% endblock formulario_1 %}
 
 {% block formulario_2 %}
+{% if user.is_authenticated %}
+    {% if user.g_mantenimiento %}
 <div id="alertMantenimiento" class="alert alert-success alert-dismissible fade show d-none" role="alert">
-                    <span id="alertMessageMantenimiento"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-
-                <!-- Estado del Mantenimiento -->
-                <div class="col-12 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Estado Actual</h6>
-                            {% if activo.mantenimiento %}
-                                <span class="badge bg-warning">En Mantenimiento</span>
-                            {% else %}
-                                <span class="badge bg-success">Sin Mantenimiento</span>
-                            {% endif %}
-                        </div>
+    <span id="alertMessageMantenimiento"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+<!-- Estado del Mantenimiento -->
+<div class="col-12 mb-3">
+    <div class="card">
+        <div class="card-body text-center">
+            <h6 class="card-title">Estado Actual</h6>
+            {% if activo.mantenimiento %}
+                <span class="badge bg-warning">En Mantenimiento</span>
+            {% else %}
+                <span class="badge bg-success">Sin Mantenimiento</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<form id="formMantenimiento" class="col-12">
+    {% csrf_token %}
+    <input type="hidden" id="mantenimiento_id" name="mantenimiento_id" value="{{ mantenimiento_activo.id|default:'' }}">
+    <input type="hidden" id="accion" name="accion" value="">
+    <div id="seccionInicio" class="{% if activo.mantenimiento %}d-none{% endif %}">
+        <div class="mb-3">
+            <label for="id_descripcion_inicio" class="form-label">
+            <strong>Iniciar Mantenimiento</strong>
+            </label>
+            {{ form_mantenimiento.descripcionInicio }}
+            <div class="form-text">Describa el problema o motivo del mantenimiento.</div>
+        </div>
+        <button type="button" class="btn btn-warning w-100" id="btnIniciarMantenimiento">
+            <i class="fas fa-play-circle me-2"></i>Iniciar Mantenimiento
+        </button>
+    </div>
+    <div id="seccionFin" class="{% if not activo.mantenimiento %}d-none{% endif %}">
+        {% if mantenimiento_activo %}
+            <div class="mb-3">
+                <label class="form-label">
+                    <strong>Mantenimiento en curso</strong>
+                </label>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <p class="mb-1"><strong>Iniciado el:</strong> {{ mantenimiento_activo.fechaInicio }}</p>
+                        <p class="mb-0"><strong>Descripción:</strong> {{ mantenimiento_activo.descripcionInicio|linebreaks }}</p>
                     </div>
                 </div>
+            </div>
+        {% endif %}
+        <div class="mb-3">
+            <label for="id_descripcion_fin" class="form-label">
+                <strong>Finalizar Mantenimiento</strong>
+            </label>
+            {{ form_mantenimiento.descripcionFin }}
+            <div class="form-text">Describa la solución aplicada.</div>
+        </div>
+        <button type="button" class="btn btn-success w-100" id="btnFinalizarMantenimiento">
+            <i class="fas fa-stop-circle me-2"></i>Finalizar Mantenimiento
+        </button>
+    </div>
+</form>    
+    {% endif %}
+{% endif %}
 
-                <!-- Formulario de Mantenimiento -->
-                <form id="formMantenimiento" class="col-12">
-                    {% csrf_token %}
-                    <input type="hidden" id="mantenimiento_id" name="mantenimiento_id" 
-                           value="{{ mantenimiento_activo.id|default:'' }}">
-                    <input type="hidden" id="accion" name="accion" value="">
-                    
-                    <!-- Para nuevo mantenimiento -->
-                    <div id="seccionInicio" class="{% if activo.mantenimiento %}d-none{% endif %}">
-                        <div class="mb-3">
-                            <label for="id_descripcion_inicio" class="form-label">
-                                <strong>Iniciar Mantenimiento</strong>
-                            </label>
-                            {{ form_mantenimiento.descripcionInicio }}
-                            <div class="form-text">
-                                Describa el problema o motivo del mantenimiento.
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-warning w-100" id="btnIniciarMantenimiento">
-                            <i class="fas fa-play-circle me-2"></i>Iniciar Mantenimiento
-                        </button>
-                    </div>
-                    
-                    <!-- Para finalizar mantenimiento -->
-                    <div id="seccionFin" class="{% if not activo.mantenimiento %}d-none{% endif %}">
-                        {% if mantenimiento_activo %}
-                        <div class="mb-3">
-                            <label class="form-label">
-                                <strong>Mantenimiento en curso</strong>
-                            </label>
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <p class="mb-1"><strong>Iniciado el:</strong> {{ mantenimiento_activo.fechaInicio }}</p>
-                                    <p class="mb-0"><strong>Descripción:</strong> {{ mantenimiento_activo.descripcionInicio|linebreaks }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                        
-                        <div class="mb-3">
-                            <label for="id_descripcion_fin" class="form-label">
-                                <strong>Finalizar Mantenimiento</strong>
-                            </label>
-                            {{ form_mantenimiento.descripcionFin }}
-                            <div class="form-text">
-                                Describa la solución aplicada.
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-success w-100" id="btnFinalizarMantenimiento">
-                            <i class="fas fa-stop-circle me-2"></i>Finalizar Mantenimiento
-                        </button>
-                    </div>
-                </form>
 {% endblock formulario_2 %}
 
  {% block script %}

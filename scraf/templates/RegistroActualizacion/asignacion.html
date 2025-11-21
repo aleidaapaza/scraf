@@ -2,36 +2,77 @@
 {% load static %}
 
 {% block PARTE_1 %} 
-  <div class="list-group">
-              {% for personal in personal_list %}
-              <label class="list-group-item">
-                <input class="form-check-input me-2" type="radio" name="personal" value="{{ personal.slug }}" required>
-                <strong>{{ personal.persona.nombrecompleto }}</strong> - 
-                CI: {{ personal.persona.carnet }} - 
-                Cargo: {{ personal.persona.cargo }}
-              </label>
-              {% empty %}
-              <div class="alert alert-warning">No hay personal disponible</div>
-              {% endfor %}
-            </div>
+<div class="mb-3">
+    <input type="text" id="filtroPersonal" class="form-control" placeholder="Buscar personal por Nombre o CI">
+</div>
+<div class="list-group" id="listaPersonal">
+    {% for personal in personal_list %}
+    <label class="list-group-item personal-item">
+        <input class="form-check-input me-2" type="radio" name="personal" value="{{ personal.slug }}" required>
+        <strong>{{ personal.persona.nombrecompleto }}</strong> - 
+        CI: {{ personal.persona.carnet }} - 
+        Cargo: {{ personal.persona.cargo }}
+    </label>
+    {% empty %}
+    <div class="alert alert-warning">No hay personal disponible</div>
+    {% endfor %}
+</div>
+
 {% endblock%}
 
 {% block PARTE_2 %} 
-<div class="list-group">
-              {% for activo in activos_list %}
-              <label class="list-group-item">
-                <input class="form-check-input me-2" type="checkbox" name="activos" value="{{ activo.codigo }}">
-                <strong>{{ activo.codigo }}</strong> - 
-                {{ activo.descActivo|truncatewords:10 }}
-                <br>
-                <small class="text-muted">Grupo: {{ activo.grupoContable.nombre }}</small>
-              </label>
-              {% empty %}
-              <div class="alert alert-info">No hay activos disponibles para asignar</div>
-              {% endfor %}
-            </div>
+<div class="mb-3">
+    <input type="text" id="filtroActivos" class="form-control" placeholder="Buscar activos por código o, descripción">
+</div>
+<div class="list-group" id="listaActivos">
+    {% for activo in activos_list %}
+    <label class="list-group-item activo-item">
+        <input class="form-check-input me-2" type="checkbox" name="activos" value="{{ activo.codigo }}">
+        <strong>{{ activo.codigo }}</strong> - 
+        {{ activo.descActivo|truncatewords:10 }}
+        <br>
+        <small class="text-muted">Grupo: {{ activo.grupoContable.nombre }}</small>
+        <small class="text-muted">Auxiliar: {{ activo.auxiliar.nombre }}</small>
+        <small class="text-muted">Estado: {{ activo.estadoActivo }}</small>
+    </label>
+    {% empty %}
+    <div class="alert alert-info">No hay activos disponibles para asignar</div>
+    {% endfor %}
+</div>
+
 {% endblock%}
 
  {% block script %}
 
+<script>
+document.getElementById('filtroPersonal').addEventListener('input', function(e) {
+    const filtro = e.target.value.toLowerCase();
+    const items = document.querySelectorAll('.personal-item');
+    
+    items.forEach(item => {
+        const texto = item.textContent.toLowerCase();
+        if (texto.includes(filtro)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+</script>
+
+<script>
+document.getElementById('filtroActivos').addEventListener('input', function(e) {
+    const filtro = e.target.value.toLowerCase();
+    const items = document.querySelectorAll('.activo-item');
+    
+    items.forEach(item => {
+        const texto = item.textContent.toLowerCase();
+        if (texto.includes(filtro)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+</script>
  {% endblock %}

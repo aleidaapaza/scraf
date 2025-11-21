@@ -15,7 +15,7 @@
           <h5 class="card-title mb-0">
                 <div class="row align-items-center">
                     <div class="col-auto"><i class="fa-solid fa-magnifying-glass"></i></div>
-                    <div class="col">Ingresa el código del activo</div>
+                    <div class="col">{{instruccion}}</div>
                 </div>
           </h5>
         </div>       
@@ -127,6 +127,7 @@
 
 {% block funcScript %}
 <script type="application/javascript">
+
 $(document).ready(function () {
     $('#myTable').DataTable();
 
@@ -134,32 +135,55 @@ $(document).ready(function () {
         e.preventDefault();
         abrirModal();
     });
+
+    // Permitir enviar con Enter
+    $('#campo').on('keypress', function (e) {
+        if (e.which === 13) { // Tecla Enter
+            e.preventDefault();
+            abrirModal();
+        }
+    });
 });
 
 function abrirModal() {
     const modalContent = $('#modalContent');
-    const codigo = $('#campo').val();
+    const codigo = $('#campo').val().trim();
     const slug = $('#revision-slug-data').val();
     const csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
     const observado = {{ observado|yesno:"true,false" }};
-    console.log("OBSERVADO:", observado);
 
+    // Validación del código
     if (!codigo) {
-        alert('Por favor, ingresa el código del activo.');
+        mostrarAlerta('Por favor, ingresa el código del activo.', 'warning');
         return;
     }
 
     if (!slug || !csrfToken) {
-        alert('Error: No se encontraron los datos de revisión.');
+        mostrarAlerta('Error: No se encontraron los datos de revisión.', 'error');
         console.error("Datos faltantes:", { slug, csrfToken });
         return;
     }
 
+    // Mostrar loading
+    modalContent.html(`
+        <div class="modal-header">
+            <h5 class="modal-title">Buscando activo...</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Buscando el activo: <strong>${codigo}</strong></p>
+        </div>
+    `);
+    $('#modalActivo').modal('show');
+
     let url;
     if (observado) {
-      url = `/revision/buscar_activo_observado/${slug}/`;
+        url = `/revision/buscar_activo_observado/${slug}/`;
     } else {
-      url = `/revision/buscar_activo/${slug}/`;
+        url = `/revision/buscar_activo/${slug}/`;
     }
 
     console.log("URL generada:", url);
@@ -173,21 +197,76 @@ function abrirModal() {
         },
         success: function (data) {
             modalContent.html(data);
-            $('#modalActivo').modal('show');
             $('#campo').val('');
         },
         error: function (xhr, status, error) {
             let msg;
             switch (xhr.status) {
-                case 404: msg = 'Activo no encontrado o código incorrecto.'; break;
-                case 403: msg = 'Error de seguridad (CSRF).'; break;
-                case 500: msg = 'Error interno del servidor.'; break;
-                default: msg = `Error ${xhr.status}. Revisa la consola.`; break;
+                case 0:
+                    msg = 'Error de conexión. Verifica que el servidor esté ejecutándose.';
+                    break;
+                case 400:
+                    if (xhr.responseText.includes('Código no registrado')) {
+                        msg = `El código <strong>${codigo}</strong> no está registrado en el sistema.`;
+                    } else {
+                        msg = 'Datos incorrectos en la solicitud.';
+                    }
+                    break;
+                case 404:
+                    msg = 'Activo no encontrado o código incorrecto.';
+                    break;
+                case 403:
+                    msg = 'Error de seguridad (CSRF). Recarga la página.';
+                    break;
+                case 500:
+                    msg = 'Error interno del servidor. Contacta al administrador.';
+                    break;
+                default:
+                    msg = `Error ${xhr.status}. Revisa la consola para más detalles.`;
+                    break;
             }
-            alert(msg);
+            
+            modalContent.html(`
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">Error</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fa-solid fa-triangle-exclamation"></i> ${msg}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            `);
             console.error("AJAX Error:", xhr.responseText, status, error);
         }
     });
+}
+function mostrarAlerta(mensaje, tipo = 'info') {
+    const alertClass = {
+        'info': 'alert-info',
+        'warning': 'alert-warning',
+        'error': 'alert-danger',
+        'success': 'alert-success'
+    }[tipo] || 'alert-info';
+
+    // Crear alerta temporal
+    const alerta = $(`
+        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+            <i class="fa-solid fa-circle-info"></i> ${mensaje}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `);
+    
+    $('body').append(alerta);
+    
+    // Auto-eliminar después de 5 segundos
+    setTimeout(() => {
+        alerta.alert('close');
+    }, 5000);
 }
 </script>
 {% endblock %}

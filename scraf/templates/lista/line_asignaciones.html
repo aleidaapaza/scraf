@@ -1,0 +1,21 @@
+{% extends 'base/baseListasDatos.html' %}
+{% load static %}
+{% block thead %}
+    <tr>
+        <th scope="col">FECHA DE REGISTRO</th>
+        <th scope="col">ESTADO</th>
+        <th scope="col">USUARIO REGISTRO</th>
+        <th scope="col">OBSERVACION</th>
+    </tr>
+
+{% endblock %}
+{% block tbody %}
+    {% for activo in object_list %}
+        <tr>
+            <td> {{ activo.fecha_registro }} </td>
+            <td> {{ activo.estado }}</td>
+            <td> {{ activo.creador }}</td>
+            <td> {{ activo.observacion }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

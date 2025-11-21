@@ -13,10 +13,11 @@ from django.views.decorators.http import require_http_methods
 from django.views.generic import CreateView, View, ListView, UpdateView, TemplateView
 
 from activos.forms import R_Activo, R_Activo_responsable, A_Activo, ActivoForm, A_Activo, MantenimientoActivoForm
-from activos.models import Activo, AuxiliarContable, Line_Activo, MantenimientoActivo
+from activos.models import Activo, AuxiliarContable, Line_Activo, MantenimientoActivo, GrupoContable
 from designacion.models import Activo_responsable, Line_Activo_Responsable
 from revision.views import get_menu_context
 from users.models import User, Personal
+
 
 class ListaActivos(LoginRequiredMixin, ListView):
     model = Activo
@@ -40,10 +41,16 @@ class RegistroActivo(LoginRequiredMixin, CreateView):
     template_name = "RegistroActualizacion/activo.html"
     form_class = ActivoForm
     success_url = reverse_lazy("activos:lista_activos")
+
     def get_context_data(self, **kwargs):
         context = super(RegistroActivo, self).get_context_data(**kwargs)
         context.update(get_menu_context(self.request))
         slug = self.kwargs.get("slug")
+        if 'form' not in context:
+            context['form'] = self.form_class(self.request.GET)
+
+        context['grupos_contables'] = GrupoContable.objects.all()
+        
         if 'form' not in context:
             context['form'] = self.form_class(self.request.GET)
         context["titulo"] = "REGISTRO DEL ACTIVO"
@@ -52,6 +59,7 @@ class RegistroActivo(LoginRequiredMixin, CreateView):
         context["accion2"] = "VOLVER"
         context["accion2_url"] = reverse_lazy("activos:lista_activos")
         return context
+    
     def post(self, request, *args, **kwargs):
         usuario = self.request.user
         form = self.form_class(request.POST)
@@ -59,13 +67,21 @@ class RegistroActivo(LoginRequiredMixin, CreateView):
             codigo = form.cleaned_data.get("codigo")
             form.save()
             activo = self.model.objects.get(codigo=codigo)
+            personal = Personal.objects.get(user__username = usuario)
+            Activo_responsable.objects.create(
+                activo = activo,
+                responsable = personal,
+                piso_ubicacion = 'ALMACENES',
+                oficina_ubicacion = 'ALMACEN',
+            )
+
             Line_Activo.objects.create(
                 activo = activo,
                 creador = usuario,
                 estadoActivo = activo.estadoActivo,
                 estadoDesignacion = activo.estadoDesignacion,
                 mantenimiento = activo.mantenimiento,
-                observacion = "Registro del Activo"
+                observacion = "Registro del Activo de Forma Manual"
             )
         return HttpResponseRedirect(reverse("activos:lista_activos"))
 
@@ -126,7 +142,6 @@ class VerActivo(LoginRequiredMixin, TemplateView):
             lugar = lugar.first()
             context["responsable"] = lugar
         mantenimiento = MantenimientoActivo.objects.filter(activo=activo, estado = True)
-        print('mantenimiento', mantenimiento)
         if mantenimiento:
             mantenimientos = mantenimiento.first()
             context["mantenimientos"] = mantenimientos

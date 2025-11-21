@@ -1,6 +1,8 @@
 from django.urls import path
 
-from designacion.views import ListaAsignaciones, crear_asignacion, crear_devolucion, get_activos_asignacion,confirmar_ubicacion, verAsignaciones, verDevolucion, ListaAsignacionesPersona
+from designacion.views import (ListaAsignaciones, crear_asignacion, crear_devolucion, get_activos_asignacion,confirmar_ubicacion, 
+                               verAsignaciones, verDevolucion, ListaAsignacionesPersona, ListaAsignacionesPersonal,
+                               Line_Asignaciones)
 
 app_name = 'designacion'
 urlpatterns = [
@@ -12,5 +14,8 @@ urlpatterns = [
     path('ConfirmacionUbicacion/<str:tipo>/<str:slug>/', confirmar_ubicacion, name='confirmacionUbicacion'),
     path('verAsignacion/<slug:slug>', verAsignaciones.as_view(), name='ver_asignaciones'),
     path('verDevolucion/<slug:slug>', verDevolucion.as_view(), name='ver_devolucion'),
+
+    path('listaAsignacionesPersonal/<int:carnet>/', ListaAsignacionesPersonal.as_view(), name='lista_asignaciones_personaL'),
+    path('lineAsignaciones/<slug:slug>', Line_Asignaciones.as_view(), name='line_asignaciones'),
 
 ]

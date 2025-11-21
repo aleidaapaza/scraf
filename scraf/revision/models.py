@@ -53,7 +53,7 @@ class Revision_line(models.Model):
 class Revision_Activo(models.Model):
     revision = models.ForeignKey(Revision, on_delete=models.CASCADE, related_name='revision_activos')
     activo = models.ForeignKey(Activo, to_field='codigo', on_delete=models.CASCADE, related_name='ActivoRevision', )
-    estado = models.BooleanField(default=False)
+    estado = models.BooleanField(default=False) #observado/SinObservacion
     fecha_registro = models.DateTimeField(auto_now_add=True)
     encargado = models.ForeignKey(User, on_delete=models.CASCADE, related_name='encargadoRevision')
     observacion = models.TextField(blank=True, null=True)

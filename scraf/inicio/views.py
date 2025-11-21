@@ -46,7 +46,6 @@ class Index(TemplateView):
                 login(request, user)
                 return redirect('inicio:Index')
             else:
-                # ✅ USAR SISTEMA DE MENSAJES DE DJANGO
                 messages.error(request, 'Error al iniciar sesión. Verifica tu usuario y contraseña.')
         else:
             messages.error(request, 'Por favor, corrige los errores en el formulario.')

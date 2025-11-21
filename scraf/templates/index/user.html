@@ -10,7 +10,9 @@
   </style>
 {% endblock %}
 {% block cuerpo %}
-  <div class="row gap-1 justify-content-between">
+{% if user.is_authenticated %}
+  {% if user.is_encargado %}
+<div class="row gap-1 justify-content-between">
     <div class="col-md-2 col-sm-5 card py-3">
       <div class="card-body d-flex flex-column justify-content-center">
         <h5><i class="fa-solid fa-book text-xl"></i> TOTAL ACTIVOS : {{ activos_total }}</h5>
@@ -31,7 +33,11 @@
         <h5><i class="fa-solid fa-screwdriver-wrench"></i> ACTIVOS EN MANTENIMIENTO: {{ activos_mantenimiento }}</h5>
       </div>    
     </div>
-  </div>
+  </div>  
+  {% else %}
+  {% endif %}
+{% endif %}
+  
 
   <div class="container-fluid mt-4">
     <!-- 1. Título y línea -->

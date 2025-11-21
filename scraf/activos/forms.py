@@ -59,6 +59,7 @@ class A_Activo_responsable(forms.ModelForm):
             'piso_ubicacion' : 'PISO DONDE SE ENCUENTRA UBICADO EL ACTIVO',
             'oficina_ubicacion' : 'OFICINA DONDE SE ENCUENTRA UBICADO EL ACTIVO',
         }
+
 class R_GrupoContable(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -137,14 +138,12 @@ class AuxiliarDependienteSelect2Widget(ModelSelect2Widget):
         return AuxiliarContable.objects.none()
 
     def filter_queryset(self, request, term, queryset=None, **dependent_fields):
+
         if queryset is None:
             queryset = self.get_queryset()
         
-        # Obtener el ID del grupo contable de los parámetros GET
         grupo_contable_id = request.GET.get('grupo_contable_id')
-        
-        print(f"🔍 DEBUG: grupo_contable_id = {grupo_contable_id}")  # Para debug
-        
+                        
         if grupo_contable_id:
             queryset = AuxiliarContable.objects.filter(grupocontable_id=grupo_contable_id)
             if term:
@@ -156,7 +155,6 @@ class AuxiliarDependienteSelect2Widget(ModelSelect2Widget):
 
     def build_attrs(self, base_attrs, extra_attrs=None):
         attrs = super().build_attrs(base_attrs, extra_attrs)
-        # Agregar data attribute para que JavaScript sepa de la dependencia
         attrs['data-depends-on'] = 'id_grupoContable'
         return attrs
 
@@ -165,18 +163,15 @@ class ActivoForm(forms.ModelForm):
         model = Activo
         fields = '__all__'
         widgets = {
-            'grupoContable': GrupoContableSelect2Widget(
-                attrs={
-                    'class': 'form-control border border-info',
-                    'id': 'id_grupoContable'
-                }
-            ),
-            'auxiliar': AuxiliarDependienteSelect2Widget(
-                attrs={
-                    'class': 'form-control border border-info',
-                    'id': 'id_auxiliar'
-                }
-            ),
+            'grupoContable': forms.Select(attrs={
+                'class': 'form-control border border-info select2',
+                'id': 'id_grupoContable'
+            }),
+            'auxiliar': forms.Select(attrs={
+                'class': 'form-control border border-info select2',
+                'id': 'id_auxiliar',
+                'disabled': True
+            }),
             'estadoActivo': forms.Select(attrs={
                 'class': 'form-control border border-info',
             }),
@@ -190,6 +185,31 @@ class ActivoForm(forms.ModelForm):
                 'placeholder': 'Descripción del activo...'
             }),
         }
+    def clean(self):
+        cleaned_data = super().clean()
+        grupo_contable = cleaned_data.get('grupoContable')
+        auxiliar = cleaned_data.get('auxiliar')
+        
+        # Validar que esté seleccionado el grupo contable
+        if not grupo_contable:
+            raise forms.ValidationError({
+                'grupoContable': 'Debe seleccionar un grupo contable.'
+            })
+        
+        # Validar que esté seleccionado el auxiliar contable
+        if not auxiliar:
+            raise forms.ValidationError({
+                'auxiliar': 'Debe seleccionar un auxiliar contable.'
+            })
+        
+        # Validar que el auxiliar pertenezca al grupo seleccionado
+        if grupo_contable and auxiliar and auxiliar.grupocontable != grupo_contable:
+            raise forms.ValidationError({
+                'auxiliar': 'El auxiliar seleccionado no pertenece al grupo contable elegido.'
+            })
+        
+        return cleaned_data
+
 
 #-----------------------------------------------------------------------------------------------------------------
 # ------------------- ACTUALIZAR ACTIVOS --------------------

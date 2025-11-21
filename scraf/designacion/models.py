@@ -5,17 +5,18 @@ from django.db.models.signals import pre_save
 from datetime import datetime
 
 from activos.models import Activo
-from users.models import Personal, User
+from users.models import Personal, User, Persona
 from activos.choices import estados, oficinas_ubicacion, pisos_ubicacion
 from designacion.choices import tipo_devolucion
 
 # Create your models here.
 def set_slug1(sender, instance, *args, **kwargs):
     año = datetime.now().year
-    mes = datetime.now().month
+    carnet = instance.carnet
+    persona = Persona.objects.get(carnet=carnet)
     if not instance.slug:
         slug = slugify(
-            '{} {} {}'.format(año, mes, str(uuid.uuid4())[:4])
+            '{} {} {}'.format(str(año)[-2:], persona.rubrica, str(uuid.uuid4())[:2])
         )
         instance.slug = slug
 

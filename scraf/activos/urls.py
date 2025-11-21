@@ -2,7 +2,8 @@ from django.urls import path
 from activos.views import (ListaActivos, RegistroActivo, RegistroActivoResponsable, VerActivo, ActualizarActivoResponsable, 
                                                 ajax_r_activo, ajax_r_activo_responsable, get_auxiliares_por_grupo,
                                                 LineActivo, gestionar_activo )
-from activos.views_b import ListaGruposContables, CargaContableView, ListaAuxiliatesContables, verAuxiliares
+from activos.views_b import (ListaGruposContables, CargaContableView, ListaAuxiliatesContables, verAuxiliares, CargaDirectaActivosView,
+                                                    )
 app_name = 'activos'
 
 urlpatterns = [
@@ -25,5 +26,6 @@ urlpatterns = [
     #actualizarDatos
     path('verActivo/<slug:codigo>/', VerActivo.as_view(), name='ver_activo'),
     path('gestionar-activo/<slug:activo_codigo>/', gestionar_activo, name='gestionar_activo'),
-
+    #RegistomasivoActivos
+    path('CargarActivos/', CargaDirectaActivosView.as_view(), name='cargaMasivaActivos'),
 ]

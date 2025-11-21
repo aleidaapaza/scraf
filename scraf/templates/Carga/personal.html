@@ -1,0 +1,136 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block contenido %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4 text-white">Carga Masiva - Personal</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-layer-group me-2"></i>
+                        Cargar Datos Personales
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="formCarga">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Seleccionar archivo CSV</label>
+                            <input type="file" name="archivo" accept=".csv" class="form-control" required>
+                            <div class="form-text">
+                                Formatos aceptados: CSV con separador por coma o tabulador
+                            </div>
+                        </div>                      
+                        <div class="mb-4">
+                            <h5 class="text-info">
+                                <i class="fas fa-table me-2"></i>
+                                Formato Requerido
+                            </h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="table-info">
+                                        <tr>
+                                            <th>nombre*</th>
+                                            <th>apellido*</th>
+                                            <th>cargo*</th>
+                                            <th>contacto</th>
+                                            <th>carnet*</th>
+                                            <th>mosca*</th>
+                                            <th>username*</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>JOSE MARIA</td>
+                                            <td>CUENTAS VARGAS</td>
+                                            <td>CARGO DE JUAN</td>
+                                            <td>70000000</td>
+                                            <td>10000000</td>
+                                            <td>JMCV</td>
+                                            <td>jose.cuentas</td>
+                                        </tr>
+                                        <tr>
+                                            <td>MARIA</td>
+                                            <td>GONZALEZ LOPEZ</td>
+                                            <td>ANALISTA SISTEMAS</td>
+                                            <td>60000000</td>
+                                            <td>10000001</td>
+                                            <td>MGL</td>
+                                            <td>maria.gonzalez</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="alert alert-info mt-3">
+                                <strong>📋 Información importante:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li><strong>Credenciales de login:</strong> 
+                                        <ul>
+                                            <li><strong>Usuario:</strong> username del CSV</li>
+                                            <li><strong>Contraseña:</strong> carnet del CSV</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-info" id="btnCargar">
+                                <i class="fas fa-upload me-2"></i>
+                                Cargar Personal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Procesando...</span>
+    </div>
+    <p class="mt-2 text-white">Procesando archivo, por favor espere...</p>
+</div>
+
+<style>
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+</style>
+
+{% endblock %}
+
+{% block script %}
+<script>
+document.getElementById('formCarga').addEventListener('submit', function(e) {
+    const archivo = document.querySelector('input[name="archivo"]').files[0];
+    if (!archivo) {
+        e.preventDefault();
+        alert('Por favor seleccione un archivo CSV');
+        return;
+    }
+    
+    document.getElementById('btnCargar').disabled = true;
+    document.getElementById('btnCargar').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
+});
+</script>
+{% endblock %}

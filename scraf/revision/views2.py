@@ -35,6 +35,7 @@ class Revision_ActivosObservados(LoginRequiredMixin, TemplateView):
         revision = get_object_or_404(Revision, slug=slug)
         revisonActivo = Revision_Activo.objects.filter(revision__slug=revision.slug, estado=True)
         context["titulo"] = f'REVISION DE ACTIVOS FALTANTES DE LA REVISION {slug}'
+        context["instruccion"] = f'Ingresa el código del activo observado'
         context["object_list"] = revisonActivo
         context["slug"] = slug
         context["observado"] = True
@@ -55,13 +56,9 @@ def buscar_activo_obs(request, slug):
             activo = get_object_or_404(Activo, codigo=codigo)
             revision = get_object_or_404(Revision, slug=slug, estado=True)
             activo_resp = get_object_or_404(Activo_responsable, activo=activo)
-            print('asckaso',activo_resp)
             revision_activo = Revision_Activo.objects.filter(revision=revision, activo=activo, estado = False)
-            print('rev', revision_activo)
             revision_activo_T = Revision_Activo.objects.filter(revision=revision, activo=activo, estado = True)
-            print('rev2', revision_activo_T)
             if revision_activo:
-                print('ingreso aqui sin observacion')
                 context = {
                     "activo": activo,
                     "revision": revision_activo.first(),
@@ -74,7 +71,6 @@ def buscar_activo_obs(request, slug):
                 )
 
             elif revision_activo_T:
-                print('ingreso aqui con observacion')
                 revision_activo_TR =revision_activo_T.first()
                 form = R_Revision_activo_observado()
                 form2 = A_Activo_responsable(instance=activo_resp)
@@ -94,7 +90,6 @@ def buscar_activo_obs(request, slug):
             return HttpResponseNotFound("Activo, Revisión o Responsable no encontrado.")
 
         except Exception as e:
-            print(f"Error interno inesperado en buscar_activo: {e}")
             return HttpResponseServerError(f"Error interno inesperado: {e}")
 
     return HttpResponse("Método no permitido", status=405)
@@ -104,16 +99,13 @@ def actualizar_activo_obs(request, slug, codigo):
     user = request.user
     personal_user = User.objects.get(username=user)
     personal = Personal.objects.get(user=personal_user)
-    print(request.method)
     if request.method == "POST":
-        print(codigo, "codigo")
         activo = Activo.objects.get(codigo=codigo)
         activo_resp = Activo_responsable.objects.get(activo__codigo=activo.codigo)
         revision = Revision.objects.get(slug=slug)
         revision_Activo = Revision_Activo.objects.get(revision=revision, activo=activo,)
 
         old_Observacion = revision_Activo.observacion
-        print(old_Observacion)
         old_piso = activo_resp.piso_ubicacion
         old_oficina = activo_resp.oficina_ubicacion
 
@@ -141,9 +133,6 @@ def actualizar_activo_obs(request, slug, codigo):
                 ------------------------
                 {observacion}
                 """
-
-            print(observacion_nueva)
-
             if cambios:
                 Line_Activo_Responsable.objects.create(
                     slug=activo,
@@ -166,3 +155,4 @@ def actualizar_activo_obs(request, slug, codigo):
             return redirect("revision:revision_activo_observado", slug=slug)
 
     return HttpResponseNotAllowed(["POST"])
+

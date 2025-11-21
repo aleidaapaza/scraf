@@ -226,7 +226,6 @@ class RegistroPersonal(LoginRequiredMixin, CreateView):
             self.object = None
             return self.render_to_response(self.get_context_data(form=form, form2=form2))
 
-
 class ActualizacionPersonal(LoginRequiredMixin, UpdateView):
    model = Personal
    second_model = User
@@ -264,7 +263,6 @@ class ActualizacionPersonal(LoginRequiredMixin, UpdateView):
             persona_p = self.third_model.objects.get(id=revisor_p.persona.pk)
             cargo_anterior = persona_p.cargo
             contacto_anterior = persona_p.contacto
-            print("cargo anterior",cargo_anterior)
             form = self.form_class(request.POST)
             form2 = self.second_form_class(request.POST, request.FILES, instance=user_p)
             form3 = self.third_form_class(request.POST, instance=persona_p)
@@ -283,12 +281,9 @@ class ActualizacionPersonal(LoginRequiredMixin, UpdateView):
                     'contacto':contacto_anterior
                 }               
                 cargo_nuevo = form3.cleaned_data.get('cargo')
-                print(cargo_nuevo)
                 if cargo_nuevo != cargo_anterior:
                     persona = Personal.objects.get(slug=persona_p.carnet)
-                    print(persona)
                     activoResponsable = Activo_responsable.objects.filter(responsable=persona)
-                    print(activoResponsable)
                     if activoResponsable:
                         messages.error(request,"No se puede actualizar el Cargo, existen activos aun Asignados a esta Persona con ese cargo",)
                         return self.render_to_response(self.get_context_data(form=form, form2=form2, form3=form3, ))

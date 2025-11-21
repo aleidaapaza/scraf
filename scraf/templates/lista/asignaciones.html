@@ -2,6 +2,9 @@
 {% load static %}
 {% block thead %}
     <tr>
+        {% if user.g_Activos or user.v_Activos %}
+        <th scope="col">LINE</th>
+        {% endif %}    
         <th scope="col">ESTADO</th>
         <th scope="col">CODIGO ASIGNACION</th>
         <th scope="col">CARNET DEL RESPONSABLE</th>
@@ -13,6 +16,10 @@
 {% block tbody %}
     {% for activo in object_list %}
         <tr>
+        {% if user.g_Activos or user.v_Activos %}
+        <td><a href="{% url 'designacion:line_asignaciones' activo.slug %}"><i class="fas fa-eye"></i></a></td>
+        {% endif %}    
+            
             {% if activo.estado %}<td class="table-success"> ACTIVO{% else %}<td>FINALIZADO{% endif %}</td>
             <td> {{ activo.slug }}</td>
             <td> {{ activo.carnet }}</td>

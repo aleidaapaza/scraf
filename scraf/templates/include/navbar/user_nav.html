@@ -7,7 +7,6 @@
                 </button>
                 <span class="ms-2">Bienvenido {{ request.user.username }}</span>
             </div>
-            <!-- CENTRO: logo -->
             <a href="{% url 'inicio:Index' %}" class="d-flex align-items-center justify-content-center" style="flex:1;">
                 <img
                     src="{% static 'img/fonabosqueLogoNegativo.webp' %}"
@@ -15,7 +14,6 @@
                     height="40"
                 >
             </a>
-            <!-- DERECHA: cerrar sesión con separador -->
             <a
                 href="{% url 'inicio:Logout' %}"
                 class="text-white text-decoration-none border-start border-white ps-3 ms-3"
@@ -58,6 +56,11 @@
                         <i class="fas fa-list-alt me-2"></i>Lista de Personal
                         </a>
                     </li>
+                    <li>
+                        <a class="nav-link px-3" href="{% url 'users:carga_datos_personal' %}">
+                            <i class="fas fa-list-alt me-2"></i>Cargar Masiva de Datos del Personal
+                        </a>
+                    </li>
                 </ul>
             </div>
         {% endif %}
@@ -65,11 +68,18 @@
             <div class="menu-section">
                 <div class="menu-title">GESTION DE ACTIVOS DE LA INSTITUCION </div>
                 <ul class="menu-items">
-                    <li>
-                        <a class="nav-link px-3" href="{% url 'activos:cargarInformacion' %}">
-                            <i class="fas fa-list-alt me-2"></i>Cargar Informacion Grupos y auxiliares Contables
-                        </a>
-                    </li>
+                    {% if user.g_Activos  %}
+                        <li>
+                            <a class="nav-link px-3" href="{% url 'activos:cargarInformacion' %}">
+                                <i class="fas fa-list-alt me-2"></i>Cargar Informacion Grupos y auxiliares Contables
+                            </a>
+                        </li>
+                        <li>
+                            <a class="nav-link px-3" href="{% url 'activos:cargaMasivaActivos' %}">
+                                <i class="fas fa-list-alt me-2"></i>Cargar Masiva de Activos Fijos
+                            </a>
+                        </li>
+                    {% endif %}                    
                     <li>
                         <a class="nav-link px-3" href="{% url 'activos:lista_GrupoContable' %}">
                             <i class="fas fa-list-alt me-2"></i>Grupos Contables

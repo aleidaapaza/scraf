@@ -76,7 +76,7 @@ class A_User(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'is_active', 'is_personal', 'is_encargado', 'is_revisor', 
-                 'g_personal', 'g_mantenimiento', 'g_Activos', 'v_Activos']  # ✅ AGREGADO g_mantenimiento
+                 'g_personal', 'g_mantenimiento', 'g_Activos', 'v_Activos']
         labels = {
             'username' : 'Nombre de usuario',
             'is_active' : '¿Usuario Activo?',
@@ -84,13 +84,13 @@ class A_User(forms.ModelForm):
             'is_encargado' : '¿Habilitar como Encargado de Revision?',
             'is_revisor' : '¿Habilitar como Apoyo de Revision?',
             'g_personal' : 'Gestion de Personal ',
-            'g_mantenimiento' : 'Gestion de Mantenimiento',  # ✅ AGREGADO
+            'g_mantenimiento' : 'Gestion de Mantenimiento',
             'g_Activos' : 'Gestion de Activos Fijos',
             'v_Activos' : 'Solo Visualiza los Activos Fijos',
         }
         help_texts = {
             'g_personal' : 'Registra, modifica y Visualiza los datos del personal',
-            'g_mantenimiento' : 'Puede poner activos en mantenimiento',  # ✅ AGREGADO
+            'g_mantenimiento' : 'Puede poner activos en mantenimiento',
             'g_Activos' : 'Registra, modifica y Visualiza los datos de los activos fijos',
             'v_Activos' : 'Solo Visualiza los datos de los activos fijos'
         }

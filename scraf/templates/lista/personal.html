@@ -3,9 +3,11 @@
 {% block thead %}
     <tr>
         <th scope="col">LINE</th>
+        <th scope="col">ASIGNACIONES DEVOLUCIONES</th>
         <th scope="col">NOMBRE</th>
         <th scope="col">APELLIDO</th>
         <th scope="col">CARGO</th>
+        <th scope="col">CARNET</th>
         <th scope="col">ULTIMA HORA DE CONEXION</th>
         <th scope="col">VER/EDITAR</th>
     </tr>
@@ -15,9 +17,11 @@
     {% for personal in object_list %}
         <tr>
             <td><a href="{% url 'users:line_personal' personal.slug %}"><i class="fas fa-eye"></i></a></td>
+            <td><a href="{% url 'designacion:lista_asignaciones_personaL' personal.persona.carnet %}"><i class="fas fa-eye"></i></a></td>
             <td> {{ personal.persona.nombre }}</td>
             <td> {{ personal.persona.apellido }} </td>
             <td> {{ personal.persona.cargo }}</td>
+            <td> {{ personal.persona.carnet }}</td>
             <td> {{ personal.user.last_login }}</td>
             <td>
                 <a href=" {% url 'users:actualizacion_personal' personal.slug %} " type="button"

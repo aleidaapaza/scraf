@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, View, ListView, UpdateView, TemplateView
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse, reverse_lazy
 from django.http import JsonResponse
 from django.contrib import messages
@@ -27,7 +28,7 @@ class ListaAsignacionesPersona(LoginRequiredMixin, ListView):
         persona = Personal.objects.get(user=users)
         context["titulo"] = "LISTA DE ACTIVOS EN LA INSTITUCION"
 
-        context["object_list"] = self.model.objects.filter(carnet=persona.persona.carnet)
+        context["object_list"] = self.model.objects.filter(carnet=persona.persona.carnet).order_by('-id')
         usuario = self.request.user
         usuario_d = User.objects.get(username=usuario)
         if usuario_d.g_Activos:           
@@ -44,8 +45,8 @@ class ListaAsignaciones(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(get_menu_context(self.request))
-        context["titulo"] = "LISTA DE ACTIVOS EN LA INSTITUCION"
-        context["object_list"] = self.model.objects.all()
+        context["titulo"] = "LISTA DE ASIGNACIONES Y DEVOLUCIONES EN LA INSTITUCION"
+        context["object_list"] = self.model.objects.all().order_by('-id')
         usuario = self.request.user
         usuario_d = User.objects.get(username=usuario)
         if usuario_d.g_Activos:           
@@ -55,6 +56,7 @@ class ListaAsignaciones(LoginRequiredMixin, ListView):
             context["entity_registro_nom2"] = "REGISTRAR NUEVA DEVOLUCION"
         return context
 
+@login_required
 def crear_asignacion(request):
     if request.method == 'POST':
         try:
@@ -89,7 +91,8 @@ def crear_asignacion(request):
                 if not created:
                     activo_responsable.asignacion = asignacion
                     activo_responsable.responsable = personal
-                    activo_responsable.save()                
+                    activo_responsable.save()
+
                 Line_Activo_Responsable.objects.create(
                     slug=activo,
                     creador=request.user,
@@ -131,7 +134,8 @@ def crear_asignacion(request):
         context.update(get_menu_context(request))
 
         return render(request, 'RegistroActualizacion/asignacion.html', context)
-    
+
+@login_required
 def crear_devolucion(request):
     if request.method == 'POST':
         try:
@@ -139,9 +143,34 @@ def crear_devolucion(request):
             activos_devueltos = request.POST.getlist('activos_devueltos')
             tipo_devolucion = request.POST.get('tipo_devolucion')
             observaciones = request.POST.get('observaciones', '')
+
+            mantenimiento = []
+            for activos in activos_devueltos:
+                activo = Activo.objects.get(codigo=activos)
+                if activo.mantenimiento:
+                    mantenimiento.append(activo)
+            if mantenimiento:
+                activos_mantenimiento = []
+                for activo in mantenimiento:
+                    activos_mantenimiento.append(activo.codigo)
+                messages.error(request, f"No se puede hacer la devolucion los activo: {activos_mantenimiento} se encuentra en mantenimiento")
+                asignaciones_activas = Asignacion.objects.filter(estado=True)        
+                context = {
+                        'subtitulo_1': 'Seleccionar Asignación',
+                        'subtitulo_2': 'Activos a Devolver',
+                        'asignaciones_list': asignaciones_activas,
+                        'accion': 'Guardar Devolucion',
+                        'accion2': 'Cancelar',
+                        'accion2_url': reverse('designacion:lista_asignaciones'),
+                        'form_action_url': reverse('designacion:devolver_asig')
+                    }        
+                context.update(get_menu_context(request))
+                return render(request, 'RegistroActualizacion/devolucion.html', context)
+
             if not asignacion_slug or not activos_devueltos:
                 messages.error(request, 'Debe seleccionar una asignación y al menos un activo')
-                return redirect('designacion:devolver_asig')                        
+                return redirect('designacion:devolver_asig')
+            
             asignacion = Asignacion.objects.get(slug=asignacion_slug)
 
             if len(activos_devueltos) == len(asignacion.codigoActivo):
@@ -229,7 +258,8 @@ def crear_devolucion(request):
         }        
         context.update(get_menu_context(request))
         return render(request, 'RegistroActualizacion/devolucion.html', context)
-
+    
+@login_required
 def get_activos_asignacion(request):
     if request.method == 'GET' and request.GET.get('asignacion_slug'):
         asignacion_slug = request.GET.get('asignacion_slug')        
@@ -262,6 +292,7 @@ def get_activos_asignacion(request):
             return JsonResponse({'success': False, 'error': 'Asignación no encontrada'})    
     return JsonResponse({'success': False, 'error': 'Solicitud inválida'})
 
+@login_required
 def confirmar_ubicacion(request, tipo, slug):    
     if tipo == 'asignacion':
         asignacion = get_object_or_404(Asignacion, slug=slug)
@@ -423,3 +454,40 @@ class verDevolucion(LoginRequiredMixin,TemplateView):
         context["devoluciones"] = devolucion
 
         return context
+
+class ListaAsignacionesPersonal(LoginRequiredMixin, ListView):
+    model = Asignacion
+    template_name = "lista/asignaciones.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
+        carnet = self.kwargs.get("carnet")
+        persona = Persona.objects.get(carnet=carnet)
+        personal = Personal.objects.get(persona=persona)
+        context["titulo"] = "LISTA DE ACTIVOS EN LA INSTITUCION"
+
+        context["object_list"] = self.model.objects.filter(carnet=personal.persona.carnet).order_by('-id')
+        usuario = self.request.user
+        usuario_d = User.objects.get(username=usuario)
+        if usuario_d.g_Activos:           
+            context["entity_registro"] = reverse_lazy("designacion:registrar_asig", args=[])
+            context["entity_registro_nom"] = "REGISTRAR NUEVA ASIGNACION"
+            context["entity_registro2"] = reverse_lazy("designacion:devolver_asig")
+            context["entity_registro_nom2"] = "REGISTRAR NUEVA DEVOLUCION"
+        return context
+
+class Line_Asignaciones(LoginRequiredMixin,ListView):
+    model = Line_Asignacion
+    template_name = "lista/line_asignaciones.html"
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(get_menu_context(self.request))
+        slug = self.kwargs.get("slug")
+        context["titulo"] = "LINE DE ASIGNACIONES/DEVOLUCIONES"
+        asignacion = Asignacion.objects.get(slug=slug)
+        context["object_list"] = self.model.objects.filter(slug=asignacion).order_by('-id')
+        usuario = self.request.user
+        usuario_d = User.objects.get(username=usuario)
+        return context
+    

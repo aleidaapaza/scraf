@@ -1,7 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import ObjectDoesNotExist, Q
+from django.contrib.auth.decorators import login_required
 from django.http import (
     HttpResponse,
+    HttpResponseBadRequest,
     JsonResponse,
     HttpResponseNotAllowed,
     HttpResponseNotFound,
@@ -123,7 +125,7 @@ class ListaRevisiones(LoginRequiredMixin, ListView):
             context["revision_datos"] = revision_datos
         return context
 
-
+@login_required
 def ajax_r_Revision(request):
     data = dict()
     try:
@@ -176,7 +178,7 @@ def ajax_r_Revision(request):
     except Exception as e:
         return JsonResponse({"error": str(e), "form_is_valid": False}, status=500)
 
-
+@login_required
 def ajax_editar_revision(request, slug):
     data = dict()
     try:
@@ -267,7 +269,7 @@ def ajax_editar_revision(request, slug):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
-
+@login_required
 def inicio_fin_Revision(request, slug):
     data3 = {}
     usuario = request.user
@@ -290,37 +292,36 @@ def inicio_fin_Revision(request, slug):
             )
         elif (revision.fechaHora_finalizacion is None and revision.fechaHora_inicio is not None):
             lista_revision = Revision_Activo.objects.filter(revision=revision)
-            print("lista",lista_revision)
             contar = Activo.objects.all().count()
-            print("activo",contar)
             contar_lista = lista_revision.count()
-            print("contar",contar_lista)
-            if contar == contar_lista:            
-                revision.fechaHora_finalizacion = timezone.now()
-                revision.estado = False
-                revision.save()
-                Revision_line.objects.create(
-                revision=revision,
-                estado="Finalizada",
-                creador=usuario,
-                observacion="Se Finaliza el proceso de revision",
-                )
-                data3["status"] = "finalizada"
-                data3["fechaHora_finalizacion"] = revision.fechaHora_finalizacion.strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                )
+            if contar == contar_lista:
+                if lista_revision.filter(estado=True):
+                    data3["status"] = "Existe Activos con Observacion"
+                    messages.error(request, "Existe Activos con Observacion")
+                else:
+                    revision.fechaHora_finalizacion = timezone.now()
+                    revision.estado = False
+                    revision.save()
+                    Revision_line.objects.create(
+                    revision=revision,
+                    estado="Finalizada",
+                    creador=usuario,
+                    observacion="Se Finaliza el proceso de revision",
+                    )
+                    data3["status"] = "finalizada"
+                    data3["fechaHora_finalizacion"] = revision.fechaHora_finalizacion.strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    )
             else:
                 data3["status"] = "Existe Activos sin revisar,"
                 messages.error(request, "Existe Activos sin revisar")
-
         else:
             data3["status"] = "ya_finalizada"
         return JsonResponse(data3)
-
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
-
+@login_required
 def ajax_ver_revision(request, slug):
     try:
         revision = get_object_or_404(Revision, slug=slug)
@@ -340,7 +341,6 @@ def ajax_ver_revision(request, slug):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
-
 class Revision_RActivos(LoginRequiredMixin, TemplateView):
     template_name = "RegistroActualizacion/Revision_activo/formulario.html"
 
@@ -352,6 +352,7 @@ class Revision_RActivos(LoginRequiredMixin, TemplateView):
         revisonActivo = Revision_Activo.objects.filter(revision__slug=revision.slug)
         revisonActivoObs = Revision_Activo.objects.filter(revision__slug=revision.slug, estado=True)
         context["titulo"] = f'REVISION DE ACTIVO {slug}'
+        context["instruccion"] = f'Ingresa el código del activo'
         context["object_list"] = revisonActivo
         context["slug"] = slug
         context["observado_cant"] = revisonActivoObs.count()
@@ -359,6 +360,7 @@ class Revision_RActivos(LoginRequiredMixin, TemplateView):
 
         return context  
 
+@login_required
 def buscar_activo(request, slug):
     if request.method == "POST":
         codigo = request.POST.get("codigo")
@@ -366,13 +368,17 @@ def buscar_activo(request, slug):
         if not codigo:
             return HttpResponse("Código no proporcionado", status=400)
         
+        try:
+            activo = Activo.objects.get(codigo=codigo)
+        except Activo.DoesNotExist:
+            return HttpResponseBadRequest("Código no registrado")        
+
         TEMPLATE_BASE_PATH = "RegistroActualizacion/Revision_Activo/"
 
         try:
             activo = get_object_or_404(Activo, codigo=codigo)
             revision = get_object_or_404(Revision, slug=slug, estado=True)
             activo_resp = get_object_or_404(Activo_responsable, activo=activo)
-            print(activo_resp)
             try:
                 revision_activo = Revision_Activo.objects.get(
                     revision=revision, activo=activo
@@ -407,19 +413,16 @@ def buscar_activo(request, slug):
             return HttpResponseNotFound("Activo, Revisión o Responsable no encontrado.")
 
         except Exception as e:
-            print(f"Error interno inesperado en buscar_activo: {e}")
             return HttpResponseServerError(f"Error interno inesperado: {e}")
 
     return HttpResponse("Método no permitido", status=405)
 
-
+@login_required
 def actualizar_activo(request, slug, codigo):
     user = request.user
     personal_user = User.objects.get(username=user)
     personal = Personal.objects.get(user=personal_user)
-    print(request.method)
     if request.method == "POST":
-        print(codigo, "codigo")
         activo = Activo.objects.get(codigo=codigo)
         activo_resp = Activo_responsable.objects.get(activo__codigo=activo.codigo)
         old_piso = activo_resp.piso_ubicacion
@@ -523,6 +526,7 @@ class Comparacion(LoginRequiredMixin,TemplateView):
             tupla = (activo.codigo, activo.descActivo, estado, fecha_revisado, responsable_revision, segundo, b_segundo)
             comparacion.append(tupla)
         context['comparaciones'] =comparacion
+        context['titulo'] = f'Lista de Comparacion'
         context['slug'] = slug
         context['b_segundo'] = b_segundo
         return context
